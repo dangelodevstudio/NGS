@@ -1,0 +1,128 @@
+{% extends 'editor/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="row g-3">
+    <!-- Coluna esquerda: formulário -->
+    <div class="col-lg-4">
+        <div class="card shadow-sm bioma-card">
+            <div class="card-header bioma-card-header">
+                <h6 class="mb-0 text-white">Configuração do Laudo (Demo)</h6>
+            </div>
+            <div class="card-body">
+                <form id="editor-form"
+                      method="post"
+                      hx-post="{% url 'preview_laudo' %}"
+                      hx-target="#preview-container"
+                      hx-trigger="keyup changed delay:400ms">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label">Nome do paciente</label>
+                        <input type="text" name="patient_name" class="form-control"
+                               value="{{ patient_name }}">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Código / ID do paciente</label>
+                        <input type="text" name="patient_code" class="form-control"
+                               value="{{ patient_code }}">
+                    </div>
+                    <div class="row">
+                        <div class="col-6 mb-3">
+                            <label class="form-label">Data de nascimento</label>
+                            <input type="text" name="birth_date" class="form-control"
+                                   placeholder="dd/mm/aaaa"
+                                   value="{{ birth_date }}">
+                        </div>
+                        <div class="col-6 mb-3">
+                            <label class="form-label">Tipo de exame</label>
+                            <select name="exam_type" class="form-select">
+                                <option {% if exam_type == 'Painel Farmacogenômico - Demo' %}selected{% endif %}>
+                                    Painel Farmacogenômico - Demo
+                                </option>
+                                <option {% if exam_type == 'Painel Metabólico - Demo' %}selected{% endif %}>
+                                    Painel Metabólico - Demo
+                                </option>
+                                <option {% if exam_type == 'Laudo Genético Personalizado' %}selected{% endif %}>
+                                    Laudo Genético Personalizado
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Médico(a) responsável</label>
+                        <input type="text" name="responsible_doctor" class="form-control"
+                               value="{{ responsible_doctor }}">
+                    </div>
+
+                    <hr class="my-3">
+
+                    <div class="row">
+                        <div class="col-6 mb-3">
+                            <label class="form-label">Perfil genético global</label>
+                            <select name="gene_profile" class="form-select">
+                                <option {% if gene_profile == 'Metabolizador normal' %}selected{% endif %}>
+                                    Metabolizador normal
+                                </option>
+                                <option {% if gene_profile == 'Metabolizador intermediário' %}selected{% endif %}>
+                                    Metabolizador intermediário
+                                </option>
+                                <option {% if gene_profile == 'Metabolizador lento' %}selected{% endif %}>
+                                    Metabolizador lento
+                                </option>
+                                <option {% if gene_profile == 'Metabolizador ultrarrápido' %}selected{% endif %}>
+                                    Metabolizador ultrarrápido
+                                </option>
+                            </select>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <label class="form-label">Nível de risco farmacogenômico</label>
+                            <select name="risk_level" class="form-select">
+                                <option value="baixo" {% if risk_level == 'baixo' %}selected{% endif %}>Baixo</option>
+                                <option value="moderado" {% if risk_level == 'moderado' %}selected{% endif %}>Moderado</option>
+                                <option value="alto" {% if risk_level == 'alto' %}selected{% endif %}>Alto</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Gene em destaque</label>
+                        <select name="highlight_gene" class="form-select">
+                            <option {% if highlight_gene == 'CYP2D6' %}selected{% endif %}>CYP2D6</option>
+                            <option {% if highlight_gene == 'CYP2C19' %}selected{% endif %}>CYP2C19</option>
+                            <option {% if highlight_gene == 'COMT' %}selected{% endif %}>COMT</option>
+                            <option {% if highlight_gene == 'ANKK1' %}selected{% endif %}>ANKK1</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Resumo / observações clínicas</label>
+                        <textarea name="notes" rows="4" class="form-control">{{ notes }}</textarea>
+                    </div>
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn bioma-primary-btn">
+                            Atualizar prévia
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Coluna direita: preview -->
+    <div class="col-lg-8">
+        <div class="card shadow-sm bioma-card">
+            <div class="card-header bioma-card-header d-flex justify-content-between align-items-center">
+                <h6 class="mb-0 text-white">Prévia do Laudo (HTML · Demo)</h6>
+                <span class="badge bg-light text-primary fw-semibold small">Modo visual · Similar ao PDF</span>
+            </div>
+            <div class="card-body bioma-preview-bg">
+                <div id="preview-container">
+                    {% include 'editor/preview_sample.html' %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

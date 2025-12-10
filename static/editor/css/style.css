@@ -1,0 +1,149 @@
+body {
+    background-color: #f3f4f8;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.bioma-navbar {
+    background: linear-gradient(90deg, #003ecf, #0050ef);
+}
+
+.bioma-main-bg {
+    background-color: #f3f4f8;
+}
+
+.bioma-card {
+    border-radius: 1rem;
+    border: none;
+}
+
+.bioma-card-header {
+    background: linear-gradient(90deg, #0050ef, #003ecf);
+    border-top-left-radius: 1rem !important;
+    border-top-right-radius: 1rem !important;
+    border-bottom: none;
+}
+
+.bioma-primary-btn {
+    background-color: #0050ef;
+    border-color: #0050ef;
+    font-weight: 600;
+}
+
+.bioma-primary-btn:hover {
+    background-color: #003ecf;
+    border-color: #003ecf;
+}
+
+.bioma-preview-bg {
+    background-color: #e7ebf5;
+}
+
+.laudo-page {
+    background-color: #ffffff;
+    border-radius: 1rem;
+    padding: 2rem;
+    min-height: 500px;
+}
+
+.laudo-header {
+    border-bottom: 2px solid #e1e4f0;
+    padding-bottom: 0.75rem;
+}
+
+.laudo-title {
+    color: #003ecf;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+}
+
+.laudo-logo-placeholder {
+    width: 96px;
+    height: 48px;
+    border-radius: 0.75rem;
+    border: 1px dashed #9aa4c6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    color: #9aa4c6;
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+.laudo-section {
+    margin-top: 1.5rem;
+}
+
+.section-title {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #4a5bb5;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.75rem;
+}
+
+.laudo-field {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 0.75rem;
+    font-size: 0.9rem;
+    padding: 0.25rem 0;
+}
+
+.field-label {
+    color: #6c7695;
+    font-weight: 500;
+}
+
+.field-value {
+    color: #1e2440;
+    font-weight: 600;
+}
+
+.highlight-card {
+    background: #f4f6ff;
+    border-radius: 0.9rem;
+    padding: 0.75rem 1rem;
+    border: 1px solid #d7ddff;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    height: 100%;
+}
+
+.highlight-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #6c7695;
+    font-weight: 600;
+}
+
+.highlight-value {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #003ecf;
+}
+
+.highlight-value.risk-baixo {
+    color: #0c8f4c;
+}
+
+.highlight-value.risk-moderado {
+    color: #f28b03;
+}
+
+.highlight-value.risk-alto {
+    color: #cc1f3a;
+}
+
+.notes-box {
+    background-color: #f9fafc;
+    border-radius: 0.75rem;
+    border: 1px solid #e1e4f0;
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+    color: #333a55;
+}

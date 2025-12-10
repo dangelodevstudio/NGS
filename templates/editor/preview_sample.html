@@ -1,0 +1,78 @@
+<div class="laudo-page shadow-sm">
+    <header class="laudo-header d-flex justify-content-between align-items-center">
+        <div>
+            <h5 class="mb-0 laudo-title">Laudo Farmacogenômico · Demo</h5>
+            <small class="text-muted">Estrutura inspirada em relatórios profissionais da Bioma</small>
+        </div>
+        <div class="laudo-logo-placeholder">
+            <span>LOGO</span>
+        </div>
+    </header>
+
+    <section class="laudo-section mt-3">
+        <h6 class="section-title">Dados do Paciente</h6>
+        <div class="row">
+            <div class="col-7">
+                <div class="laudo-field">
+                    <span class="field-label">Paciente</span>
+                    <span class="field-value">{{ patient_name }}</span>
+                </div>
+                <div class="laudo-field">
+                    <span class="field-label">Código</span>
+                    <span class="field-value">{{ patient_code }}</span>
+                </div>
+            </div>
+            <div class="col-5">
+                <div class="laudo-field">
+                    <span class="field-label">Data de nascimento</span>
+                    <span class="field-value">{{ birth_date }}</span>
+                </div>
+                <div class="laudo-field">
+                    <span class="field-label">Exame</span>
+                    <span class="field-value">{{ exam_type }}</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="laudo-section mt-3">
+        <h6 class="section-title">Resumo Genético</h6>
+        <div class="row g-3 align-items-stretch">
+            <div class="col-md-4">
+                <div class="highlight-card">
+                    <span class="highlight-label">Perfil global</span>
+                    <span class="highlight-value">{{ gene_profile }}</span>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="highlight-card">
+                    <span class="highlight-label">Nível de risco</span>
+                    <span class="highlight-value risk-{{ risk_level }}">{{ risk_level|capfirst }}</span>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="highlight-card">
+                    <span class="highlight-label">Gene em destaque</span>
+                    <span class="highlight-value">{{ highlight_gene }}</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="laudo-section mt-3">
+        <h6 class="section-title">Comentário clínico</h6>
+        <div class="notes-box">
+            <p class="mb-0">
+                {{ notes|linebreaksbr }}
+            </p>
+        </div>
+    </section>
+
+    <section class="laudo-section mt-3">
+        <h6 class="section-title">Responsável técnico</h6>
+        <div class="laudo-field">
+            <span class="field-label">Médico(a)</span>
+            <span class="field-value">{{ responsible_doctor }}</span>
+        </div>
+    </section>
+</div>
