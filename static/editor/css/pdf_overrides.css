@@ -1,0 +1,20 @@
+.laudo-page {
+    width: 794px;
+    min-height: 1123px;
+    box-shadow: none;
+}
+
+.notes-box,
+.laudo-section,
+.laudo-table {
+    page-break-inside: avoid;
+}
+
+.laudo-section {
+    margin-top: 1.25rem;
+    padding: 1rem;
+}
+
+.notes-box {
+    padding: 0.75rem 1rem;
+}

@@ -1,3 +1,4 @@
+{% load static %}
 <div class="laudo-document">
     <!-- PÁGINA 1: CAPA -->
     <div class="laudo-page laudo-cover">
@@ -338,6 +339,9 @@
         <footer class="laudo-footer mt-4 pt-3">
             <div class="small text-muted">
                 BIOMA GENETICS · CNPJ: 28.002.455/0001-65 · Rua Luigi Galvani, 146 – 9º andar · São Paulo – SP · CEP 04575-020
+            </div>
+            <div class="mt-2">
+                <img src="{% static 'editor/img/selo_ona.png' %}" alt="Selo ONA" class="selo-ona-img">
             </div>
         </footer>
     </div>

@@ -2,10 +2,11 @@ from django.shortcuts import render
 from django.views.decorators.http import require_POST, require_http_methods
 from django.http import HttpResponse
 from django.template.loader import render_to_string
+from django.contrib.staticfiles import finders
 import pdfkit
 import os
 
-# Modelos de laudo e respectivos valores padrão
+# Modelos de laudo e respectivos valores padrÃ£o
 LAUDO_MODELOS = {
     "cancer_hereditario_144": {
         "label": "PAINEL NGS PARA CÂNCER HEREDITÁRIO - 144 GENES",
@@ -84,8 +85,9 @@ LAUDO_MODELOS = {
 }
 
 
+
 def _build_context_from_request(request):
-    # tipo de laudo selecionado (default = câncer hereditário 144 genes)
+    # tipo de laudo selecionado (default = cÃ¢ncer hereditÃ¡rio 144 genes)
     laudo_type = request.POST.get('laudo_type', 'cancer_hereditario_144')
     modelo = LAUDO_MODELOS.get(laudo_type, LAUDO_MODELOS['cancer_hereditario_144'])
     defaults = modelo["defaults"]
@@ -97,10 +99,10 @@ def _build_context_from_request(request):
         return request.POST.get(name, fallback)
 
     context = {
-        # manter tipo de laudo no contexto (para o select e para a prévia)
+        # manter tipo de laudo no contexto (para o select e para a prÃ©via)
         'laudo_type': laudo_type,
 
-        # dados do paciente (sempre editáveis, com placeholders)
+        # dados do paciente (sempre editÃ¡veis, com placeholders)
         'patient_name': get_field('patient_name', 'NOME COMPLETO PACIENTE'),
         'patient_birth_date': get_field('patient_birth_date', '00/00/0000'),
         'patient_sex': get_field('patient_sex', 'Feminino'),
@@ -116,7 +118,7 @@ def _build_context_from_request(request):
         'sample_description': get_field('sample_description', 'Swab bucal (00000000000000)'),
         'clinical_indication': get_field(
             'clinical_indication',
-            'História pessoal/familiar de câncer, etc.'
+            'HistÃ³ria pessoal/familiar de cÃ¢ncer, etc.'
         ),
 
         # resultado principal
@@ -145,19 +147,19 @@ def _build_context_from_request(request):
         'vus_inheritance': get_field('vus_inheritance'),
         'vus_classification': get_field('vus_classification'),
 
-        # métricas e recomendações
+        # mÃ©tricas e recomendaÃ§Ãµes
         'metrics_coverage_mean': get_field('metrics_coverage_mean'),
         'metrics_coverage_50x': get_field('metrics_coverage_50x'),
         'metrics_text': get_field('metrics_text'),
         'recommendations_text': get_field('recommendations_text'),
         'notes_text': get_field('notes_text'),
 
-        # metodologia e limitações
+        # metodologia e limitaÃ§Ãµes
         'methodology_text': get_field('methodology_text'),
         'limitations_text': get_field('limitations_text'),
         'observations_text': get_field('observations_text'),
 
-        # genes analisados e referências
+        # genes analisados e referÃªncias
         'genes_analyzed_list': get_field('genes_analyzed_list'),
         'references_text': get_field('references_text'),
 
@@ -166,7 +168,7 @@ def _build_context_from_request(request):
         'tech_professional_crbm': get_field('tech_professional_crbm', 'CRBM-SP: 26338'),
         'md_responsible': get_field('md_responsible', 'Dr. Guilherme Lugo'),
         'md_responsible_crm': get_field('md_responsible_crm', 'CRM-SP: 256188'),
-        'md_technical': get_field('md_technical', 'Dra. Ângela F. L. Waitzberg'),
+        'md_technical': get_field('md_technical', 'Dra. Ãngela F. L. Waitzberg'),
         'md_technical_crm': get_field('md_technical_crm', 'CRM-SP: 69504'),
     }
 
@@ -189,19 +191,24 @@ def get_pdfkit_config():
     wkhtmltopdf_path = r"C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe"
     if os.path.isfile(wkhtmltopdf_path):
         return pdfkit.configuration(wkhtmltopdf=wkhtmltopdf_path)
-    # Se não encontrar o executável nesse caminho, tente usar o wkhtmltopdf do PATH
+    # Se nÃ£o encontrar o executÃ¡vel nesse caminho, tente usar o wkhtmltopdf do PATH
     return None
 
 
 @require_http_methods(["POST"])
 def export_pdf(request):
-    # Usa o mesmo contexto da prévia
+    # Usa o mesmo contexto da pr?via
     context = _build_context_from_request(request)
 
-    # Renderiza o mesmo template da prévia
-    html_string = render_to_string('editor/preview_pdf.html', context, request=request)
+    # Renderiza o mesmo template da pr?via
+    html_string = render_to_string("editor/preview_pdf.html", context, request=request)
 
-    # Configuração do wkhtmltopdf
+    # Localiza os arquivos CSS (principal + overrides para PDF)
+    main_css = finders.find("editor/css/style.css")
+    pdf_override_css = finders.find("editor/css/pdf_overrides.css")
+    css_files = [path for path in [main_css, pdf_override_css] if path]
+
+    # Configura??o do wkhtmltopdf
     config = get_pdfkit_config()
 
     pdf_options = {
@@ -215,11 +222,22 @@ def export_pdf(request):
     }
 
     if config is not None:
-        pdf_bytes = pdfkit.from_string(html_string, False, options=pdf_options, configuration=config)
+        pdf_bytes = pdfkit.from_string(
+            html_string,
+            False,
+            options=pdf_options,
+            configuration=config,
+            css=css_files
+        )
     else:
-        # Tenta sem config explícita, assumindo wkhtmltopdf no PATH
-        pdf_bytes = pdfkit.from_string(html_string, False, options=pdf_options)
+        # Tenta sem config expl?cita, assumindo wkhtmltopdf no PATH
+        pdf_bytes = pdfkit.from_string(
+            html_string,
+            False,
+            options=pdf_options,
+            css=css_files
+        )
 
     response = HttpResponse(pdf_bytes, content_type='application/pdf')
-    response['Content-Disposition'] = 'inline; filename=\"laudo.pdf\"'
+    response['Content-Disposition'] = 'inline; filename="laudo.pdf"'
     return response

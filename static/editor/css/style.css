@@ -1,6 +1,15 @@
+:root {
+    --bioma-purple: #763bbd;
+    --bioma-purple-dark: #753bbd;
+    --bioma-gray-bg: #f5f3f7;
+    --bioma-gray-box: #ebe7f2;
+    --bioma-gray-text: #595959;
+    --bioma-table-alt: #efefef;
+}
 body {
     background-color: #f3f4f8;
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-family: 'Red Hat Display', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    color: var(--bioma-gray-text);
 }
 
 .bioma-navbar {
@@ -43,12 +52,15 @@ body {
 }
 
 .laudo-page {
-    background-color: #ffffff;
     width: 794px; /* Aproximadamente A4 em 96 DPI */
     min-height: 1123px;
     margin: 0 auto 1.5rem auto;
     padding: 2.5rem 2.75rem;
     box-shadow: 0 0 8px rgba(15, 23, 42, 0.08);
+    background-color: var(--bioma-gray-bg);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
 }
 
 /* Quebra de página entre páginas no PDF */
@@ -83,6 +95,10 @@ body {
 
 .laudo-section {
     margin-top: 1.5rem;
+    background: #ffffff;
+    border: 1px solid #e6dcfb;
+    border-radius: 1rem;
+    padding: 1rem;
 }
 
 .section-title {
@@ -151,12 +167,12 @@ body {
 }
 
 .notes-box {
-    background-color: #f9fafc;
+    background-color: #f5edff;
     border-radius: 0.75rem;
-    border: 1px solid #e1e4f0;
+    border: 1px solid #d9ccff;
     padding: 0.75rem 1rem;
     font-size: 0.9rem;
-    color: #333a55;
+    color: var(--bioma-gray-text);
 }
 
 .laudo-patient-box {
@@ -189,7 +205,7 @@ body {
     display: inline-block;
     padding: 0.35rem 0.9rem;
     border-radius: 999px;
-    background-color: #6b2fbf;
+    background-color: var(--bioma-purple);
     color: #ffffff;
     font-size: 0.75rem;
     font-weight: 700;
@@ -198,13 +214,18 @@ body {
 }
 
 .laudo-table thead {
-    background-color: #f3ecff;
+    background-color: var(--bioma-purple);
+    color: #ffffff;
 }
 
 .laudo-table th {
     font-size: 0.75rem;
     text-transform: uppercase;
     letter-spacing: 0.05em;
+}
+
+.laudo-table tr:nth-child(even) {
+    background-color: var(--bioma-table-alt);
 }
 
 .laudo-table td {
@@ -393,4 +414,30 @@ body {
     border-radius: 1rem;
     border-color: #c9b8ff;
     background-color: #faf7ff;
+}
+
+.logo-bioma-img {
+    height: 64px;
+    width: auto;
+}
+
+.selo-ona-img {
+    height: 48px;
+    width: auto;
+}
+.laudo-cover {
+    background-image: url("/static/editor/img/bg_capa.jpg");
+    box-shadow: none;
+}
+
+.laudo-main,
+.laudo-additional,
+.laudo-methodology,
+.laudo-genes,
+.laudo-references {
+    background-image: url("/static/editor/img/bg_interno.jpg");
+}
+
+.laudo-backcover {
+    background-image: url("/static/editor/img/bg_backcover.jpg");
 }
