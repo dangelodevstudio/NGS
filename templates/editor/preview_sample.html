@@ -1,78 +1,344 @@
-<div class="laudo-page shadow-sm">
-    <header class="laudo-header d-flex justify-content-between align-items-center">
-        <div>
-            <h5 class="mb-0 laudo-title">Laudo Farmacogenômico · Demo</h5>
-            <small class="text-muted">Estrutura inspirada em relatórios profissionais da Bioma</small>
+<div class="laudo-document">
+    <!-- PÁGINA 1: CAPA -->
+    <div class="laudo-page laudo-cover">
+        <div class="laudo-cover-header">
+            <div class="laudo-cover-logo bioma-logo">
+                <span>b’oma</span>
+            </div>
+            <div class="laudo-cover-title-block">
+                <h1 class="laudo-cover-title">
+                    {{ exam_name }}
+                </h1>
+                <p class="laudo-cover-subtitle">
+                    Relatório de Análise Genética
+                </p>
+            </div>
         </div>
-        <div class="laudo-logo-placeholder">
-            <span>LOGO</span>
-        </div>
-    </header>
 
-    <section class="laudo-section mt-3">
-        <h6 class="section-title">Dados do Paciente</h6>
-        <div class="row">
-            <div class="col-7">
-                <div class="laudo-field">
-                    <span class="field-label">Paciente</span>
-                    <span class="field-value">{{ patient_name }}</span>
-                </div>
-                <div class="laudo-field">
-                    <span class="field-label">Código</span>
-                    <span class="field-value">{{ patient_code }}</span>
-                </div>
-            </div>
-            <div class="col-5">
-                <div class="laudo-field">
-                    <span class="field-label">Data de nascimento</span>
-                    <span class="field-value">{{ birth_date }}</span>
-                </div>
-                <div class="laudo-field">
-                    <span class="field-label">Exame</span>
-                    <span class="field-value">{{ exam_type }}</span>
+        <div class="laudo-cover-body">
+            <div class="laudo-cover-info">
+                <h2 class="laudo-cover-section-title">Dados do paciente</h2>
+                <div class="laudo-cover-patient-grid">
+                    <div class="laudo-cover-field">
+                        <span class="field-label">Nome</span>
+                        <span class="field-value">{{ patient_name }}</span>
+                    </div>
+                    <div class="laudo-cover-field">
+                        <span class="field-label">Data de nascimento</span>
+                        <span class="field-value">{{ patient_birth_date }}</span>
+                    </div>
+                    <div class="laudo-cover-field">
+                        <span class="field-label">Sexo</span>
+                        <span class="field-value">{{ patient_sex }}</span>
+                    </div>
+                    <div class="laudo-cover-field">
+                        <span class="field-label">Código ID</span>
+                        <span class="field-value">{{ patient_code }}</span>
+                    </div>
                 </div>
             </div>
         </div>
-    </section>
 
-    <section class="laudo-section mt-3">
-        <h6 class="section-title">Resumo Genético</h6>
-        <div class="row g-3 align-items-stretch">
-            <div class="col-md-4">
-                <div class="highlight-card">
-                    <span class="highlight-label">Perfil global</span>
-                    <span class="highlight-value">{{ gene_profile }}</span>
-                </div>
+        <footer class="laudo-cover-footer">
+            <div class="laudo-footer-text">
+                BIOMA GENETICS · CNPJ: 28.002.455/0001-65 · Rua Luigi Galvani, 146 – 9° andar · São Paulo – SP · CEP 04575-020
             </div>
-            <div class="col-md-4">
-                <div class="highlight-card">
-                    <span class="highlight-label">Nível de risco</span>
-                    <span class="highlight-value risk-{{ risk_level }}">{{ risk_level|capfirst }}</span>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="highlight-card">
-                    <span class="highlight-label">Gene em destaque</span>
-                    <span class="highlight-value">{{ highlight_gene }}</span>
-                </div>
-            </div>
-        </div>
-    </section>
+        </footer>
+    </div>
 
-    <section class="laudo-section mt-3">
-        <h6 class="section-title">Comentário clínico</h6>
-        <div class="notes-box">
-            <p class="mb-0">
-                {{ notes|linebreaksbr }}
-            </p>
-        </div>
-    </section>
+    <!-- PÁGINA 2: DADOS + RESULTADOS + INTERPRETAÇÃO + ACHADOS ADICIONAIS -->
+    <div class="laudo-page laudo-main">
+        {% include "editor/_laudo_header_paciente.html" %}
 
-    <section class="laudo-section mt-3">
-        <h6 class="section-title">Responsável técnico</h6>
-        <div class="laudo-field">
-            <span class="field-label">Médico(a)</span>
-            <span class="field-value">{{ responsible_doctor }}</span>
-        </div>
-    </section>
+        <!-- Bloco DADOS -->
+        <section class="laudo-section mt-2">
+            <div class="laudo-pill-title">DADOS</div>
+            <div class="mt-2">
+                <div class="laudo-field">
+                    <span class="field-label">Solicitante:</span>
+                    <span class="field-value">{{ requester_name }}</span>
+                </div>
+                <div class="laudo-field">
+                    <span class="field-label">Amostra:</span>
+                    <span class="field-value">{{ sample_description }}</span>
+                </div>
+                <div class="laudo-field">
+                    <span class="field-label">Indicação clínica:</span>
+                    <span class="field-value">{{ clinical_indication }}</span>
+                </div>
+                <div class="laudo-field">
+                    <span class="field-label">Nome do exame:</span>
+                    <span class="field-value">{{ exam_name }}</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Bloco RESULTADOS -->
+        <section class="laudo-section mt-3">
+            <div class="laudo-pill-title">RESULTADOS</div>
+            <div class="mt-2">
+                <p class="mb-1">
+                    {{ main_result_intro }}
+                </p>
+                <div class="table-responsive mt-2">
+                    <table class="table table-sm laudo-table align-middle">
+                        <thead>
+                            <tr>
+                                <th>Gene</th>
+                                <th>Variante</th>
+                                <th>dbSNP</th>
+                                <th>Zigosidade</th>
+                                <th>Herança</th>
+                                <th>Classificação</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    {{ main_gene }}<br>
+                                    <small class="text-muted">{{ main_transcript }}</small>
+                                </td>
+                                <td>
+                                    {{ main_variant_c }}<br>
+                                    <small class="text-muted">{{ main_variant_p }}</small>
+                                </td>
+                                <td>{{ main_dbsnp }}</td>
+                                <td>{{ main_zygosity }}</td>
+                                <td>{{ main_inheritance }}</td>
+                                <td>{{ main_classification }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                {% if main_condition %}
+                <p class="mt-2 mb-0">
+                    <span class="field-label">Condição: </span>
+                    <span class="field-value">{{ main_condition }}</span>
+                </p>
+                {% endif %}
+            </div>
+        </section>
+
+        <!-- Bloco INTERPRETAÇÃO -->
+        <section class="laudo-section mt-3">
+            <div class="laudo-pill-title">INTERPRETAÇÃO</div>
+            <div class="notes-box mt-2">
+                <p class="mb-0">
+                    {{ interpretation_text|linebreaksbr }}
+                </p>
+            </div>
+        </section>
+
+        <!-- Bloco ACHADOS ADICIONAIS -->
+        <section class="laudo-section mt-3">
+            <div class="laudo-pill-title">ACHADOS ADICIONAIS</div>
+            <div class="notes-box mt-2">
+                <p class="mb-2">
+                    {{ additional_findings_text|linebreaksbr }}
+                </p>
+                <div class="table-responsive mt-2">
+                    <table class="table table-sm laudo-table align-middle">
+                        <thead>
+                            <tr>
+                                <th>Gene</th>
+                                <th>Variante</th>
+                                <th>dbSNP</th>
+                                <th>Zigosidade</th>
+                                <th>Herança</th>
+                                <th>Classificação</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="text-muted">—</td>
+                                <td class="text-muted">—</td>
+                                <td class="text-muted">—</td>
+                                <td class="text-muted">—</td>
+                                <td class="text-muted">—</td>
+                                <td class="text-muted">—</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Rodapé com profissionais -->
+        <footer class="laudo-footer mt-4 pt-3">
+            <div class="small">
+                <div>Profissional técnico: {{ tech_professional }} {{ tech_professional_crbm }}</div>
+                <div>Médico Responsável: {{ md_responsible }} | {{ md_responsible_crm }}</div>
+                <div>Responsável técnico: {{ md_technical }} | {{ md_technical_crm }}</div>
+                <div class="mt-1 text-muted">
+                    BIOMA GENETICS | CNPJ: 28.002.455/0001-65 · Rua Luigi Galvani, 146 – 9° andar - São Paulo, SP - CEP 04575-020
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- PÁGINA 3: Achados adicionais + Métricas + Recomendações + Notas -->
+    <div class="laudo-page laudo-extra laudo-additional">
+        {% include "editor/_laudo_header_paciente.html" %}
+
+        <section class="laudo-section mt-2">
+            <div class="laudo-pill-title">ACHADOS ADICIONAIS</div>
+            <div class="notes-box mt-2">
+                <p class="mb-2">
+                    {{ additional_findings_text|linebreaksbr }}
+                </p>
+
+                <div class="table-responsive mt-2">
+                    <table class="table table-sm laudo-table align-middle">
+                        <thead>
+                            <tr>
+                                <th>Gene</th>
+                                <th>Variante</th>
+                                <th>dbSNP</th>
+                                <th>Zigosidade</th>
+                                <th>Herança</th>
+                                <th>Classificação</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    {{ vus_gene }}<br>
+                                    <small class="text-muted">{{ vus_transcript }}</small>
+                                </td>
+                                <td>
+                                    {{ vus_variant_c }}<br>
+                                    <small class="text-muted">{{ vus_variant_p }}</small>
+                                </td>
+                                <td>{{ vus_dbsnp }}</td>
+                                <td>{{ vus_zygosity }}</td>
+                                <td>{{ vus_inheritance }}</td>
+                                <td>{{ vus_classification }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <section class="laudo-section mt-3">
+            <div class="laudo-pill-title">MÉTRICAS</div>
+            <div class="notes-box mt-2">
+                <p class="mb-1">
+                    Cobertura média da região alvo: <strong>{{ metrics_coverage_mean }}</strong><br>
+                    Proporção da região alvo com cobertura ≥ 50x: <strong>{{ metrics_coverage_50x }}</strong>
+                </p>
+                <p class="mb-0">
+                    {{ metrics_text|linebreaksbr }}
+                </p>
+            </div>
+        </section>
+
+        <section class="laudo-section mt-3">
+            <div class="laudo-pill-title">RECOMENDAÇÕES</div>
+            <div class="notes-box mt-2">
+                <p class="mb-0">
+                    {{ recommendations_text|linebreaksbr }}
+                </p>
+            </div>
+        </section>
+
+        <section class="laudo-section mt-3">
+            <div class="laudo-pill-title">NOTAS</div>
+            <div class="notes-box mt-2">
+                <p class="mb-0">
+                    {{ notes_text|linebreaksbr }}
+                </p>
+            </div>
+        </section>
+
+        <footer class="laudo-footer mt-4 pt-3">
+            <div class="small">
+                <div>Profissional técnico: {{ tech_professional }} {{ tech_professional_crbm }}</div>
+                <div>Médico Responsável: {{ md_responsible }} | {{ md_responsible_crm }}</div>
+                <div>Responsável técnico: {{ md_technical }} | {{ md_technical_crm }}</div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- PÁGINA 4: Metodologia, Limitações, Observações -->
+    <div class="laudo-page laudo-extra laudo-methodology">
+        {% include "editor/_laudo_header_paciente.html" %}
+
+        <!-- METODOLOGIA -->
+        <section class="laudo-section mt-1">
+            <div class="laudo-pill-title laudo-pill-method">
+                METODOLOGIA
+            </div>
+            <div class="notes-box notes-box-method mt-2">
+                <p class="mb-0">
+                    {{ methodology_text|linebreaksbr }}
+                </p>
+            </div>
+        </section>
+
+        <!-- CONSIDERAÇÕES E LIMITAÇÕES -->
+        <section class="laudo-section mt-3">
+            <div class="laudo-pill-title laudo-pill-method">
+                CONSIDERAÇÕES E LIMITAÇÕES
+            </div>
+            <div class="notes-box notes-box-method mt-2">
+                <p class="mb-0">
+                    {{ limitations_text|linebreaksbr }}
+                </p>
+            </div>
+        </section>
+
+        <!-- OBSERVAÇÕES -->
+        <section class="laudo-section mt-3">
+            <div class="laudo-pill-title laudo-pill-method">
+                OBSERVAÇÕES
+            </div>
+            <div class="notes-box notes-box-method mt-2">
+                <p class="mb-0">
+                    {{ observations_text|linebreaksbr }}
+                </p>
+            </div>
+        </section>
+
+        <footer class="laudo-footer mt-4 pt-3">
+            <div class="small">
+                <div>Profissional técnico: {{ tech_professional }} {{ tech_professional_crbm }}</div>
+                <div>Médico Responsável: {{ md_responsible }} | {{ md_responsible_crm }}</div>
+                <div>Responsável técnico: {{ md_technical }} | {{ md_technical_crm }}</div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- PÁGINAS 5+ : Genes analisados e Referências -->
+    <div class="laudo-page laudo-extra laudo-genes">
+        {% include "editor/_laudo_header_paciente.html" %}
+
+        <section class="laudo-section mt-2">
+            <div class="laudo-pill-title">GENES ANALISADOS</div>
+            <div class="notes-box mt-2">
+                <p class="mb-0 laudo-monospace">
+                    {{ genes_analyzed_list|linebreaksbr }}
+                </p>
+            </div>
+        </section>
+    </div>
+
+    <div class="laudo-page laudo-extra laudo-references">
+        {% include "editor/_laudo_header_paciente.html" %}
+
+        <section class="laudo-section mt-2">
+            <div class="laudo-pill-title">REFERÊNCIAS</div>
+            <div class="notes-box mt-2">
+                <p class="mb-0 laudo-monospace">
+                    {{ references_text|linebreaksbr }}
+                </p>
+            </div>
+        </section>
+
+        <footer class="laudo-footer mt-4 pt-3">
+            <div class="small text-muted">
+                BIOMA GENETICS · CNPJ: 28.002.455/0001-65 · Rua Luigi Galvani, 146 – 9º andar · São Paulo – SP · CEP 04575-020
+            </div>
+        </footer>
+    </div>
 </div>

@@ -1,0 +1,35 @@
+<div class="laudo-method-header d-flex justify-content-between align-items-start mb-4">
+    <div class="laudo-method-logo">
+        <div class="bioma-logo-big">
+            <span>b’oma</span>
+            <small class="logo-subtitle d-block">Precision Medicine</small>
+        </div>
+    </div>
+    <div class="laudo-method-patient-box">
+        <div class="laudo-method-patient-title">
+            Nome: <span class="fw-bold">{{ patient_name }}</span>
+        </div>
+        <div class="laudo-method-patient-grid">
+            <div>
+                <span class="field-label">Data de Nascimento:</span>
+                <span class="field-value">{{ patient_birth_date }}</span>
+            </div>
+            <div>
+                <span class="field-label">Sexo:</span>
+                <span class="field-value">{{ patient_sex }}</span>
+            </div>
+            <div>
+                <span class="field-label">Código ID:</span>
+                <span class="field-value">{{ patient_code }}</span>
+            </div>
+            <div>
+                <span class="field-label">Data de Entrada:</span>
+                <span class="field-value">{{ exam_entry_date }}</span>
+            </div>
+            <div>
+                <span class="field-label">Data de Liberação:</span>
+                <span class="field-value">{{ exam_release_date }}</span>
+            </div>
+        </div>
+    </div>
+</div>

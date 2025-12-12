@@ -38,11 +38,22 @@ body {
     background-color: #e7ebf5;
 }
 
+.laudo-document {
+    padding: 1.5rem 0;
+}
+
 .laudo-page {
     background-color: #ffffff;
-    border-radius: 1rem;
-    padding: 2rem;
-    min-height: 500px;
+    width: 794px; /* Aproximadamente A4 em 96 DPI */
+    min-height: 1123px;
+    margin: 0 auto 1.5rem auto;
+    padding: 2.5rem 2.75rem;
+    box-shadow: 0 0 8px rgba(15, 23, 42, 0.08);
+}
+
+/* Quebra de página entre páginas no PDF */
+.laudo-page + .laudo-page {
+    page-break-before: always;
 }
 
 .laudo-header {
@@ -146,4 +157,240 @@ body {
     padding: 0.75rem 1rem;
     font-size: 0.9rem;
     color: #333a55;
+}
+
+.laudo-patient-box {
+    background-color: #ffffff;
+    border-radius: 1rem;
+    padding: 1rem 1.25rem;
+    box-shadow: 0 0 0 1px rgba(111, 93, 185, 0.15);
+    min-width: 260px;
+}
+
+.laudo-patient-line {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    padding: 0.1rem 0;
+}
+
+.bioma-logo {
+    width: 120px;
+    height: 60px;
+    border-radius: 1rem;
+    border-style: dashed;
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: #6b2fbf;
+}
+
+.laudo-pill-title {
+    display: inline-block;
+    padding: 0.35rem 0.9rem;
+    border-radius: 999px;
+    background-color: #6b2fbf;
+    color: #ffffff;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.laudo-table thead {
+    background-color: #f3ecff;
+}
+
+.laudo-table th {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.laudo-table td {
+    font-size: 0.8rem;
+}
+
+.laudo-footer {
+    border-top: 1px solid #e1e4f0;
+    font-size: 0.75rem;
+    color: #66698a;
+}
+
+.laudo-cover {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.laudo-cover-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 3rem;
+}
+
+.laudo-cover-logo {
+    width: 140px;
+    height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 1.25rem;
+    border: 1px dashed #9aa4c6;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #6b2fbf;
+}
+
+.laudo-cover-title-block {
+    max-width: 60%;
+    text-align: right;
+}
+
+.laudo-cover-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #3b2b78;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.5rem;
+}
+
+.laudo-cover-subtitle {
+    font-size: 0.95rem;
+    color: #6c7695;
+    margin: 0;
+}
+
+.laudo-cover-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 2.5rem;
+}
+
+.laudo-cover-info {
+    background: #f9f7ff;
+    border-radius: 1rem;
+    border: 1px solid #e1ddff;
+    padding: 1.25rem 1.5rem;
+}
+
+.laudo-cover-exam-info {
+    margin-top: 0.75rem;
+}
+
+.laudo-cover-section-title {
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #6b2fbf;
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+}
+
+.laudo-cover-patient-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem 1.5rem;
+}
+
+.laudo-cover-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    font-size: 0.9rem;
+}
+
+.laudo-cover-footer {
+    border-top: 1px solid #e1e4f0;
+    padding-top: 0.75rem;
+    font-size: 0.75rem;
+    color: #66698a;
+    text-align: center;
+}
+
+.laudo-footer-text {
+    max-width: 100%;
+}
+
+.laudo-header-simple {
+    display: flex;
+    flex-direction: column;
+}
+
+.laudo-title-small {
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #3b2b78;
+}
+
+.laudo-extra .laudo-pill-title {
+    margin-top: 0.25rem;
+}
+
+.laudo-monospace {
+    font-family: "Courier New", monospace;
+    font-size: 0.8rem;
+}
+
+.laudo-method-header {
+    gap: 2rem;
+}
+
+.bioma-logo-big {
+    border-radius: 1.5rem;
+    border: 1px solid #e1ddff;
+    padding: 1rem 1.5rem;
+    display: inline-block;
+    font-size: 2.25rem;
+    font-weight: 700;
+    color: #6b2fbf;
+    line-height: 1.1;
+}
+
+.bioma-logo-big .logo-subtitle {
+    font-size: 0.8rem;
+    font-weight: 400;
+    color: #6c7695;
+    margin-top: 0.25rem;
+}
+
+.laudo-method-patient-box {
+    background: #ffffff;
+    border-radius: 1rem;
+    border: 1px solid #e1ddff;
+    padding: 1rem 1.25rem;
+    min-width: 260px;
+    max-width: 320px;
+    font-size: 0.85rem;
+}
+
+.laudo-method-patient-title {
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+}
+
+.laudo-method-patient-grid {
+    display: grid;
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+    gap: 0.15rem;
+}
+
+.laudo-method-patient-grid .field-label {
+    font-weight: 600;
+    margin-right: 0.25rem;
+}
+
+.laudo-pill-method {
+    border-radius: 999px;
+}
+
+.notes-box-method {
+    border-radius: 1rem;
+    border-color: #c9b8ff;
+    background-color: #faf7ff;
 }
