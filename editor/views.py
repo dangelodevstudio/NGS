@@ -6,6 +6,7 @@ from django.contrib.staticfiles import finders
 from pathlib import Path
 import pdfkit
 import os
+import logging
 
 # Modelos de laudo e respectivos valores padrÃ£o
 LAUDO_MODELOS = {
@@ -289,22 +290,26 @@ def export_pdf(request):
     # Configura??o do wkhtmltopdf
     config = get_pdfkit_config()
 
-    if config is not None:
-        pdf_bytes = pdfkit.from_string(
-            html_string,
-            False,
-            options=pdf_options,
-            configuration=config,
-            css=css_files
-        )
-    else:
-        # Tenta sem config expl?cita, assumindo wkhtmltopdf no PATH
-        pdf_bytes = pdfkit.from_string(
-            html_string,
-            False,
-            options=pdf_options,
-            css=css_files
-        )
+    try:
+        if config is not None:
+            pdf_bytes = pdfkit.from_string(
+                html_string,
+                False,
+                options=pdf_options,
+                configuration=config,
+                css=css_files
+            )
+        else:
+            # Tenta sem config expl?cita, assumindo wkhtmltopdf no PATH
+            pdf_bytes = pdfkit.from_string(
+                html_string,
+                False,
+                options=pdf_options,
+                css=css_files
+            )
+    except Exception:
+        logging.exception("Erro ao gerar PDF (Template B? %s)", context.get("laudo_type"))
+        raise
 
     response = HttpResponse(pdf_bytes, content_type='application/pdf')
     response['Content-Disposition'] = 'inline; filename="laudo.pdf"'
