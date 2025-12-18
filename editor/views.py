@@ -3,6 +3,7 @@ from django.views.decorators.http import require_POST, require_http_methods
 from django.http import HttpResponse
 from django.template.loader import render_to_string
 from django.contrib.staticfiles import finders
+from pathlib import Path
 import pdfkit
 import os
 
@@ -83,6 +84,25 @@ LAUDO_MODELOS = {
     },
     # No futuro vamos adicionar mais modelos aqui (epilepsia, neuro, etc.)
 }
+
+def _split_interpretation_for_template_b(text, first_limit=900):
+    """
+    Divide o texto de interpreta??o em duas partes aproximadas para o template B.
+    Usa quebras de par?grafo ou senten?as para evitar cortes abruptos.
+    """
+    if not text:
+        return "", ""
+    cleaned = text.strip()
+    if len(cleaned) <= first_limit:
+        return cleaned, ""
+    slice_text = cleaned[:first_limit]
+    split_at = max(slice_text.rfind("\n\n"), slice_text.rfind(". "))
+    if split_at == -1 or split_at < first_limit * 0.5:
+        split_at = first_limit
+    part1 = cleaned[:split_at].strip()
+    part2 = cleaned[split_at:].strip()
+    return part1, part2
+
 
 
 
@@ -172,6 +192,15 @@ def _build_context_from_request(request):
         'md_technical_crm': get_field('md_technical_crm', 'CRM-SP: 69504'),
     }
 
+    # Ajustes específicos para template B (split de interpretação)
+    if context.get('laudo_type') == 'cancer_hereditario_144':
+        part1, part2 = _split_interpretation_for_template_b(context.get('interpretation_text', ''))
+        context['interpretation_p2'] = part1
+        context['interpretation_p3'] = part2
+    else:
+        context['interpretation_p2'] = context.get('interpretation_text', '')
+        context['interpretation_p3'] = ''
+
     return context
 
 
@@ -183,7 +212,10 @@ def editor_home(request):
 @require_POST
 def preview_laudo(request):
     context = _build_context_from_request(request)
-    return render(request, 'editor/preview_sample.html', context)
+    template_name = "editor/preview_sample.html"
+    if context.get("laudo_type") == "cancer_hereditario_144":
+        template_name = "editor/preview_sample_b.html"
+    return render(request, template_name, context)
 
 
 def get_pdfkit_config():
@@ -200,17 +232,9 @@ def export_pdf(request):
     # Usa o mesmo contexto da pr?via
     context = _build_context_from_request(request)
 
-    # Renderiza o mesmo template da pr?via
-    html_string = render_to_string("editor/preview_pdf.html", context, request=request)
-
-    # Localiza os arquivos CSS (principal + overrides para PDF)
-    main_css = finders.find("editor/css/style.css")
-    pdf_override_css = finders.find("editor/css/pdf_overrides.css")
-    css_files = [path for path in [main_css, pdf_override_css] if path]
-
-    # Configura??o do wkhtmltopdf
-    config = get_pdfkit_config()
-
+    # Seleciona o template e CSS conforme o tipo de laudo
+    template_name = "editor/preview_pdf.html"
+    css_files = []
     pdf_options = {
         "page-size": "A4",
         "encoding": "UTF-8",
@@ -220,6 +244,42 @@ def export_pdf(request):
         "margin-left": "10mm",
         "enable-local-file-access": "",
     }
+
+    if context.get("laudo_type") == "cancer_hereditario_144":
+        template_name = "editor/preview_sample_b.html"
+        css_b = finders.find("editor/css/pdf_template_b.css")
+        if css_b:
+            css_files = [css_b]
+        # Monta caminhos absolutos para os fundos das 8 p?ginas
+        bg_pages = []
+        for i in range(1, 9):
+            path_bg = finders.find(f"editor/img/templates/laudo144_pg0{i}.png")
+            if path_bg:
+                bg_pages.append(Path(path_bg).resolve().as_uri())
+            else:
+                bg_pages.append(f"/static/editor/img/templates/laudo144_pg0{i}.png")
+        context = dict(context, bg_pages=bg_pages)
+        pdf_options = {
+            "page-size": "A4",
+            "encoding": "UTF-8",
+            "margin-top": "0mm",
+            "margin-right": "0mm",
+            "margin-bottom": "0mm",
+            "margin-left": "0mm",
+            "enable-local-file-access": "",
+            "disable-smart-shrinking": "",
+            "print-media-type": "",
+        }
+    else:
+        main_css = finders.find("editor/css/style.css")
+        pdf_override_css = finders.find("editor/css/pdf_overrides.css")
+        css_files = [p for p in [main_css, pdf_override_css] if p]
+
+    # Renderiza o template escolhido
+    html_string = render_to_string(template_name, context, request=request)
+
+    # Configura??o do wkhtmltopdf
+    config = get_pdfkit_config()
 
     if config is not None:
         pdf_bytes = pdfkit.from_string(

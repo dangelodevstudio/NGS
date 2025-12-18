@@ -326,7 +326,11 @@
             </div>
             <div class="card-body bioma-preview-bg">
                 <div id="preview-container">
-                    {% include 'editor/preview_sample.html' %}
+                    {% if laudo_type == 'cancer_hereditario_144' %}
+                        {% include 'editor/preview_sample_b.html' %}
+                    {% else %}
+                        {% include 'editor/preview_sample.html' %}
+                    {% endif %}
                 </div>
             </div>
         </div>

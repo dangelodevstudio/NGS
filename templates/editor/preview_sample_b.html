@@ -1,0 +1,111 @@
+{% load static %}
+<div class="pdf-document">
+    <!-- PAGE 01: CAPA -->
+    <div class="pdf-page page-01">
+        <img class="page-bg" src="{{ bg_pages.0|default:'/static/editor/img/templates/laudo144_pg01.png' }}" alt="">
+        <div class="field field-p1-name txt-value">{{ patient_name }}</div>
+        <div class="field field-p1-birth txt-value">{{ patient_birth_date }}</div>
+        <div class="field field-p1-code txt-value">{{ patient_code }}</div>
+    </div>
+
+    <!-- PAGE 02: HEADER + DADOS + RESULTADO PRINCIPAL + RESULTADOS + INTERPRETAÇÃO (parte 1) -->
+    <div class="pdf-page page-02">
+        <img class="page-bg" src="{{ bg_pages.1|default:'/static/editor/img/templates/laudo144_pg02.png' }}" alt="">
+        
+        <!-- Header do paciente -->
+        <div class="field field-p2-header-name txt-value">{{ patient_name }}</div>
+        <div class="field field-p2-header-birth txt-value">{{ patient_birth_date }}</div>
+        <div class="field field-p2-header-sex txt-value">{{ patient_sex }}</div>
+        <div class="field field-p2-header-code txt-value">{{ patient_code }}</div>
+        <div class="field field-p2-header-entry txt-value">{{ exam_entry_date }}</div>
+        <div class="field field-p2-header-release txt-value">{{ exam_release_date }}</div>
+        
+        <!-- Bloco DADOS -->
+        <div class="field field-p2-requester txt-value">{{ requester_name }}</div>
+        <div class="field field-p2-sample txt-value">{{ sample_description }}</div>
+        <div class="field field-p2-clinical box txt-paragraph">{{ clinical_indication }}</div>
+        <div class="field field-p2-exam txt-value">{{ exam_name }}</div>
+        
+        <!-- Linha do RESULTADO PRINCIPAL -->
+        <div class="field field-p2-gene txt-value">{{ main_gene }}</div>
+        <div class="field field-p2-variant-c txt-value">{{ main_variant_c }}</div>
+        <div class="field field-p2-variant-p txt-value">{{ main_variant_p }}</div>
+        <div class="field field-p2-classification txt-value">{{ main_classification }}</div>
+        
+        <!-- Bloco RESULTADOS (texto curto) -->
+        <div class="field field-p2-results box txt-paragraph">{{ main_result_intro }}</div>
+        
+        <!-- Bloco INTERPRETAÇÃO (parte 1) -->
+        <div class="field field-p2-interpretation box txt-paragraph">
+            {{ interpretation_p2|linebreaksbr }}
+        </div>
+    </div>
+
+    <!-- PAGE 03: INTERPRETAÇÃO (parte 2) + ACHADOS ADICIONAIS + Tabela VUS -->
+    <div class="pdf-page page-03">
+        <img class="page-bg" src="{{ bg_pages.2|default:'/static/editor/img/templates/laudo144_pg03.png' }}" alt="">
+        
+        <!-- Continuação da INTERPRETAÇÃO -->
+        <div class="field field-p3-interpretation box txt-paragraph">
+            {{ interpretation_p3|linebreaksbr }}
+        </div>
+        
+        <!-- Bloco ACHADOS ADICIONAIS -->
+        <div class="field field-p3-additional box txt-paragraph">
+            {{ additional_findings_text|linebreaksbr }}
+        </div>
+        
+        <!-- Tabela VUS -->
+        <div class="field field-p3-vus-gene txt-table">{{ vus_gene }}</div>
+        <div class="field field-p3-vus-transcript txt-table">{{ vus_transcript }}</div>
+        <div class="field field-p3-vus-variant-c txt-table">{{ vus_variant_c }}</div>
+        <div class="field field-p3-vus-variant-p txt-table">{{ vus_variant_p }}</div>
+        <div class="field field-p3-vus-dbsnp txt-table">{{ vus_dbsnp }}</div>
+        <div class="field field-p3-vus-zygosity txt-table">{{ vus_zygosity }}</div>
+        <div class="field field-p3-vus-inheritance txt-table">{{ vus_inheritance }}</div>
+        <div class="field field-p3-vus-classification txt-table">{{ vus_classification }}</div>
+    </div>
+
+    <!-- PAGE 04: GENES ANALISADOS -->
+    <div class="pdf-page page-04">
+        <img class="page-bg" src="{{ bg_pages.3|default:'/static/editor/img/templates/laudo144_pg04.png' }}" alt="">
+        <div class="field field-p4-genes box txt-paragraph">
+            {{ genes_analyzed_list|linebreaksbr }}
+        </div>
+    </div>
+
+    <!-- PAGE 05: NOTAS + RECOMENDAÇÕES + MÉTRICAS/COBERTURA -->
+    <div class="pdf-page page-05">
+        <img class="page-bg" src="{{ bg_pages.4|default:'/static/editor/img/templates/laudo144_pg05.png' }}" alt="">
+        <div class="field field-p5-notes box txt-paragraph">
+            {{ notes_text|linebreaksbr }}
+        </div>
+        <div class="field field-p5-recommendations box txt-paragraph">
+            {{ recommendations_text|linebreaksbr }}
+        </div>
+        <div class="field field-p5-metrics box txt-paragraph">
+            {{ metrics_text|linebreaksbr }}
+        </div>
+        <div class="field field-p5-coverage-mean txt-value">
+            {{ metrics_coverage_mean }}
+        </div>
+        <div class="field field-p5-coverage-50x txt-value">
+            {{ metrics_coverage_50x }}
+        </div>
+    </div>
+
+    <!-- PAGE 06: Apenas fundo -->
+    <div class="pdf-page page-06">
+        <img class="page-bg" src="{{ bg_pages.5|default:'/static/editor/img/templates/laudo144_pg06.png' }}" alt="">
+    </div>
+
+    <!-- PAGE 07: Apenas fundo -->
+    <div class="pdf-page page-07">
+        <img class="page-bg" src="{{ bg_pages.6|default:'/static/editor/img/templates/laudo144_pg07.png' }}" alt="">
+    </div>
+
+    <!-- PAGE 08: Apenas fundo -->
+    <div class="pdf-page page-08">
+        <img class="page-bg" src="{{ bg_pages.7|default:'/static/editor/img/templates/laudo144_pg08.png' }}" alt="">
+    </div>
+</div>

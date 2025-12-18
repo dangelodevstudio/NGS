@@ -1,0 +1,360 @@
+/* ============================================
+   LAYOUT A4 - TRAVADO
+   ============================================ */
+@page {
+    size: A4;
+    margin: 0;
+}
+
+.pdf-document {
+    width: 210mm;
+}
+
+.pdf-page {
+    width: 210mm;
+    height: 297mm;
+    position: relative;
+    overflow: hidden;
+    page-break-after: always;
+}
+
+.page-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 210mm;
+    height: 297mm;
+    object-fit: cover;
+    z-index: 0;
+}
+
+/* ============================================
+   DESIGN SYSTEM BIOMA - TIPOGRAFIA
+   ============================================ */
+/* Fonte base: Red Hat Display */
+* {
+    font-family: 'Red Hat Display', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+/* Título */
+.txt-title {
+    font-size: 14pt;
+    font-weight: 700;
+    line-height: 1.2;
+    color: #753bbd;
+}
+
+/* Seção */
+.txt-section {
+    font-size: 11pt;
+    font-weight: 600;
+    line-height: 1.3;
+    color: #753bbd;
+}
+
+/* Label */
+.txt-label {
+    font-size: 9pt;
+    font-weight: 600;
+    line-height: 1.3;
+    color: #7a7a7a;
+}
+
+/* Valor */
+.txt-value {
+    font-size: 10pt;
+    font-weight: 500;
+    line-height: 1.3;
+    color: #595959;
+}
+
+/* Parágrafo */
+.txt-paragraph {
+    font-size: 9.5pt;
+    font-weight: 400;
+    line-height: 1.35;
+    color: #595959;
+}
+
+/* Tabela */
+.txt-table {
+    font-size: 9pt;
+    font-weight: 500;
+    line-height: 1.2;
+    color: #595959;
+}
+
+/* ============================================
+   ESTRUTURA PADRONIZADA DOS CAMPOS
+   ============================================ */
+.field {
+    position: absolute;
+    z-index: 2;
+    width: auto;
+    height: auto;
+    display: none;
+    white-space: nowrap;
+    word-break: normal;
+    overflow-wrap: normal;
+    writing-mode: horizontal-tb;
+}
+
+.box {
+    white-space: normal;
+    overflow: hidden;
+    width: 182mm;
+    min-height: 12mm;
+    writing-mode: horizontal-tb;
+}
+
+/* Campos liberados para alinhamento inicial (pÇ?ginas 1 e 2) */
+.field-p1-name,
+.field-p1-birth,
+.field-p1-code,
+.field-p2-header-name,
+.field-p2-header-birth,
+.field-p2-header-sex,
+.field-p2-header-code,
+.field-p2-header-entry,
+.field-p2-header-release,
+.field-p2-requester,
+.field-p2-sample,
+.field-p2-clinical,
+.field-p2-exam,
+.field-p2-gene,
+.field-p2-variant-c,
+.field-p2-variant-p,
+.field-p2-classification,
+.field-p2-results,
+.field-p2-interpretation {
+    display: block;
+}
+
+/* ============================================
+   PAGE 01: CAPA
+   ============================================ */
+.field-p1-name {
+    top: 74mm;
+    left: 22mm;
+    width: 166mm;
+}
+
+.field-p1-birth {
+    top: 88mm;
+    left: 22mm;
+    width: 60mm;
+}
+
+.field-p1-code {
+    top: 88mm;
+    left: 120mm;
+    width: 70mm;
+}
+
+/* ============================================
+   PAGE 02: HEADER + DADOS + RESULTADO + INTERPRETAÇÃO
+   ============================================ */
+/* Header do paciente */
+.field-p2-header-name {
+    top: 18mm;
+    left: 77mm;
+    width: 120mm;
+}
+
+.field-p2-header-birth {
+    top: 26mm;
+    left: 77mm;
+    width: 45mm;
+}
+
+.field-p2-header-sex {
+    top: 26mm;
+    left: 130mm;
+    width: 30mm;
+}
+
+.field-p2-header-code {
+    top: 34mm;
+    left: 77mm;
+    width: 60mm;
+}
+
+.field-p2-header-entry {
+    top: 42mm;
+    left: 77mm;
+    width: 45mm;
+}
+
+.field-p2-header-release {
+    top: 42mm;
+    left: 130mm;
+    width: 45mm;
+}
+
+/* Bloco DADOS */
+.field-p2-requester {
+    top: 84mm;
+    left: 14mm;
+    width: 182mm;
+}
+
+.field-p2-sample {
+    top: 92mm;
+    left: 14mm;
+    width: 182mm;
+}
+
+.field-p2-clinical {
+    top: 100mm;
+    left: 14mm;
+    width: 182mm;
+    height: 12mm;
+}
+
+.field-p2-exam {
+    top: 114mm;
+    left: 14mm;
+    width: 182mm;
+}
+
+/* Linha do RESULTADO PRINCIPAL */
+.field-p2-gene {
+    top: 182mm;
+    left: 16mm;
+    width: 24mm;
+}
+
+.field-p2-variant-c {
+    top: 182mm;
+    left: 44mm;
+    width: 36mm;
+}
+
+.field-p2-variant-p {
+    top: 188mm;
+    left: 44mm;
+    width: 36mm;
+}
+
+.field-p2-classification {
+    top: 182mm;
+    left: 168mm;
+    width: 26mm;
+}
+
+/* Bloco RESULTADOS */
+.field-p2-results {
+    top: 138mm;
+    left: 14mm;
+    width: 182mm;
+    height: 16mm;
+}
+
+/* Bloco INTERPRETAÇÃO (parte 1) */
+.field-p2-interpretation {
+    top: 222mm;
+    left: 14mm;
+    width: 182mm;
+    height: 40mm;
+}
+
+/* ============================================
+   PAGE 03: INTERPRETAÇÃO (parte 2) + ACHADOS + VUS
+   ============================================ */
+/* Continuação da INTERPRETAÇÃO */
+.field-p3-interpretation {
+    top: 0mm;
+    left: 0mm;
+}
+
+/* Bloco ACHADOS ADICIONAIS */
+.field-p3-additional {
+    top: 0mm;
+    left: 0mm;
+}
+
+/* Tabela VUS */
+.field-p3-vus-gene {
+    top: 0mm;
+    left: 0mm;
+}
+
+.field-p3-vus-transcript {
+    top: 0mm;
+    left: 0mm;
+}
+
+.field-p3-vus-variant-c {
+    top: 0mm;
+    left: 0mm;
+}
+
+.field-p3-vus-variant-p {
+    top: 0mm;
+    left: 0mm;
+}
+
+.field-p3-vus-dbsnp {
+    top: 0mm;
+    left: 0mm;
+}
+
+.field-p3-vus-zygosity {
+    top: 0mm;
+    left: 0mm;
+}
+
+.field-p3-vus-inheritance {
+    top: 0mm;
+    left: 0mm;
+}
+
+.field-p3-vus-classification {
+    top: 0mm;
+    left: 0mm;
+}
+
+/* ============================================
+   PAGE 04: GENES ANALISADOS
+   ============================================ */
+.field-p4-genes {
+    top: 0mm;
+    left: 0mm;
+}
+
+/* ============================================
+   PAGE 05: NOTAS + RECOMENDAÇÕES + MÉTRICAS
+   ============================================ */
+.field-p5-notes {
+    top: 0mm;
+    left: 0mm;
+}
+
+.field-p5-recommendations {
+    top: 0mm;
+    left: 0mm;
+}
+
+.field-p5-metrics {
+    top: 0mm;
+    left: 0mm;
+}
+
+.field-p5-coverage-mean {
+    top: 0mm;
+    left: 0mm;
+}
+
+.field-p5-coverage-50x {
+    top: 0mm;
+    left: 0mm;
+}
+
+/* ============================================
+   DEBUG ALIGNMENT
+   ============================================ */
+/*
+.field {
+    outline: 1px dashed rgba(255,0,0,.35);
+}
+*/
