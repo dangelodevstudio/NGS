@@ -220,9 +220,15 @@ def preview_laudo(request):
 
 def get_pdfkit_config():
     # Ajuste este caminho se o wkhtmltopdf estiver instalado em outro lugar
-    wkhtmltopdf_path = r"C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe"
-    if os.path.isfile(wkhtmltopdf_path):
-        return pdfkit.configuration(wkhtmltopdf=wkhtmltopdf_path)
+    candidate_paths = [
+        os.environ.get("WKHTMTOPDF_PATH"),
+        os.environ.get("WKHTMLTOPDF_PATH"),
+        r"C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe",
+        "/usr/bin/wkhtmltopdf",
+    ]
+    for path in candidate_paths:
+        if path and os.path.isfile(path):
+            return pdfkit.configuration(wkhtmltopdf=path)
     # Se nÃ£o encontrar o executÃ¡vel nesse caminho, tente usar o wkhtmltopdf do PATH
     return None
 
