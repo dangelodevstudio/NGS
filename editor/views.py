@@ -8,6 +8,14 @@ import pdfkit
 import os
 import logging
 
+# Wkhtmltopdf (versão dos repositórios do Ubuntu) depende dos plugins Qt.
+# No Heroku eles ficam em /app/.apt/usr/lib/...; configuramos o caminho aqui
+# para evitar o erro "Could not find the Qt platform plugin offscreen".
+QT_PLATFORM_PATH = "/app/.apt/usr/lib/x86_64-linux-gnu/qt5/plugins/platforms"
+if os.path.isdir(QT_PLATFORM_PATH):
+    os.environ.setdefault("QT_QPA_PLATFORM_PLUGIN_PATH", QT_PLATFORM_PATH)
+    os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
+
 # Modelos de laudo e respectivos valores padrÃ£o
 LAUDO_MODELOS = {
     "cancer_hereditario_144": {
