@@ -266,9 +266,11 @@ def export_pdf(request):
             "margin-right": "0mm",
             "margin-bottom": "0mm",
             "margin-left": "0mm",
-            "enable-local-file-access": "",
+            "enable-local-file-access": True,
             "disable-smart-shrinking": "",
             "print-media-type": "",
+            "load-error-handling": "ignore",
+            "load-media-error-handling": "ignore",
         }
     else:
         main_css = finders.find("editor/css/style.css")

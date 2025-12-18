@@ -16,6 +16,7 @@
     position: relative;
     overflow: hidden;
     page-break-after: always;
+    box-sizing: border-box;
 }
 
 .page-bg {
@@ -24,7 +25,8 @@
     left: 0;
     width: 210mm;
     height: 297mm;
-    object-fit: cover;
+    object-fit: contain;
+    object-position: top center;
     z-index: 0;
 }
 
@@ -54,35 +56,79 @@
 
 /* Label */
 .txt-label {
-    font-size: 9pt;
+    font-size: 10pt;
     font-weight: 600;
     line-height: 1.3;
-    color: #7a7a7a;
+    color: #595959;
 }
 
 /* Valor */
 .txt-value {
-    font-size: 10pt;
-    font-weight: 500;
+    font-size: 12pt;
+    font-weight: 600;
     line-height: 1.3;
-    color: #595959;
+    color: #595959 !important;
 }
 
 /* Parágrafo */
 .txt-paragraph {
-    font-size: 9.5pt;
-    font-weight: 400;
+    font-size: 11pt;
+    font-weight: 600;
     line-height: 1.35;
-    color: #595959;
+    color: #595959 !important;
 }
 
 /* Tabela */
 .txt-table {
-    font-size: 9pt;
-    font-weight: 500;
+    font-size: 11pt;
+    font-weight: 400;
     line-height: 1.2;
     color: #595959;
 }
+
+.txt-footer {
+    color: #753bbd;
+    font-weight: 600;
+}
+
+/* Capa e headers: cor institucional */
+[class*="field-p2-header-"],
+[class*="field-p3-header-"],
+[class*="field-p4-header-"],
+[class*="field-p5-header-"],
+[class*="field-p6-header-"],
+[class*="field-p7-header-"] {
+    color: #753bbd !important;
+    font-size: 11pt !important;
+    font-weight: 300 !important;
+}
+
+[class*="field-p2-header-name"],
+[class*="field-p3-header-name"],
+[class*="field-p4-header-name"],
+[class*="field-p5-header-name"],
+[class*="field-p6-header-name"],
+[class*="field-p7-header-name"] {
+    font-size: 14pt !important;
+    font-weight: 600 !important;
+}
+
+.field-p1-name,
+.field-p1-birth,
+.field-p1-code {
+    color: #753bbd !important;
+}
+
+.field-p1-name {
+    font-size: 16pt !important;
+    font-weight: 700 !important;
+}
+
+.field-p1-birth,
+.field-p1-code {
+    font-size: 14pt !important;
+}
+
 
 /* ============================================
    ESTRUTURA PADRONIZADA DOS CAMPOS
@@ -97,6 +143,8 @@
     word-break: normal;
     overflow-wrap: normal;
     writing-mode: horizontal-tb;
+    color: #595959;
+    font-weight: 400;
 }
 
 .box {
@@ -105,9 +153,10 @@
     width: 182mm;
     min-height: 12mm;
     writing-mode: horizontal-tb;
+    color: #595959 !important;
 }
 
-/* Campos liberados para alinhamento inicial (pÇ?ginas 1 e 2) */
+/* Campos liberados (páginas 1-5) */
 .field-p1-name,
 .field-p1-birth,
 .field-p1-code,
@@ -126,228 +175,277 @@
 .field-p2-variant-p,
 .field-p2-classification,
 .field-p2-results,
-.field-p2-interpretation {
+.field-p2-interpretation,
+.field-p3-interpretation,
+.field-p3-additional,
+.field-p3-vus-gene,
+.field-p3-vus-transcript,
+.field-p3-vus-variant-c,
+.field-p3-vus-variant-p,
+.field-p3-vus-dbsnp,
+.field-p3-vus-zygosity,
+.field-p3-vus-inheritance,
+.field-p3-vus-classification,
+.field-p4-genes,
+.field-p5-notes,
+.field-p5-recommendations,
+.field-p5-metrics,
+.field-p5-coverage-mean,
+.field-p5-coverage-50x,
+.field-p6-methodology {
     display: block;
+}
+
+/* Headers (p2–p7) sempre visíveis no preview */
+.field-p2-header-name,
+.field-p2-header-birth,
+.field-p2-header-sex,
+.field-p2-header-code,
+.field-p2-header-entry,
+.field-p2-header-release,
+.field-p3-header-name,
+.field-p3-header-birth,
+.field-p3-header-sex,
+.field-p3-header-code,
+.field-p3-header-entry,
+.field-p3-header-release,
+.field-p4-header-name,
+.field-p4-header-birth,
+.field-p4-header-sex,
+.field-p4-header-code,
+.field-p4-header-entry,
+.field-p4-header-release,
+.field-p5-header-name,
+.field-p5-header-birth,
+.field-p5-header-sex,
+.field-p5-header-code,
+.field-p5-header-entry,
+.field-p5-header-release,
+.field-p6-header-name,
+.field-p6-header-birth,
+.field-p6-header-sex,
+.field-p6-header-code,
+.field-p6-header-entry,
+.field-p6-header-release,
+.field-p7-header-name,
+.field-p7-header-birth,
+.field-p7-header-sex,
+.field-p7-header-code,
+.field-p7-header-entry,
+.field-p7-header-release {
+    display: block !important;
 }
 
 /* ============================================
    PAGE 01: CAPA
    ============================================ */
-.field-p1-name {
-    top: 74mm;
-    left: 22mm;
-    width: 166mm;
-}
+.field-p1-name { top: 148.73mm; left: 31.60mm; width: 154.44mm; height: 4.57mm; }
 
-.field-p1-birth {
-    top: 88mm;
-    left: 22mm;
-    width: 60mm;
-}
+.field-p1-birth { top: 159.57mm; left: 32.08mm; width: 55.61mm; height: 4.57mm; }
 
-.field-p1-code {
-    top: 88mm;
-    left: 120mm;
-    width: 70mm;
-}
+.field-p1-code { top: 167.59mm; left: 32.15mm; width: 59.62mm; height: 5.57mm; }
 
 /* ============================================
    PAGE 02: HEADER + DADOS + RESULTADO + INTERPRETAÇÃO
    ============================================ */
-/* Header do paciente */
-.field-p2-header-name {
-    top: 18mm;
-    left: 77mm;
-    width: 120mm;
-}
+/* Header do paciente (caixa superior) */
+.field-p2-header-name { top: 13.97mm; left: 81.91mm; width: 109.87mm; height: 4.57mm; }
 
-.field-p2-header-birth {
-    top: 26mm;
-    left: 77mm;
-    width: 45mm;
-}
+.field-p2-header-birth { top: 19.97mm; left: 81.91mm; width: 109.87mm; height: 4.57mm; }
 
-.field-p2-header-sex {
-    top: 26mm;
-    left: 130mm;
-    width: 30mm;
-}
+.field-p2-header-sex { top: 25.97mm; left: 81.91mm; width: 109.87mm; height: 4.57mm; }
 
-.field-p2-header-code {
-    top: 34mm;
-    left: 77mm;
-    width: 60mm;
-}
+.field-p2-header-code { top: 31.97mm; left: 81.91mm; width: 109.87mm; height: 4.57mm; }
 
-.field-p2-header-entry {
-    top: 42mm;
-    left: 77mm;
-    width: 45mm;
-}
+.field-p2-header-entry { top: 37.96mm; left: 81.91mm; width: 109.87mm; height: 4.57mm; }
 
-.field-p2-header-release {
-    top: 42mm;
-    left: 130mm;
-    width: 45mm;
-}
+.field-p2-header-release { top: 43.52mm; left: 81.78mm; width: 105.53mm; height: 4.07mm; }
 
 /* Bloco DADOS */
-.field-p2-requester {
-    top: 84mm;
-    left: 14mm;
-    width: 182mm;
-}
+.field-p2-requester { top: 81.91mm; left: 16.97mm; width: 181.79mm; height: 4.57mm; }
 
-.field-p2-sample {
-    top: 92mm;
-    left: 14mm;
-    width: 182mm;
-}
+.field-p2-sample { top: 88.44mm; left: 16.98mm; width: 181.86mm; height: 4.57mm; }
 
-.field-p2-clinical {
-    top: 100mm;
-    left: 14mm;
-    width: 182mm;
-    height: 12mm;
-}
+.field-p2-clinical { top: 95.06mm; left: 16.64mm; width: 186.48mm; height: 11.99mm; }
 
-.field-p2-exam {
-    top: 114mm;
-    left: 14mm;
-    width: 182mm;
-}
+.field-p2-exam { top: 108.86mm; left: 16.84mm; width: 177.38mm; height: 4.57mm; }
 
 /* Linha do RESULTADO PRINCIPAL */
 .field-p2-gene {
-    top: 182mm;
-    left: 16mm;
-    width: 24mm;
+    top: 161mm;
+    left: 12mm;
+    width: 26mm;
 }
 
 .field-p2-variant-c {
-    top: 182mm;
-    left: 44mm;
+    top: 161mm;
+    left: 40mm;
     width: 36mm;
 }
 
 .field-p2-variant-p {
-    top: 188mm;
-    left: 44mm;
+    top: 168mm;
+    left: 40mm;
     width: 36mm;
 }
 
 .field-p2-classification {
-    top: 182mm;
-    left: 168mm;
+    top: 161mm;
+    left: 170mm;
     width: 26mm;
 }
 
 /* Bloco RESULTADOS */
 .field-p2-results {
-    top: 138mm;
-    left: 14mm;
+    top: 130mm;
+    left: 15mm;
     width: 182mm;
-    height: 16mm;
+    height: 12mm;
 }
 
 /* Bloco INTERPRETAÇÃO (parte 1) */
 .field-p2-interpretation {
-    top: 222mm;
-    left: 14mm;
+    top: 214mm;
+    left: 15mm;
     width: 182mm;
-    height: 40mm;
+    height: 44mm;
 }
 
 /* ============================================
    PAGE 03: INTERPRETAÇÃO (parte 2) + ACHADOS + VUS
    ============================================ */
 /* Continuação da INTERPRETAÇÃO */
+
+.field-p3-header-name { top: 13.97mm; left: 81.91mm; width: 109.87mm; height: 4.57mm; }
+
+.field-p3-header-birth { top: 19.97mm; left: 81.91mm; width: 109.87mm; height: 4.57mm; }
+
+.field-p3-header-sex { top: 25.97mm; left: 81.91mm; width: 109.87mm; height: 4.57mm; }
+
+.field-p3-header-code { top: 31.97mm; left: 81.91mm; width: 109.87mm; height: 4.57mm; }
+
+.field-p3-header-entry { top: 37.96mm; left: 81.91mm; width: 109.87mm; height: 4.57mm; }
+
+.field-p3-header-release { top: 43.52mm; left: 81.78mm; width: 105.53mm; height: 4.07mm; }
+
 .field-p3-interpretation {
-    top: 0mm;
-    left: 0mm;
+    top: 78mm;
+    left: 14mm;
+    width: 182mm;
+    height: 90mm;
 }
 
 /* Bloco ACHADOS ADICIONAIS */
 .field-p3-additional {
-    top: 0mm;
-    left: 0mm;
+    top: 190mm;
+    left: 14mm;
+    width: 182mm;
+    height: 24mm;
 }
 
 /* Tabela VUS */
 .field-p3-vus-gene {
-    top: 0mm;
-    left: 0mm;
+    top: 228mm;
+    left: 14mm;
+    width: 22mm;
 }
 
 .field-p3-vus-transcript {
-    top: 0mm;
-    left: 0mm;
+    top: 234mm;
+    left: 36mm;
+    width: 22mm;
 }
 
 .field-p3-vus-variant-c {
-    top: 0mm;
-    left: 0mm;
+    top: 228mm;
+    left: 58mm;
+    width: 26mm;
 }
 
 .field-p3-vus-variant-p {
-    top: 0mm;
-    left: 0mm;
+    top: 234mm;
+    left: 84mm;
+    width: 26mm;
 }
 
 .field-p3-vus-dbsnp {
-    top: 0mm;
-    left: 0mm;
+    top: 228mm;
+    left: 110mm;
+    width: 22mm;
 }
 
 .field-p3-vus-zygosity {
-    top: 0mm;
-    left: 0mm;
+    top: 228mm;
+    left: 132mm;
+    width: 20mm;
 }
 
 .field-p3-vus-inheritance {
-    top: 0mm;
-    left: 0mm;
+    top: 228mm;
+    left: 152mm;
+    width: 22mm;
 }
 
 .field-p3-vus-classification {
-    top: 0mm;
-    left: 0mm;
+    top: 228mm;
+    left: 174mm;
+    width: 21mm;
 }
 
 /* ============================================
    PAGE 04: GENES ANALISADOS
    ============================================ */
 .field-p4-genes {
-    top: 0mm;
-    left: 0mm;
+    top: 94mm;
+    left: 14mm;
+    width: 182mm;
+    height: 55mm;
 }
 
 /* ============================================
    PAGE 05: NOTAS + RECOMENDAÇÕES + MÉTRICAS
    ============================================ */
 .field-p5-notes {
-    top: 0mm;
-    left: 0mm;
+    top: 86mm;
+    left: 14mm;
+    width: 182mm;
+    height: 45mm;
 }
 
 .field-p5-recommendations {
-    top: 0mm;
-    left: 0mm;
+    top: 156mm;
+    left: 14mm;
+    width: 182mm;
+    height: 24mm;
 }
 
 .field-p5-metrics {
-    top: 0mm;
-    left: 0mm;
+    top: 200mm;
+    left: 14mm;
+    width: 182mm;
+    height: 30mm;
 }
 
 .field-p5-coverage-mean {
-    top: 0mm;
-    left: 0mm;
+    top: 204mm;
+    left: 16mm;
+    width: 40mm;
 }
 
 .field-p5-coverage-50x {
-    top: 0mm;
-    left: 0mm;
+    top: 204mm;
+    left: 80mm;
+    width: 40mm;
+}
+
+/* ============================================
+   PAGE 06: METODOLOGIA
+   ============================================ */
+.field-p6-methodology {
+    top: 82mm;
+    left: 14mm;
+    width: 182mm;
+    height: 44mm;
 }
 
 /* ============================================

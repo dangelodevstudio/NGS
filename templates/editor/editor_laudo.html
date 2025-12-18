@@ -2,338 +2,586 @@
 {% load static %}
 
 {% block content %}
-<div class="row g-3">
-    <!-- Coluna esquerda: formulário -->
-    <div class="col-lg-4">
-        <div class="card shadow-sm bioma-card">
-            <div class="card-header bioma-card-header">
-                <h6 class="mb-0 text-white">Configuração do Laudo</h6>
-            </div>
-            <div class="card-body">
-                <form id="editor-form"
-                      method="post"
-                      hx-post="{% url 'preview_laudo' %}"
-                      hx-target="#preview-container"
-                      hx-trigger="keyup change input delay:400ms from:input,textarea,select">
-                    {% csrf_token %}
-
-                    <!-- Tipo de Laudo -->
-                    <div class="mb-3">
-                        <h6 class="text-uppercase small text-muted mb-2">Tipo de laudo</h6>
-                        <select name="laudo_type" class="form-select">
-                            <option value="cancer_hereditario_144"
-                                    {% if laudo_type == 'cancer_hereditario_144' %}selected{% endif %}>
-                                Painel NGS para Câncer Hereditário – 144 genes
-                            </option>
-                        </select>
+<div class="editor-layout">
+    <div class="row g-3 editor-row">
+        <!-- Coluna esquerda: formulário -->
+        <div class="col-lg-4 editor-form-pane">
+            <div class="card shadow-sm bioma-card">
+                <div class="card-header bioma-card-header d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0 text-white">Configuração do Laudo</h6>
+                    <div class="form-check form-switch text-white">
+                        <input class="form-check-input" type="checkbox" id="calibration-toggle">
+                        <label class="form-check-label small" for="calibration-toggle">Modo calibração</label>
                     </div>
+                </div>
+                <div class="card-body">
+                    <form id="editor-form"
+                          method="post"
+                          hx-post="{% url 'preview_laudo' %}"
+                          hx-target="#preview-container"
+                          hx-trigger="keyup change input delay:400ms from:input,textarea,select">
+                        {% csrf_token %}
 
-                    <hr class="my-3">
+                        <!-- Tipo de Laudo -->
+                        <div class="mb-3">
+                            <h6 class="text-uppercase small text-muted mb-2">Tipo de laudo</h6>
+                            <select name="laudo_type" class="form-select">
+                                <option value="cancer_hereditario_144"
+                                        {% if laudo_type == 'cancer_hereditario_144' %}selected{% endif %}>
+                                    Painel NGS para Câncer Hereditário – 144 genes
+                                </option>
+                            </select>
+                        </div>
 
-                    <!-- Identificação do Paciente -->
-                    <div class="mb-3">
-                        <h6 class="text-uppercase small text-muted mb-2">Identificação do paciente</h6>
-                        <div class="mb-2">
-                            <label class="form-label">Nome do paciente</label>
-                            <input type="text" name="patient_name" class="form-control" value="{{ patient_name }}">
-                        </div>
-                        <div class="row">
-                            <div class="col-6 mb-2">
-                                <label class="form-label">Data de nascimento</label>
-                                <input type="text" name="patient_birth_date" class="form-control" placeholder="dd/mm/aaaa" value="{{ patient_birth_date }}">
-                            </div>
-                            <div class="col-6 mb-2">
-                                <label class="form-label">Sexo</label>
-                                <select name="patient_sex" class="form-select">
-                                    <option value="Feminino" {% if patient_sex == 'Feminino' %}selected{% endif %}>Feminino</option>
-                                    <option value="Masculino" {% if patient_sex == 'Masculino' %}selected{% endif %}>Masculino</option>
-                                    <option value="Outro" {% if patient_sex == 'Outro' %}selected{% endif %}>Outro</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-6 mb-2">
-                                <label class="form-label">Código ID</label>
-                                <input type="text" name="patient_code" class="form-control" value="{{ patient_code }}">
-                            </div>
-                            <div class="col-6 mb-2">
-                                <label class="form-label">Nome do exame</label>
-                                <input type="text" name="exam_name" class="form-control" value="{{ exam_name }}">
-                            </div>
-                        </div>
-                    </div>
+                        <hr class="my-3">
 
-                    <hr class="my-3">
+                        <!-- Identificação do Paciente -->
+                        <div class="mb-3">
+                            <h6 class="text-uppercase small text-muted mb-2">Identificação do paciente</h6>
+                            <div class="mb-2">
+                                <label class="form-label">Nome do paciente</label>
+                                <input type="text" name="patient_name" class="form-control" value="{{ patient_name }}">
+                            </div>
+                            <div class="row">
+                                <div class="col-6 mb-2">
+                                    <label class="form-label">Data de nascimento</label>
+                                    <input type="text" name="patient_birth_date" class="form-control" placeholder="dd/mm/aaaa" value="{{ patient_birth_date }}">
+                                </div>
+                                <div class="col-6 mb-2">
+                                    <label class="form-label">Sexo</label>
+                                    <select name="patient_sex" class="form-select">
+                                        <option value="Feminino" {% if patient_sex == 'Feminino' %}selected{% endif %}>Feminino</option>
+                                        <option value="Masculino" {% if patient_sex == 'Masculino' %}selected{% endif %}>Masculino</option>
+                                        <option value="Outro" {% if patient_sex == 'Outro' %}selected{% endif %}>Outro</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-6 mb-2">
+                                    <label class="form-label">Código ID</label>
+                                    <input type="text" name="patient_code" class="form-control" value="{{ patient_code }}">
+                                </div>
+                                <div class="col-6 mb-2">
+                                    <label class="form-label">Nome do exame</label>
+                                    <input type="text" name="exam_name" class="form-control" value="{{ exam_name }}">
+                                </div>
+                            </div>
+                        </div>
 
-                    <!-- Dados do Exame -->
-                    <div class="mb-3">
-                        <h6 class="text-uppercase small text-muted mb-2">Dados do exame</h6>
-                        <div class="row">
-                            <div class="col-6 mb-2">
-                                <label class="form-label">Data de entrada</label>
-                                <input type="text" name="exam_entry_date" class="form-control" placeholder="dd/mm/aaaa" value="{{ exam_entry_date }}">
-                            </div>
-                            <div class="col-6 mb-2">
-                                <label class="form-label">Data de liberação</label>
-                                <input type="text" name="exam_release_date" class="form-control" placeholder="dd/mm/aaaa" value="{{ exam_release_date }}">
-                            </div>
-                        </div>
-                        <div class="mb-2">
-                            <label class="form-label">Solicitante</label>
-                            <input type="text" name="requester_name" class="form-control" value="{{ requester_name }}">
-                        </div>
-                        <div class="mb-2">
-                            <label class="form-label">Amostra</label>
-                            <input type="text" name="sample_description" class="form-control" value="{{ sample_description }}">
-                        </div>
-                        <div class="mb-2">
-                            <label class="form-label">Indicação clínica</label>
-                            <textarea name="clinical_indication" rows="3" class="form-control">{{ clinical_indication }}</textarea>
-                        </div>
-                    </div>
+                        <hr class="my-3">
 
-                    <hr class="my-3">
+                        <!-- Dados do Exame -->
+                        <div class="mb-3">
+                            <h6 class="text-uppercase small text-muted mb-2">Dados do exame</h6>
+                            <div class="row">
+                                <div class="col-6 mb-2">
+                                    <label class="form-label">Data de entrada</label>
+                                    <input type="text" name="exam_entry_date" class="form-control" placeholder="dd/mm/aaaa" value="{{ exam_entry_date }}">
+                                </div>
+                                <div class="col-6 mb-2">
+                                    <label class="form-label">Data de liberação</label>
+                                    <input type="text" name="exam_release_date" class="form-control" placeholder="dd/mm/aaaa" value="{{ exam_release_date }}">
+                                </div>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label">Solicitante</label>
+                                <input type="text" name="requester_name" class="form-control" value="{{ requester_name }}">
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label">Amostra</label>
+                                <input type="text" name="sample_description" class="form-control" value="{{ sample_description }}">
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label">Indicação clínica</label>
+                                <textarea name="clinical_indication" rows="3" class="form-control">{{ clinical_indication }}</textarea>
+                            </div>
+                        </div>
 
-                    <!-- Resultado principal -->
-                    <div class="mb-3">
-                        <h6 class="text-uppercase small text-muted mb-2">Resultado principal</h6>
-                        <div class="row">
-                            <div class="col-6 mb-2">
-                                <label class="form-label">Gene</label>
-                                <input type="text" name="main_gene" class="form-control" value="{{ main_gene }}">
-                            </div>
-                            <div class="col-6 mb-2">
-                                <label class="form-label">Transcrito (NM_...)</label>
-                                <input type="text" name="main_transcript" class="form-control" value="{{ main_transcript }}">
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-6 mb-2">
-                                <label class="form-label">Variante (c.)</label>
-                                <input type="text" name="main_variant_c" class="form-control" value="{{ main_variant_c }}">
-                            </div>
-                            <div class="col-6 mb-2">
-                                <label class="form-label">Proteína (p.)</label>
-                                <input type="text" name="main_variant_p" class="form-control" value="{{ main_variant_p }}">
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-4 mb-2">
-                                <label class="form-label">dbSNP</label>
-                                <input type="text" name="main_dbsnp" class="form-control" value="{{ main_dbsnp }}">
-                            </div>
-                            <div class="col-4 mb-2">
-                                <label class="form-label">Zigosidade</label>
-                                <input type="text" name="main_zygosity" class="form-control" value="{{ main_zygosity }}">
-                            </div>
-                            <div class="col-4 mb-2">
-                                <label class="form-label">Herança</label>
-                                <input type="text" name="main_inheritance" class="form-control" value="{{ main_inheritance }}">
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-6 mb-2">
-                                <label class="form-label">Classificação</label>
-                                <input type="text" name="main_classification" class="form-control" value="{{ main_classification }}">
-                            </div>
-                            <div class="col-6 mb-2">
-                                <label class="form-label">Condição</label>
-                                <input type="text" name="main_condition" class="form-control" value="{{ main_condition }}">
-                            </div>
-                        </div>
-                        <div class="mb-2">
-                            <label class="form-label">Frase introdutória do resultado</label>
-                            <textarea name="main_result_intro" rows="2" class="form-control">{{ main_result_intro }}</textarea>
-                        </div>
-                    </div>
+                        <hr class="my-3">
 
-                    <hr class="my-3">
-
-                    <!-- Interpretação principal -->
-                    <div class="mb-3">
-                        <h6 class="text-uppercase small text-muted mb-2">Interpretação principal</h6>
-                        <textarea name="interpretation_text" rows="6" class="form-control">{{ interpretation_text }}</textarea>
-                    </div>
-
-                    <hr class="my-3">
-
-                    <!-- Achados adicionais (VUS) -->
-                    <div class="mb-3">
-                        <h6 class="text-uppercase small text-muted mb-2">Achados adicionais (VUS)</h6>
-                        <div class="row">
-                            <div class="col-6 mb-2">
-                                <label class="form-label">Gene (VUS)</label>
-                                <input type="text" name="vus_gene" class="form-control" value="{{ vus_gene }}">
+                        <!-- Resultado principal -->
+                        <div class="mb-3">
+                            <h6 class="text-uppercase small text-muted mb-2">Resultado principal</h6>
+                            <div class="row">
+                                <div class="col-6 mb-2">
+                                    <label class="form-label">Gene</label>
+                                    <input type="text" name="main_gene" class="form-control" value="{{ main_gene }}">
+                                </div>
+                                <div class="col-6 mb-2">
+                                    <label class="form-label">Transcrito (NM_...)</label>
+                                    <input type="text" name="main_transcript" class="form-control" value="{{ main_transcript }}">
+                                </div>
                             </div>
-                            <div class="col-6 mb-2">
-                                <label class="form-label">Transcrito (VUS)</label>
-                                <input type="text" name="vus_transcript" class="form-control" value="{{ vus_transcript }}">
+                            <div class="row">
+                                <div class="col-6 mb-2">
+                                    <label class="form-label">Variante (c.)</label>
+                                    <input type="text" name="main_variant_c" class="form-control" value="{{ main_variant_c }}">
+                                </div>
+                                <div class="col-6 mb-2">
+                                    <label class="form-label">Proteína (p.)</label>
+                                    <input type="text" name="main_variant_p" class="form-control" value="{{ main_variant_p }}">
+                                </div>
                             </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-6 mb-2">
-                                <label class="form-label">Variante (c.) VUS</label>
-                                <input type="text" name="vus_variant_c" class="form-control" value="{{ vus_variant_c }}">
+                            <div class="row">
+                                <div class="col-4 mb-2">
+                                    <label class="form-label">dbSNP</label>
+                                    <input type="text" name="main_dbsnp" class="form-control" value="{{ main_dbsnp }}">
+                                </div>
+                                <div class="col-4 mb-2">
+                                    <label class="form-label">Zigosidade</label>
+                                    <input type="text" name="main_zygosity" class="form-control" value="{{ main_zygosity }}">
+                                </div>
+                                <div class="col-4 mb-2">
+                                    <label class="form-label">Herança</label>
+                                    <input type="text" name="main_inheritance" class="form-control" value="{{ main_inheritance }}">
+                                </div>
                             </div>
-                            <div class="col-6 mb-2">
-                                <label class="form-label">Proteína (p.) VUS</label>
-                                <input type="text" name="vus_variant_p" class="form-control" value="{{ vus_variant_p }}">
+                            <div class="row">
+                                <div class="col-6 mb-2">
+                                    <label class="form-label">Classificação</label>
+                                    <input type="text" name="main_classification" class="form-control" value="{{ main_classification }}">
+                                </div>
+                                <div class="col-6 mb-2">
+                                    <label class="form-label">Condição</label>
+                                    <input type="text" name="main_condition" class="form-control" value="{{ main_condition }}">
+                                </div>
                             </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-6 mb-2">
-                                <label class="form-label">dbSNP VUS</label>
-                                <input type="text" name="vus_dbsnp" class="form-control" value="{{ vus_dbsnp }}">
-                            </div>
-                            <div class="col-6 mb-2">
-                                <label class="form-label">Zigosidade VUS</label>
-                                <input type="text" name="vus_zygosity" class="form-control" value="{{ vus_zygosity }}">
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-6 mb-2">
-                                <label class="form-label">Herança VUS</label>
-                                <input type="text" name="vus_inheritance" class="form-control" value="{{ vus_inheritance }}">
-                            </div>
-                            <div class="col-6 mb-2">
-                                <label class="form-label">Classificação VUS</label>
-                                <input type="text" name="vus_classification" class="form-control" value="{{ vus_classification }}">
-                            </div>
-                        </div>
-                        <div class="mb-2">
-                            <label class="form-label">Texto de achados adicionais</label>
-                            <textarea name="additional_findings_text" rows="4" class="form-control">{{ additional_findings_text }}</textarea>
-                        </div>
-                    </div>
-
-                    <hr class="my-3">
-
-                    <!-- Métricas, recomendações e notas -->
-                    <div class="mb-3">
-                        <h6 class="text-uppercase small text-muted mb-2">Métricas, recomendações e notas</h6>
-                        <div class="row">
-                            <div class="col-6 mb-2">
-                                <label class="form-label">Cobertura média</label>
-                                <input type="text" name="metrics_coverage_mean" class="form-control" value="{{ metrics_coverage_mean }}">
-                            </div>
-                            <div class="col-6 mb-2">
-                                <label class="form-label">Bases ≥50x</label>
-                                <input type="text" name="metrics_coverage_50x" class="form-control" value="{{ metrics_coverage_50x }}">
+                            <div class="mb-2">
+                                <label class="form-label">Frase introdutória do resultado</label>
+                                <textarea name="main_result_intro" rows="2" class="form-control">{{ main_result_intro }}</textarea>
                             </div>
                         </div>
-                        <div class="mb-2">
-                            <label class="form-label">Texto de métricas</label>
-                            <textarea name="metrics_text" rows="3" class="form-control">{{ metrics_text }}</textarea>
-                        </div>
-                        <div class="mb-2">
-                            <label class="form-label">Recomendações</label>
-                            <textarea name="recommendations_text" rows="3" class="form-control">{{ recommendations_text }}</textarea>
-                        </div>
-                        <div class="mb-2">
-                            <label class="form-label">Notas</label>
-                            <textarea name="notes_text" rows="3" class="form-control">{{ notes_text }}</textarea>
-                        </div>
-                    </div>
 
-                    <hr class="my-3">
+                        <hr class="my-3">
 
-                    <!-- Metodologia e limitações -->
-                    <div class="mb-3">
-                        <h6 class="text-uppercase small text-muted mb-2">Metodologia e limitações</h6>
-                        <div class="mb-2">
-                            <label class="form-label">Metodologia</label>
-                            <textarea name="methodology_text" rows="3" class="form-control">{{ methodology_text }}</textarea>
+                        <!-- Interpretação principal -->
+                        <div class="mb-3">
+                            <h6 class="text-uppercase small text-muted mb-2">Interpretação principal</h6>
+                            <textarea name="interpretation_text" rows="6" class="form-control">{{ interpretation_text }}</textarea>
                         </div>
-                        <div class="mb-2">
-                            <label class="form-label">Limitações</label>
-                            <textarea name="limitations_text" rows="3" class="form-control">{{ limitations_text }}</textarea>
-                        </div>
-                        <div class="mb-2">
-                            <label class="form-label">Observações</label>
-                            <textarea name="observations_text" rows="3" class="form-control">{{ observations_text }}</textarea>
-                        </div>
-                    </div>
 
-                    <hr class="my-3">
+                        <hr class="my-3">
 
-                    <!-- Genes analisados e referências -->
-                    <div class="mb-3">
-                        <h6 class="text-uppercase small text-muted mb-2">Genes analisados e referências</h6>
-                        <div class="mb-2">
-                            <label class="form-label">Genes analisados</label>
-                            <textarea name="genes_analyzed_list" rows="4" class="form-control">{{ genes_analyzed_list }}</textarea>
+                        <!-- Achados adicionais (VUS) -->
+                        <div class="mb-3">
+                            <h6 class="text-uppercase small text-muted mb-2">Achados adicionais (VUS)</h6>
+                            <div class="row">
+                                <div class="col-6 mb-2">
+                                    <label class="form-label">Gene (VUS)</label>
+                                    <input type="text" name="vus_gene" class="form-control" value="{{ vus_gene }}">
+                                </div>
+                                <div class="col-6 mb-2">
+                                    <label class="form-label">Transcrito (VUS)</label>
+                                    <input type="text" name="vus_transcript" class="form-control" value="{{ vus_transcript }}">
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-6 mb-2">
+                                    <label class="form-label">Variante (c.) VUS</label>
+                                    <input type="text" name="vus_variant_c" class="form-control" value="{{ vus_variant_c }}">
+                                </div>
+                                <div class="col-6 mb-2">
+                                    <label class="form-label">Proteína (p.) VUS</label>
+                                    <input type="text" name="vus_variant_p" class="form-control" value="{{ vus_variant_p }}">
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-6 mb-2">
+                                    <label class="form-label">dbSNP VUS</label>
+                                    <input type="text" name="vus_dbsnp" class="form-control" value="{{ vus_dbsnp }}">
+                                </div>
+                                <div class="col-6 mb-2">
+                                    <label class="form-label">Zigosidade VUS</label>
+                                    <input type="text" name="vus_zygosity" class="form-control" value="{{ vus_zygosity }}">
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-6 mb-2">
+                                    <label class="form-label">Herança VUS</label>
+                                    <input type="text" name="vus_inheritance" class="form-control" value="{{ vus_inheritance }}">
+                                </div>
+                                <div class="col-6 mb-2">
+                                    <label class="form-label">Classificação VUS</label>
+                                    <input type="text" name="vus_classification" class="form-control" value="{{ vus_classification }}">
+                                </div>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label">Texto de achados adicionais</label>
+                                <textarea name="additional_findings_text" rows="4" class="form-control">{{ additional_findings_text }}</textarea>
+                            </div>
                         </div>
-                        <div class="mb-2">
-                            <label class="form-label">Referências</label>
-                            <textarea name="references_text" rows="4" class="form-control">{{ references_text }}</textarea>
-                        </div>
-                    </div>
 
-                    <hr class="my-3">
+                        <hr class="my-3">
 
-                    <!-- Profissionais -->
-                    <div class="mb-3">
-                        <h6 class="text-uppercase small text-muted mb-2">Profissionais</h6>
-                        <div class="mb-2">
-                            <label class="form-label">Profissional técnico</label>
-                            <input type="text" name="tech_professional" class="form-control" value="{{ tech_professional }}">
+                        <!-- Métricas, recomendações e notas -->
+                        <div class="mb-3">
+                            <h6 class="text-uppercase small text-muted mb-2">Métricas, recomendações e notas</h6>
+                            <div class="row">
+                                <div class="col-6 mb-2">
+                                    <label class="form-label">Cobertura média</label>
+                                    <input type="text" name="metrics_coverage_mean" class="form-control" value="{{ metrics_coverage_mean }}">
+                                </div>
+                                <div class="col-6 mb-2">
+                                    <label class="form-label">Bases ≥50x</label>
+                                    <input type="text" name="metrics_coverage_50x" class="form-control" value="{{ metrics_coverage_50x }}">
+                                </div>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label">Texto de métricas</label>
+                                <textarea name="metrics_text" rows="3" class="form-control">{{ metrics_text }}</textarea>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label">Recomendações</label>
+                                <textarea name="recommendations_text" rows="3" class="form-control">{{ recommendations_text }}</textarea>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label">Notas</label>
+                                <textarea name="notes_text" rows="3" class="form-control">{{ notes_text }}</textarea>
+                            </div>
                         </div>
-                        <div class="mb-2">
-                            <label class="form-label">CRBM</label>
-                            <input type="text" name="tech_professional_crbm" class="form-control" value="{{ tech_professional_crbm }}">
-                        </div>
-                        <div class="mb-2">
-                            <label class="form-label">Médico responsável</label>
-                            <input type="text" name="md_responsible" class="form-control" value="{{ md_responsible }}">
-                        </div>
-                        <div class="mb-2">
-                            <label class="form-label">CRM médico responsável</label>
-                            <input type="text" name="md_responsible_crm" class="form-control" value="{{ md_responsible_crm }}">
-                        </div>
-                        <div class="mb-2">
-                            <label class="form-label">Responsável técnico</label>
-                            <input type="text" name="md_technical" class="form-control" value="{{ md_technical }}">
-                        </div>
-                        <div class="mb-2">
-                            <label class="form-label">CRM responsável técnico</label>
-                            <input type="text" name="md_technical_crm" class="form-control" value="{{ md_technical_crm }}">
-                        </div>
-                    </div>
 
-                    <div class="d-grid gap-2">
-                        <button type="submit" class="btn bioma-primary-btn">
-                            Atualizar prévia
-                        </button>
-                        <button type="submit"
-                                class="btn btn-outline-secondary"
-                                formaction="{% url 'export_pdf' %}"
-                                formtarget="_blank"
-                                hx-disable="true">
-                            Gerar PDF (PDF A4)
-                        </button>
-                    </div>
-                </form>
+                        <hr class="my-3">
+
+                        <!-- Metodologia e limitações -->
+                        <div class="mb-3">
+                            <h6 class="text-uppercase small text-muted mb-2">Metodologia e limitações</h6>
+                            <div class="mb-2">
+                                <label class="form-label">Metodologia</label>
+                                <textarea name="methodology_text" rows="3" class="form-control">{{ methodology_text }}</textarea>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label">Limitações</label>
+                                <textarea name="limitations_text" rows="3" class="form-control">{{ limitations_text }}</textarea>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label">Observações</label>
+                                <textarea name="observations_text" rows="3" class="form-control">{{ observations_text }}</textarea>
+                            </div>
+                        </div>
+
+                        <hr class="my-3">
+
+                        <!-- Genes analisados e referências -->
+                        <div class="mb-3">
+                            <h6 class="text-uppercase small text-muted mb-2">Genes analisados e referências</h6>
+                            <div class="mb-2">
+                                <label class="form-label">Genes analisados</label>
+                                <textarea name="genes_analyzed_list" rows="4" class="form-control">{{ genes_analyzed_list }}</textarea>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label">Referências</label>
+                                <textarea name="references_text" rows="4" class="form-control">{{ references_text }}</textarea>
+                            </div>
+                        </div>
+
+                        <hr class="my-3">
+
+                        <!-- Profissionais -->
+                        <div class="mb-3">
+                            <h6 class="text-uppercase small text-muted mb-2">Profissionais</h6>
+                            <div class="mb-2">
+                                <label class="form-label">Profissional técnico</label>
+                                <input type="text" name="tech_professional" class="form-control" value="{{ tech_professional }}">
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label">CRBM</label>
+                                <input type="text" name="tech_professional_crbm" class="form-control" value="{{ tech_professional_crbm }}">
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label">Médico responsável</label>
+                                <input type="text" name="md_responsible" class="form-control" value="{{ md_responsible }}">
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label">CRM médico responsável</label>
+                                <input type="text" name="md_responsible_crm" class="form-control" value="{{ md_responsible_crm }}">
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label">Responsável técnico</label>
+                                <input type="text" name="md_technical" class="form-control" value="{{ md_technical }}">
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label">CRM responsável técnico</label>
+                                <input type="text" name="md_technical_crm" class="form-control" value="{{ md_technical_crm }}">
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn bioma-primary-btn">
+                                Atualizar prévia
+                            </button>
+                            <button type="submit"
+                                    class="btn btn-outline-secondary"
+                                    formaction="{% url 'export_pdf' %}"
+                                    formtarget="_blank"
+                                    hx-disable="true">
+                                Gerar PDF (PDF A4)
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
-    </div>
 
-    <!-- Coluna direita: preview -->
-    <div class="col-lg-8">
-        <div class="card shadow-sm bioma-card">
-            <div class="card-header bioma-card-header d-flex justify-content-between align-items-center">
-                <h6 class="mb-0 text-white">Prévia do Laudo (HTML ✦ Demo)</h6>
-                <span class="badge bg-light text-primary fw-semibold small">Modo visual ✦ Similar ao PDF</span>
-            </div>
-            <div class="card-body bioma-preview-bg">
-                <div id="preview-container">
-                    {% if laudo_type == 'cancer_hereditario_144' %}
-                        {% include 'editor/preview_sample_b.html' %}
-                    {% else %}
-                        {% include 'editor/preview_sample.html' %}
-                    {% endif %}
+        <!-- Coluna direita: preview -->
+        <div class="col-lg-8 editor-preview-pane">
+            <div class="card shadow-sm bioma-card">
+                <div class="card-header bioma-card-header d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0 text-white">Prévia do Laudo (HTML → Demo)</h6>
+                    <span class="badge bg-light text-primary fw-semibold small">Modo visual → Similar ao PDF</span>
+                </div>
+                <div class="card-body bioma-preview-bg preview-viewport" id="preview-viewport">
+                    <div class="preview-shell" id="preview-shell">
+                        <div class="preview-scale" id="preview-scale">
+                            <div class="a4-grid"></div>
+                            <div id="preview-container">
+                                {% if laudo_type == 'cancer_hereditario_144' %}
+                                    {% include 'editor/preview_sample_b.html' %}
+                                {% else %}
+                                    {% include 'editor/preview_sample.html' %}
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+(function() {
+    const viewport = document.getElementById('preview-viewport');
+    const scaleEl = document.getElementById('preview-scale');
+    const shell = document.getElementById('preview-shell');
+    const toggle = document.getElementById('calibration-toggle');
+    const PAGE_WIDTH_PX = 794; // 210mm @ 96dpi
+
+    function updateScale() {
+        if (!viewport || !scaleEl) return;
+        const available = viewport.clientWidth - 32; // padding guard
+        const scale = Math.min(1, Math.max(0.3, available / PAGE_WIDTH_PX));
+        scaleEl.style.setProperty('--preview-scale', scale.toFixed(3));
+        scaleEl.style.transform = `scale(${scale})`;
+    }
+
+    function applyCalibration() {
+        if (!shell || !toggle) return;
+        shell.classList.toggle('is-calibrating', !!toggle.checked);
+    }
+
+    window.addEventListener('resize', updateScale);
+    updateScale();
+
+    if (toggle && shell) {
+        toggle.addEventListener('change', () => {
+            applyCalibration();
+        });
+    }
+
+    document.addEventListener('htmx:afterSwap', (evt) => {
+        if (evt.target && evt.target.id === 'preview-container') {
+            updateScale();
+            applyCalibration();
+        }
+    });
+
+    applyCalibration();
+})();
+
+(function() {
+    const shell = document.getElementById('preview-shell');
+    const scaleEl = document.getElementById('preview-scale');
+    const toggle = document.getElementById('calibration-toggle');
+    const PAGE_WIDTH_PX = 794; // 210mm @ 96dpi
+    const PX_PER_MM = PAGE_WIDTH_PX / 210;
+    const storageKey = 'templateBFieldOverrides';
+    let overrides = {};
+    let currentField = null;
+    let currentClass = '';
+
+    function pxToMm(px) {
+        return +(px / PX_PER_MM).toFixed(2);
+    }
+
+    function getFieldClass(el) {
+        const cls = Array.from(el.classList).find(c => c.startsWith('field-'));
+        return cls || '';
+    }
+
+    function readBox(el) {
+        const cs = getComputedStyle(el);
+        return {
+            top: pxToMm(parseFloat(cs.top) || 0),
+            left: pxToMm(parseFloat(cs.left) || 0),
+            width: pxToMm(parseFloat(cs.width) || 0),
+            height: pxToMm(parseFloat(cs.height) || 0),
+        };
+    }
+
+    function applyBox(el, box) {
+        ['top', 'left', 'width', 'height'].forEach(prop => {
+            if (box[prop] !== undefined && box[prop] !== null && !Number.isNaN(box[prop])) {
+                el.style[prop] = `${box[prop]}mm`;
+            }
+        });
+    }
+
+    function loadOverrides() {
+        try {
+            overrides = JSON.parse(localStorage.getItem(storageKey) || '{}') || {};
+        } catch (e) {
+            overrides = {};
+        }
+    }
+
+    function saveOverrides() {
+        localStorage.setItem(storageKey, JSON.stringify(overrides));
+    }
+
+    function applyOverrides() {
+        Object.entries(overrides).forEach(([cls, box]) => {
+            shell.querySelectorAll(`.${cls}`).forEach(el => applyBox(el, box));
+        });
+    }
+
+    // HUD helper
+    const helper = document.createElement('div');
+    helper.className = 'field-helper';
+    helper.innerHTML = `
+        <div class="helper-title">Field helper</div>
+        <div class="helper-values">
+            <div><strong>top</strong>: <span data-field="top">-</span> mm</div>
+            <div><strong>left</strong>: <span data-field="left">-</span> mm</div>
+            <div><strong>width</strong>: <span data-field="width">-</span> mm</div>
+            <div><strong>height</strong>: <span data-field="height">-</span> mm</div>
+        </div>
+        <div class="helper-actions">
+            <button type="button" data-action="copy">Copy CSS rule</button>
+            <button type="button" data-action="toggle-box">Toggle box mode</button>
+        </div>
+    `;
+    shell.appendChild(helper);
+
+    function updateHelper() {
+        if (!shell.classList.contains('is-calibrating') || !currentField) {
+            helper.classList.remove('is-visible');
+            return;
+        }
+        const box = readBox(currentField);
+        helper.classList.add('is-visible');
+        helper.querySelector('.helper-title').textContent = currentClass || 'field';
+        helper.querySelector('[data-field="top"]').textContent = box.top.toFixed(2);
+        helper.querySelector('[data-field="left"]').textContent = box.left.toFixed(2);
+        helper.querySelector('[data-field="width"]').textContent = box.width.toFixed(2);
+        helper.querySelector('[data-field="height"]').textContent = box.height.toFixed(2);
+    }
+
+    function selectField(el) {
+        if (!shell.classList.contains('is-calibrating')) return;
+        if (currentField && currentField !== el) {
+            currentField.classList.remove('is-selected');
+        }
+        currentField = el;
+        currentClass = getFieldClass(el);
+        if (currentField) {
+            currentField.classList.add('is-selected');
+        }
+        updateHelper();
+    }
+
+    function setBoxAndPersist(el, box) {
+        applyBox(el, box);
+        if (currentClass) {
+            overrides[currentClass] = Object.assign({}, overrides[currentClass] || {}, box);
+            saveOverrides();
+        }
+        updateHelper();
+    }
+
+    function handleKey(e) {
+        if (!shell.classList.contains('is-calibrating') || !currentField) return;
+        if (!['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) return;
+        e.preventDefault();
+        const box = readBox(currentField);
+        if (e.altKey) {
+            const step = 0.5;
+            if (e.key === 'ArrowLeft') box.width = Math.max(0, box.width - step);
+            if (e.key === 'ArrowRight') box.width += step;
+            if (e.key === 'ArrowUp') box.height = Math.max(0, box.height - step);
+            if (e.key === 'ArrowDown') box.height += step;
+        } else {
+            const step = e.shiftKey ? 2 : 0.5;
+            if (e.key === 'ArrowLeft') box.left -= step;
+            if (e.key === 'ArrowRight') box.left += step;
+            if (e.key === 'ArrowUp') box.top -= step;
+            if (e.key === 'ArrowDown') box.top += step;
+        }
+        setBoxAndPersist(currentField, box);
+    }
+
+    shell.addEventListener('click', (e) => {
+        if (!shell.classList.contains('is-calibrating')) return;
+        const target = e.target.closest('.field');
+        if (!target || !shell.contains(target)) return;
+        selectField(target);
+    });
+
+    document.addEventListener('keydown', handleKey);
+
+    helper.addEventListener('click', async (e) => {
+        const action = e.target.getAttribute('data-action');
+        if (!action || !currentField) return;
+        if (action === 'copy') {
+            const box = readBox(currentField);
+            const rule = `.${currentClass} { top: ${box.top.toFixed(2)}mm; left: ${box.left.toFixed(2)}mm; width: ${box.width.toFixed(2)}mm; height: ${box.height.toFixed(2)}mm; }`;
+            try {
+                await navigator.clipboard.writeText(rule);
+            } catch (err) {
+                console.warn('Clipboard error', err);
+            }
+        }
+        if (action === 'toggle-box') {
+            currentField.classList.toggle('box');
+        }
+        updateHelper();
+    });
+
+    function reselectAfterSwap() {
+        if (currentClass) {
+            const candidate = shell.querySelector(`.${currentClass}`);
+            if (candidate) {
+                selectField(candidate);
+            } else {
+                currentField = null;
+                currentClass = '';
+                updateHelper();
+            }
+        } else {
+            updateHelper();
+        }
+    }
+
+    document.addEventListener('htmx:afterSwap', (evt) => {
+        if (evt.target && evt.target.id === 'preview-container') {
+            applyOverrides();
+            reselectAfterSwap();
+        }
+    });
+
+    if (toggle) {
+        toggle.addEventListener('change', () => {
+            if (!toggle.checked && currentField) {
+                currentField.classList.remove('is-selected');
+                currentField = null;
+                currentClass = '';
+            }
+            updateHelper();
+        });
+    }
+
+    loadOverrides();
+    applyOverrides();
+    updateHelper();
+})();
+</script>
 {% endblock %}
