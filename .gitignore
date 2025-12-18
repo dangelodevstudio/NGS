@@ -1,0 +1,8 @@
+venv/
+__pycache__/
+*.pyc
+db.sqlite3
+debug_b.html
+out_stdout.pdf
+.DS_Store
+*.log
