@@ -1,12 +1,15 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.http import require_POST, require_http_methods
 from django.http import HttpResponse
 from django.template.loader import render_to_string
 from django.contrib.staticfiles import finders
+from django.db.models import Q
 from pathlib import Path
+import uuid
 import pdfkit
 import os
 import logging
+from .models import Folder, Report
 
 # Wkhtmltopdf (versão dos repositórios do Ubuntu) depende dos plugins Qt.
 # No Heroku eles ficam em /app/.apt/usr/lib/...; configuramos o caminho aqui
@@ -94,6 +97,71 @@ LAUDO_MODELOS = {
     # No futuro vamos adicionar mais modelos aqui (epilepsia, neuro, etc.)
 }
 
+REPORT_FIELDS = [
+    "laudo_type",
+    "patient_name",
+    "patient_birth_date",
+    "patient_sex",
+    "patient_code",
+    "exam_name",
+    "exam_entry_date",
+    "exam_release_date",
+    "requester_name",
+    "sample_description",
+    "clinical_indication",
+    "main_gene",
+    "main_transcript",
+    "main_variant_c",
+    "main_variant_p",
+    "main_dbsnp",
+    "main_zygosity",
+    "main_inheritance",
+    "main_classification",
+    "main_condition",
+    "main_result_intro",
+    "interpretation_text",
+    "additional_findings_text",
+    "vus_gene",
+    "vus_transcript",
+    "vus_variant_c",
+    "vus_variant_p",
+    "vus_dbsnp",
+    "vus_zygosity",
+    "vus_inheritance",
+    "vus_classification",
+    "metrics_coverage_mean",
+    "metrics_coverage_50x",
+    "metrics_text",
+    "recommendations_text",
+    "notes_text",
+    "methodology_text",
+    "limitations_text",
+    "observations_text",
+    "genes_analyzed_list",
+    "references_text",
+    "tech_professional",
+    "tech_professional_crbm",
+    "md_responsible",
+    "md_responsible_crm",
+    "md_technical",
+    "md_technical_crm",
+]
+
+DEFAULT_REPORT_TITLE = "Novo laudo"
+PLACEHOLDER_PATIENT_NAME = "NOME COMPLETO PACIENTE"
+
+
+def _get_report_type_options():
+    return [{"key": key, "label": value["label"]} for key, value in LAUDO_MODELOS.items()]
+
+
+def _resolve_laudo_type(request, base_data=None):
+    return (
+        request.POST.get("laudo_type")
+        or (base_data or {}).get("laudo_type")
+        or "cancer_hereditario_144"
+    )
+
 def _split_interpretation_for_template_b(text, first_limit=900):
     """
     Divide o texto de interpreta??o em duas partes aproximadas para o template B.
@@ -115,112 +183,269 @@ def _split_interpretation_for_template_b(text, first_limit=900):
 
 
 
-def _build_context_from_request(request):
-    # tipo de laudo selecionado (default = cÃ¢ncer hereditÃ¡rio 144 genes)
-    laudo_type = request.POST.get('laudo_type', 'cancer_hereditario_144')
-    modelo = LAUDO_MODELOS.get(laudo_type, LAUDO_MODELOS['cancer_hereditario_144'])
+def _extract_report_data(request, base_data=None):
+    data = {}
+    source = base_data or {}
+    for field in REPORT_FIELDS:
+        if request.method == "POST" and field in request.POST:
+            data[field] = request.POST.get(field, "")
+        elif field in source:
+            data[field] = source.get(field)
+    if "laudo_type" not in data:
+        data["laudo_type"] = _resolve_laudo_type(request, base_data)
+    return data
+
+
+def _build_context(request, base_data=None):
+    # tipo de laudo selecionado (default = c??ncer heredit??rio 144 genes)
+    laudo_type = _resolve_laudo_type(request, base_data)
+    modelo = LAUDO_MODELOS.get(laudo_type, LAUDO_MODELOS["cancer_hereditario_144"])
     defaults = modelo["defaults"]
 
-    # helper para pegar valor do POST ou usar default
+    # helper para pegar valor do POST, dados salvos ou default
     def get_field(name, fallback=None):
         if fallback is None:
-            fallback = defaults.get(name, '')
-        return request.POST.get(name, fallback)
+            fallback = defaults.get(name, "")
+        if request.method == "POST" and name in request.POST:
+            return request.POST.get(name, "")
+        if base_data and name in base_data:
+            return base_data.get(name)
+        return fallback
 
     context = {
-        # manter tipo de laudo no contexto (para o select e para a prÃ©via)
-        'laudo_type': laudo_type,
+        # manter tipo de laudo no contexto (para o select e para a pr??via)
+        "laudo_type": laudo_type,
 
-        # dados do paciente (sempre editÃ¡veis, com placeholders)
-        'patient_name': get_field('patient_name', 'NOME COMPLETO PACIENTE'),
-        'patient_birth_date': get_field('patient_birth_date', '00/00/0000'),
-        'patient_sex': get_field('patient_sex', 'Feminino'),
-        'patient_code': get_field('patient_code', '0000000000'),
+        # dados do paciente (sempre edit??veis, com placeholders)
+        "patient_name": get_field("patient_name", "NOME COMPLETO PACIENTE"),
+        "patient_birth_date": get_field("patient_birth_date", "00/00/0000"),
+        "patient_sex": get_field("patient_sex", "Feminino"),
+        "patient_code": get_field("patient_code", "0000000000"),
 
         # dados do exame
-        'exam_name': get_field('exam_name'),
-        'exam_entry_date': get_field('exam_entry_date', '00/00/0000'),
-        'exam_release_date': get_field('exam_release_date', '00/00/0000'),
+        "exam_name": get_field("exam_name"),
+        "exam_entry_date": get_field("exam_entry_date", "00/00/0000"),
+        "exam_release_date": get_field("exam_release_date", "00/00/0000"),
 
         # solicitante / amostra
-        'requester_name': get_field('requester_name', 'Dr(a). Fulana de Tal CRM - BR 8141'),
-        'sample_description': get_field('sample_description', 'Swab bucal (00000000000000)'),
-        'clinical_indication': get_field(
-            'clinical_indication',
-            'HistÃ³ria pessoal/familiar de cÃ¢ncer, etc.'
+        "requester_name": get_field("requester_name", "Dr(a). Fulana de Tal CRM - BR 8141"),
+        "sample_description": get_field("sample_description", "Swab bucal (00000000000000)"),
+        "clinical_indication": get_field(
+            "clinical_indication",
+            "Hist??ria pessoal/familiar de c??ncer, etc.",
         ),
 
         # resultado principal
-        'main_gene': get_field('main_gene'),
-        'main_transcript': get_field('main_transcript'),
-        'main_variant_c': get_field('main_variant_c'),
-        'main_variant_p': get_field('main_variant_p'),
-        'main_dbsnp': get_field('main_dbsnp'),
-        'main_zygosity': get_field('main_zygosity'),
-        'main_inheritance': get_field('main_inheritance'),
-        'main_classification': get_field('main_classification'),
-        'main_condition': get_field('main_condition'),
-        'main_result_intro': get_field('main_result_intro'),
+        "main_gene": get_field("main_gene"),
+        "main_transcript": get_field("main_transcript"),
+        "main_variant_c": get_field("main_variant_c"),
+        "main_variant_p": get_field("main_variant_p"),
+        "main_dbsnp": get_field("main_dbsnp"),
+        "main_zygosity": get_field("main_zygosity"),
+        "main_inheritance": get_field("main_inheritance"),
+        "main_classification": get_field("main_classification"),
+        "main_condition": get_field("main_condition"),
+        "main_result_intro": get_field("main_result_intro"),
 
         # textos livres
-        'interpretation_text': get_field('interpretation_text'),
-        'additional_findings_text': get_field('additional_findings_text'),
+        "interpretation_text": get_field("interpretation_text"),
+        "additional_findings_text": get_field("additional_findings_text"),
 
         # VUS / achados adicionais estruturados
-        'vus_gene': get_field('vus_gene'),
-        'vus_transcript': get_field('vus_transcript'),
-        'vus_variant_c': get_field('vus_variant_c'),
-        'vus_variant_p': get_field('vus_variant_p'),
-        'vus_dbsnp': get_field('vus_dbsnp'),
-        'vus_zygosity': get_field('vus_zygosity'),
-        'vus_inheritance': get_field('vus_inheritance'),
-        'vus_classification': get_field('vus_classification'),
+        "vus_gene": get_field("vus_gene"),
+        "vus_transcript": get_field("vus_transcript"),
+        "vus_variant_c": get_field("vus_variant_c"),
+        "vus_variant_p": get_field("vus_variant_p"),
+        "vus_dbsnp": get_field("vus_dbsnp"),
+        "vus_zygosity": get_field("vus_zygosity"),
+        "vus_inheritance": get_field("vus_inheritance"),
+        "vus_classification": get_field("vus_classification"),
 
-        # mÃ©tricas e recomendaÃ§Ãµes
-        'metrics_coverage_mean': get_field('metrics_coverage_mean'),
-        'metrics_coverage_50x': get_field('metrics_coverage_50x'),
-        'metrics_text': get_field('metrics_text'),
-        'recommendations_text': get_field('recommendations_text'),
-        'notes_text': get_field('notes_text'),
+        # m??tricas e recomenda????es
+        "metrics_coverage_mean": get_field("metrics_coverage_mean"),
+        "metrics_coverage_50x": get_field("metrics_coverage_50x"),
+        "metrics_text": get_field("metrics_text"),
+        "recommendations_text": get_field("recommendations_text"),
+        "notes_text": get_field("notes_text"),
 
-        # metodologia e limitaÃ§Ãµes
-        'methodology_text': get_field('methodology_text'),
-        'limitations_text': get_field('limitations_text'),
-        'observations_text': get_field('observations_text'),
+        # metodologia e limita????es
+        "methodology_text": get_field("methodology_text"),
+        "limitations_text": get_field("limitations_text"),
+        "observations_text": get_field("observations_text"),
 
-        # genes analisados e referÃªncias
-        'genes_analyzed_list': get_field('genes_analyzed_list'),
-        'references_text': get_field('references_text'),
+        # genes analisados e refer??ncias
+        "genes_analyzed_list": get_field("genes_analyzed_list"),
+        "references_text": get_field("references_text"),
 
         # profissionais
-        'tech_professional': get_field('tech_professional', 'Erika Macedo'),
-        'tech_professional_crbm': get_field('tech_professional_crbm', 'CRBM-SP: 26338'),
-        'md_responsible': get_field('md_responsible', 'Dr. Guilherme Lugo'),
-        'md_responsible_crm': get_field('md_responsible_crm', 'CRM-SP: 256188'),
-        'md_technical': get_field('md_technical', 'Dra. Ãngela F. L. Waitzberg'),
-        'md_technical_crm': get_field('md_technical_crm', 'CRM-SP: 69504'),
+        "tech_professional": get_field("tech_professional", "Erika Macedo"),
+        "tech_professional_crbm": get_field("tech_professional_crbm", "CRBM-SP: 26338"),
+        "md_responsible": get_field("md_responsible", "Dr. Guilherme Lugo"),
+        "md_responsible_crm": get_field("md_responsible_crm", "CRM-SP: 256188"),
+        "md_technical": get_field("md_technical", "Dra. ??ngela F. L. Waitzberg"),
+        "md_technical_crm": get_field("md_technical_crm", "CRM-SP: 69504"),
     }
 
-    # Ajustes específicos para template B (split de interpretação)
-    if context.get('laudo_type') == 'cancer_hereditario_144':
-        part1, part2 = _split_interpretation_for_template_b(context.get('interpretation_text', ''))
-        context['interpretation_p2'] = part1
-        context['interpretation_p3'] = part2
+    # Ajustes espec??ficos para template B (split de interpreta????o)
+    if context.get("laudo_type") == "cancer_hereditario_144":
+        part1, part2 = _split_interpretation_for_template_b(context.get("interpretation_text", ""))
+        context["interpretation_p2"] = part1
+        context["interpretation_p3"] = part2
     else:
-        context['interpretation_p2'] = context.get('interpretation_text', '')
-        context['interpretation_p3'] = ''
+        context["interpretation_p2"] = context.get("interpretation_text", "")
+        context["interpretation_p3"] = ""
 
     return context
 
 
-def editor_home(request):
-    context = _build_context_from_request(request)
-    return render(request, 'editor/editor_laudo.html', context)
+def _get_report_from_request(request):
+    report_id = request.POST.get("report_id")
+    if not report_id:
+        return None
+    try:
+        report_uuid = uuid.UUID(str(report_id))
+    except ValueError:
+        return None
+    return Report.objects.filter(id=report_uuid, workspace=request.workspace).first()
+
+
+def _update_report_from_request(report, request):
+    data = _extract_report_data(request, report.data or {})
+    report.data = data
+    report.report_type = data.get("laudo_type", report.report_type)
+    if not report.title or report.title.strip() == DEFAULT_REPORT_TITLE:
+        candidate = data.get("patient_name")
+        if candidate and candidate != PLACEHOLDER_PATIENT_NAME:
+            report.title = candidate
+    report.save()
+    return data
+
+
+def dashboard(request):
+    query = request.GET.get("q", "").strip()
+    reports = Report.objects.filter(workspace=request.workspace)
+    if query:
+        reports = reports.filter(
+            Q(title__icontains=query)
+            | Q(data__patient_name__icontains=query)
+            | Q(data__patient_code__icontains=query)
+        )
+    recent_reports = list(reports.order_by("-updated_at")[:10])
+    report_types = _get_report_type_options()
+    type_labels = {opt["key"]: opt["label"] for opt in report_types}
+    for report in recent_reports:
+        report.type_label = type_labels.get(report.report_type, report.report_type)
+    folders = Folder.objects.filter(workspace=request.workspace).prefetch_related("reports")
+    context = {
+        "recent_reports": recent_reports,
+        "folders": folders,
+        "query": query,
+        "report_types": report_types,
+    }
+    return render(request, "editor/dashboard.html", context)
+
+
+@require_http_methods(["POST"])
+def create_folder(request):
+    name = request.POST.get("name", "").strip()
+    if name:
+        Folder.objects.create(workspace=request.workspace, name=name)
+    return redirect("dashboard")
+
+
+@require_http_methods(["GET", "POST"])
+def report_new(request):
+    if request.method == "POST":
+        report_type = request.POST.get("report_type") or "cancer_hereditario_144"
+        title = request.POST.get("title", "").strip() or DEFAULT_REPORT_TITLE
+        folder_id = request.POST.get("folder_id")
+        folder = None
+        if folder_id:
+            folder = Folder.objects.filter(id=folder_id, workspace=request.workspace).first()
+        report = Report.objects.create(
+            workspace=request.workspace,
+            folder=folder,
+            title=title,
+            report_type=report_type,
+            data={"laudo_type": report_type},
+        )
+        return redirect("report_editor", report_id=report.id)
+
+    context = {
+        "folders": Folder.objects.filter(workspace=request.workspace),
+        "report_types": _get_report_type_options(),
+    }
+    return render(request, "editor/report_new.html", context)
+
+
+def folder_detail(request, folder_id):
+    folder = get_object_or_404(Folder, id=folder_id, workspace=request.workspace)
+    query = request.GET.get("q", "").strip()
+    reports = list(
+        Report.objects.filter(workspace=request.workspace, folder=folder).order_by("-updated_at")
+    )
+    type_labels = {opt["key"]: opt["label"] for opt in _get_report_type_options()}
+    for report in reports:
+        report.type_label = type_labels.get(report.report_type, report.report_type)
+    if query:
+        reports = [
+            report
+            for report in reports
+            if query.lower() in (report.title or "").lower()
+            or query.lower() in (report.data or {}).get("patient_name", "").lower()
+            or query.lower() in (report.data or {}).get("patient_code", "").lower()
+        ]
+    context = {
+        "folder": folder,
+        "reports": reports,
+        "query": query,
+    }
+    return render(request, "editor/folder_detail.html", context)
+
+
+def report_editor(request, report_id):
+    report = get_object_or_404(Report, id=report_id, workspace=request.workspace)
+    base_data = dict(report.data or {})
+    base_data.setdefault("laudo_type", report.report_type)
+    context = _build_context(request, base_data=base_data)
+    context["report"] = report
+    context["report_types"] = _get_report_type_options()
+    return render(request, "editor/editor_laudo.html", context)
+
+
+@require_http_methods(["POST"])
+def report_delete(request, report_id):
+    report = get_object_or_404(Report, id=report_id, workspace=request.workspace)
+    redirect_target = "dashboard"
+    if report.folder_id:
+        redirect_target = "folder_detail"
+        folder_id = report.folder_id
+    report.delete()
+    if redirect_target == "folder_detail":
+        return redirect(redirect_target, folder_id=folder_id)
+    return redirect(redirect_target)
+
+
+@require_http_methods(["POST"])
+def report_duplicate(request, report_id):
+    report = get_object_or_404(Report, id=report_id, workspace=request.workspace)
+    copy_title = f"Copia de {report.title}" if report.title else DEFAULT_REPORT_TITLE
+    new_report = Report.objects.create(
+        workspace=request.workspace,
+        folder=report.folder,
+        title=copy_title,
+        report_type=report.report_type,
+        data=dict(report.data or {}),
+    )
+    return redirect("report_editor", report_id=new_report.id)
 
 
 @require_POST
 def preview_laudo(request):
-    context = _build_context_from_request(request)
+    report = _get_report_from_request(request)
+    if report:
+        _update_report_from_request(report, request)
+    context = _build_context(request, base_data=report.data if report else None)
     template_name = "editor/preview_sample.html"
     if context.get("laudo_type") == "cancer_hereditario_144":
         template_name = "editor/preview_sample_b.html"
@@ -245,7 +470,10 @@ def get_pdfkit_config():
 @require_http_methods(["POST"])
 def export_pdf(request):
     # Usa o mesmo contexto da pr?via
-    context = _build_context_from_request(request)
+    report = _get_report_from_request(request)
+    if report:
+        _update_report_from_request(report, request)
+    context = _build_context(request, base_data=report.data if report else None)
 
     # Seleciona o template e CSS conforme o tipo de laudo
     template_name = "editor/preview_pdf.html"

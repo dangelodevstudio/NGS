@@ -14,9 +14,10 @@
 <body>
     <nav class="navbar navbar-expand-lg bioma-navbar shadow-sm">
         <div class="container-fluid">
-            <span class="navbar-brand mb-0 h1 text-white">
-                Painel NGS · Editor de Laudos
-            </span>
+            <a class="navbar-brand mb-0 h1 text-white text-decoration-none" href="{% url 'dashboard' %}">
+                Painel NGS - Editor de Laudos
+            </a>
+            <a class="btn bioma-home-btn" href="{% url 'dashboard' %}">Home</a>
         </div>
     </nav>
 

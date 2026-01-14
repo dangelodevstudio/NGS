@@ -1,0 +1,51 @@
+{% extends 'editor/base.html' %}
+
+{% block content %}
+<div class="folder-header d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+    <div>
+        <h4 class="dashboard-title mb-1">{{ folder.name }}</h4>
+        <p class="dashboard-muted mb-0">Laudos nesta pasta.</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a class="btn btn-outline-secondary" href="{% url 'dashboard' %}">Voltar</a>
+        <a class="btn bioma-primary-btn" href="{% url 'report_new' %}">Novo laudo</a>
+    </div>
+</div>
+
+<div class="card bioma-card dashboard-card">
+    <div class="card-body">
+        <form class="d-flex gap-2 mb-3" method="get">
+            <input type="text" name="q" class="form-control" placeholder="Buscar por nome, codigo ou titulo" value="{{ query }}">
+            <button type="submit" class="btn btn-outline-secondary">Buscar</button>
+        </form>
+
+        {% if reports %}
+            <div class="list-group dashboard-list">
+                {% for report in reports %}
+                    <div class="list-group-item d-flex flex-wrap align-items-center justify-content-between gap-3">
+                        <div>
+                            <div class="report-title">{{ report.title }}</div>
+                            <div class="report-meta">
+                                {{ report.type_label }} · Atualizado em {{ report.updated_at|date:"d/m/Y H:i" }}
+                            </div>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <a href="{% url 'report_editor' report.id %}" class="btn btn-sm btn-outline-primary">Abrir</a>
+                            <form method="post" action="{% url 'report_duplicate' report.id %}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-outline-secondary">Duplicar</button>
+                            </form>
+                            <form method="post" action="{% url 'report_delete' report.id %}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-outline-danger">Excluir</button>
+                            </form>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="dashboard-muted">Nenhum laudo nesta pasta.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

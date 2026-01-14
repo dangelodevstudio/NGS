@@ -1,0 +1,118 @@
+{% extends 'editor/base.html' %}
+
+{% block content %}
+<div class="dashboard-wrap">
+    <div class="row g-4">
+        <div class="col-lg-4">
+            <div class="card bioma-card dashboard-card">
+                <div class="card-body">
+                    <h5 class="dashboard-title">Novo Laudo</h5>
+                    <p class="dashboard-muted">Crie um laudo rascunho e abra no editor.</p>
+                    <form method="post" action="{% url 'report_new' %}">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label class="form-label">Tipo</label>
+                            <select name="report_type" class="form-select">
+                                {% for option in report_types %}
+                                    <option value="{{ option.key }}">{{ option.label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Pasta (opcional)</label>
+                            <select name="folder_id" class="form-select">
+                                <option value="">Sem pasta</option>
+                                {% for folder in folders %}
+                                    <option value="{{ folder.id }}">{{ folder.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Titulo (opcional)</label>
+                            <input type="text" name="title" class="form-control" placeholder="Novo laudo">
+                        </div>
+                        <button type="submit" class="btn bioma-primary-btn w-100">Criar</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card bioma-card dashboard-card mt-4">
+                <div class="card-body">
+                    <h5 class="dashboard-title">Nova Pasta</h5>
+                    <p class="dashboard-muted">Organize os laudos em pastas.</p>
+                    <form method="post" action="{% url 'folder_create' %}">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label class="form-label">Nome da pasta</label>
+                            <input type="text" name="name" class="form-control" placeholder="Ex: Oncologia">
+                        </div>
+                        <button type="submit" class="btn btn-outline-primary w-100">Adicionar</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="card bioma-card dashboard-card">
+                <div class="card-body">
+                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3">
+                        <div>
+                            <h5 class="dashboard-title">Recentes</h5>
+                            <p class="dashboard-muted mb-0">Ultimos 10 laudos do workspace.</p>
+                        </div>
+                        <form class="d-flex gap-2" method="get">
+                            <input type="text" name="q" class="form-control" placeholder="Buscar por nome, codigo ou titulo" value="{{ query }}">
+                            <button type="submit" class="btn btn-outline-secondary">Buscar</button>
+                        </form>
+                    </div>
+                    {% if recent_reports %}
+                        <div class="list-group dashboard-list">
+                            {% for report in recent_reports %}
+                                <div class="list-group-item d-flex flex-wrap align-items-center justify-content-between gap-3">
+                                    <div>
+                                        <div class="report-title">{{ report.title }}</div>
+                                        <div class="report-meta">
+                                            {{ report.type_label }} · Atualizado em {{ report.updated_at|date:"d/m/Y H:i" }}
+                                        </div>
+                                    </div>
+                                    <div class="d-flex gap-2">
+                                        <a href="{% url 'report_editor' report.id %}" class="btn btn-sm btn-outline-primary">Abrir</a>
+                                        <form method="post" action="{% url 'report_duplicate' report.id %}">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-sm btn-outline-secondary">Duplicar</button>
+                                        </form>
+                                        <form method="post" action="{% url 'report_delete' report.id %}">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">Excluir</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="dashboard-muted">Nenhum laudo criado ainda.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card bioma-card dashboard-card mt-4">
+                <div class="card-body">
+                    <h5 class="dashboard-title">Pastas</h5>
+                    {% if folders %}
+                        <div class="dashboard-folder-grid">
+                            {% for folder in folders %}
+                                <a class="folder-chip" href="{% url 'folder_detail' folder.id %}">
+                                    <div class="folder-name">{{ folder.name }}</div>
+                                    <div class="folder-count">{{ folder.reports.count }} laudos</div>
+                                </a>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="dashboard-muted">Nenhuma pasta criada.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
