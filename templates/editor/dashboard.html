@@ -73,6 +73,9 @@
                                         <div class="report-title">{{ report.title }}</div>
                                         <div class="report-meta">
                                             {{ report.type_label }} · Atualizado em {{ report.updated_at|date:"d/m/Y H:i" }}
+                                            {% if is_admin and report.analyst_name %}
+                                                · Analista: {{ report.analyst_name }}
+                                            {% endif %}
                                         </div>
                                     </div>
                                     <div class="d-flex gap-2">

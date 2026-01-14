@@ -1,14 +1,18 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.http import require_POST, require_http_methods
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseForbidden
 from django.template.loader import render_to_string
 from django.contrib.staticfiles import finders
+from django.contrib.auth.decorators import login_required
 from django.db.models import Q
+from django.contrib.auth.models import User
 from pathlib import Path
 import uuid
 import pdfkit
 import os
 import logging
+import re
+import textwrap
 from .models import Folder, Report
 
 # Wkhtmltopdf (versão dos repositórios do Ubuntu) depende dos plugins Qt.
@@ -92,6 +96,14 @@ LAUDO_MODELOS = {
                 "Referências: ACMG/AMP guidelines; ClinVar; gnomAD; NCCN Guidelines para predisposição hereditária ao câncer; "
                 "literatura científica atualizada até a data de emissão."
             ),
+            "analyst_name": "Analista Responsavel",
+            "analyst_registry": "",
+            "lab_tech_name": "Erika Macedo",
+            "lab_tech_registry": "CRBM-SP: 26338",
+            "geneticist_name": "Dr. Guilherme Lugo",
+            "geneticist_registry": "CRM-SP: 256188",
+            "director_name": "Dra. Angela F. L. Waitzberg",
+            "director_registry": "CRM-SP: 69504",
         },
     },
     # No futuro vamos adicionar mais modelos aqui (epilepsia, neuro, etc.)
@@ -107,6 +119,14 @@ REPORT_FIELDS = [
     "exam_entry_date",
     "exam_release_date",
     "requester_name",
+    "requester_reg_type",
+    "requester_reg_type_other",
+    "requester_reg_number",
+    "requester_reg_state",
+    "requester_not_identified",
+    "sample_type",
+    "sample_type_other",
+    "sample_identifier",
     "sample_description",
     "clinical_indication",
     "main_gene",
@@ -139,6 +159,14 @@ REPORT_FIELDS = [
     "observations_text",
     "genes_analyzed_list",
     "references_text",
+    "analyst_name",
+    "analyst_registry",
+    "lab_tech_name",
+    "lab_tech_registry",
+    "geneticist_name",
+    "geneticist_registry",
+    "director_name",
+    "director_registry",
     "tech_professional",
     "tech_professional_crbm",
     "md_responsible",
@@ -150,6 +178,64 @@ REPORT_FIELDS = [
 DEFAULT_REPORT_TITLE = "Novo laudo"
 PLACEHOLDER_PATIENT_NAME = "NOME COMPLETO PACIENTE"
 
+REQUESTER_REG_TYPES = [
+    "CRM",
+    "CRBio",
+    "CRBM",
+    "COREN",
+    "CRF",
+    "CPF",
+    "Outro",
+]
+
+REQUESTER_UF_LIST = [
+    "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS",
+    "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC",
+    "SP", "SE", "TO",
+]
+
+
+SAMPLE_TYPES = [
+    "Swab Oral",
+    "Sangue EDTA",
+    "Liquido Amniotico",
+    "Trofoblasto",
+    "Sangue Fetal (Cordocentese)",
+    "Biopsia de pele",
+    "DNA extraido e enviado ao laboratorio",
+    "Outro",
+]
+
+PROFESSIONAL_OPTIONS = {
+    "analyst": [
+        {
+            "name": "Analista Responsavel",
+            "registry": "",
+            "label": "Analista Responsavel",
+        },
+    ],
+    "lab_tech": [
+        {
+            "name": "Erika Macedo",
+            "registry": "CRBM-SP: 26338",
+            "label": "Erika Macedo (CRBM-SP: 26338)",
+        },
+    ],
+    "geneticist": [
+        {
+            "name": "Dr. Guilherme Lugo",
+            "registry": "CRM-SP: 256188",
+            "label": "Dr. Guilherme Lugo (CRM-SP: 256188)",
+        },
+    ],
+    "director": [
+        {
+            "name": "Dra. Angela F. L. Waitzberg",
+            "registry": "CRM-SP: 69504",
+            "label": "Dra. Angela F. L. Waitzberg (CRM-SP: 69504)",
+        },
+    ],
+}
 
 def _get_report_type_options():
     return [{"key": key, "label": value["label"]} for key, value in LAUDO_MODELOS.items()]
@@ -162,22 +248,125 @@ def _resolve_laudo_type(request, base_data=None):
         or "cancer_hereditario_144"
     )
 
-def _split_interpretation_for_template_b(text, first_limit=900):
+
+def _to_bool(value):
+    if isinstance(value, bool):
+        return value
+    if value is None:
+        return False
+    return str(value).lower() in ("1", "true", "on", "yes")
+
+
+def _format_requester_display(data):
+    if not data:
+        return ""
+    if _to_bool(data.get("requester_not_identified")):
+        return "Nao identificado"
+
+    name = (data.get("requester_name") or "").strip()
+    reg_type = (data.get("requester_reg_type") or "").strip()
+    reg_type_other = (data.get("requester_reg_type_other") or "").strip()
+    reg_number = (data.get("requester_reg_number") or "").strip()
+    reg_state = (data.get("requester_reg_state") or "").strip()
+
+    if reg_type == "Outro":
+        reg_type = reg_type_other
+
+    has_reg = any([reg_type, reg_number, reg_state])
+
+    if name and not has_reg:
+        if name.lower().startswith(("dr", "dra", "dr(a)")):
+            return name
+        return f"Dr(a). {name}"
+
+    parts = []
+    if name:
+        parts.append(f"Dr(a). {name}")
+    elif has_reg:
+        parts.append("Dr(a).")
+    if reg_type:
+        parts.append(reg_type)
+
+    display = " ".join([p for p in parts if p]).strip()
+
+    if reg_state:
+        suffix = reg_state
+        if reg_number:
+            suffix = f"{suffix} {reg_number}"
+        display = f"{display} - {suffix}" if display else suffix
+    elif reg_number:
+        display = f"{display} {reg_number}" if display else reg_number
+
+    return display.strip()
+
+
+
+def _parse_sample_description(description):
+    if not description:
+        return "", ""
+    raw = description.strip()
+    if "(" in raw and raw.endswith(")"):
+        left = raw[: raw.rfind("(")].strip()
+        right = raw[raw.rfind("(") + 1 : -1].strip()
+        return left, right
+    return raw, ""
+def _format_sample_display(data):
+    if not data:
+        return ""
+    sample_type = (data.get("sample_type") or "").strip()
+    sample_other = (data.get("sample_type_other") or "").strip()
+    sample_identifier = (data.get("sample_identifier") or "").strip()
+
+    if sample_type == "Outro":
+        sample_type = sample_other
+
+    if not sample_type:
+        return ""
+
+    if sample_identifier:
+        return f"{sample_type} ({sample_identifier})"
+    return sample_type
+
+
+def _split_text_by_lines(text, max_lines, max_chars):
+    paragraphs = [p.strip() for p in re.split(r"\n\s*\n", text) if p.strip()]
+    lines_used = 0
+    part1 = []
+    part2 = []
+
+    for index, para in enumerate(paragraphs):
+        normalized = re.sub(r"\s+", " ", para)
+        wrapped = textwrap.wrap(normalized, width=max_chars)
+        if lines_used + len(wrapped) <= max_lines:
+            part1.append(para)
+            lines_used += len(wrapped)
+            continue
+
+        remaining = max_lines - lines_used
+        if remaining > 0:
+            part1.append(" ".join(wrapped[:remaining]))
+            tail = wrapped[remaining:]
+            if tail:
+                part2.append(" ".join(tail))
+        else:
+            part2.append(para)
+        part2.extend(paragraphs[index + 1 :])
+        break
+
+    return "\n\n".join(part1).strip(), "\n\n".join(part2).strip()
+
+
+def _split_interpretation_for_template_b(text, max_lines_p2=8, max_chars_per_line=88):
     """
-    Divide o texto de interpreta??o em duas partes aproximadas para o template B.
-    Usa quebras de par?grafo ou senten?as para evitar cortes abruptos.
+    Divide o texto de interpreta??o pelo limite aproximado de linhas da caixa da pagina 2.
+    Mantem par?grafos e evita abrir a pagina 3 sem necessidade.
     """
     if not text:
         return "", ""
     cleaned = text.strip()
-    if len(cleaned) <= first_limit:
-        return cleaned, ""
-    slice_text = cleaned[:first_limit]
-    split_at = max(slice_text.rfind("\n\n"), slice_text.rfind(". "))
-    if split_at == -1 or split_at < first_limit * 0.5:
-        split_at = first_limit
-    part1 = cleaned[:split_at].strip()
-    part2 = cleaned[split_at:].strip()
+    if not cleaned:
+        return "", ""
+    part1, part2 = _split_text_by_lines(cleaned, max_lines_p2, max_chars_per_line)
     return part1, part2
 
 
@@ -187,6 +376,12 @@ def _extract_report_data(request, base_data=None):
     data = {}
     source = base_data or {}
     for field in REPORT_FIELDS:
+        if field == "requester_not_identified":
+            if request.method == "POST":
+                data[field] = field in request.POST
+            elif field in source:
+                data[field] = _to_bool(source.get(field))
+            continue
         if request.method == "POST" and field in request.POST:
             data[field] = request.POST.get(field, "")
         elif field in source:
@@ -228,7 +423,15 @@ def _build_context(request, base_data=None):
         "exam_release_date": get_field("exam_release_date", "00/00/0000"),
 
         # solicitante / amostra
-        "requester_name": get_field("requester_name", "Dr(a). Fulana de Tal CRM - BR 8141"),
+        "requester_name": get_field("requester_name", "Dr(a). Fulana de Tal"),
+        "requester_reg_type": get_field("requester_reg_type", ""),
+        "requester_reg_type_other": get_field("requester_reg_type_other", ""),
+        "requester_reg_number": get_field("requester_reg_number", ""),
+        "requester_reg_state": get_field("requester_reg_state", ""),
+        "requester_not_identified": get_field("requester_not_identified", False),
+        "sample_type": get_field("sample_type", ""),
+        "sample_type_other": get_field("sample_type_other", ""),
+        "sample_identifier": get_field("sample_identifier", ""),
         "sample_description": get_field("sample_description", "Swab bucal (00000000000000)"),
         "clinical_indication": get_field(
             "clinical_indication",
@@ -264,20 +467,28 @@ def _build_context(request, base_data=None):
         # m??tricas e recomenda????es
         "metrics_coverage_mean": get_field("metrics_coverage_mean"),
         "metrics_coverage_50x": get_field("metrics_coverage_50x"),
-        "metrics_text": get_field("metrics_text"),
+        "metrics_text": defaults.get("metrics_text", ""),
         "recommendations_text": get_field("recommendations_text"),
-        "notes_text": get_field("notes_text"),
+        "notes_text": defaults.get("notes_text", ""),
 
         # metodologia e limita????es
-        "methodology_text": get_field("methodology_text"),
-        "limitations_text": get_field("limitations_text"),
-        "observations_text": get_field("observations_text"),
+        "methodology_text": defaults.get("methodology_text", ""),
+        "limitations_text": defaults.get("limitations_text", ""),
+        "observations_text": defaults.get("observations_text", ""),
 
         # genes analisados e refer??ncias
-        "genes_analyzed_list": get_field("genes_analyzed_list"),
-        "references_text": get_field("references_text"),
+        "genes_analyzed_list": defaults.get("genes_analyzed_list", ""),
+        "references_text": defaults.get("references_text", ""),
 
         # profissionais
+        "analyst_name": get_field("analyst_name", ""),
+        "analyst_registry": get_field("analyst_registry", ""),
+        "lab_tech_name": get_field("lab_tech_name", ""),
+        "lab_tech_registry": get_field("lab_tech_registry", ""),
+        "geneticist_name": get_field("geneticist_name", ""),
+        "geneticist_registry": get_field("geneticist_registry", ""),
+        "director_name": get_field("director_name", ""),
+        "director_registry": get_field("director_registry", ""),
         "tech_professional": get_field("tech_professional", "Erika Macedo"),
         "tech_professional_crbm": get_field("tech_professional_crbm", "CRBM-SP: 26338"),
         "md_responsible": get_field("md_responsible", "Dr. Guilherme Lugo"),
@@ -285,6 +496,37 @@ def _build_context(request, base_data=None):
         "md_technical": get_field("md_technical", "Dra. ??ngela F. L. Waitzberg"),
         "md_technical_crm": get_field("md_technical_crm", "CRM-SP: 69504"),
     }
+
+    context["is_admin"] = _is_admin(request.user)
+    context["requester_not_identified"] = _to_bool(context.get("requester_not_identified"))
+    context["requester_display"] = _format_requester_display(context)
+
+    if not context.get("analyst_name"):
+        context["analyst_name"] = defaults.get("analyst_name", "")
+    if not context.get("analyst_registry"):
+        context["analyst_registry"] = defaults.get("analyst_registry", "")
+    if not context.get("lab_tech_name"):
+        context["lab_tech_name"] = context.get("tech_professional") or defaults.get("lab_tech_name", "")
+    if not context.get("lab_tech_registry"):
+        context["lab_tech_registry"] = context.get("tech_professional_crbm") or defaults.get("lab_tech_registry", "")
+    if not context.get("geneticist_name"):
+        context["geneticist_name"] = context.get("md_responsible") or defaults.get("geneticist_name", "")
+    if not context.get("geneticist_registry"):
+        context["geneticist_registry"] = context.get("md_responsible_crm") or defaults.get("geneticist_registry", "")
+    if not context.get("director_name"):
+        context["director_name"] = context.get("md_technical") or defaults.get("director_name", "")
+    if not context.get("director_registry"):
+        context["director_registry"] = context.get("md_technical_crm") or defaults.get("director_registry", "")
+
+    if not context.get("sample_type") and context.get("sample_description"):
+        parsed_type, parsed_id = _parse_sample_description(context.get("sample_description"))
+        mapping = {"swab bucal": "Swab Oral", "swab oral": "Swab Oral"}
+        if parsed_type:
+            key = parsed_type.lower()
+            context["sample_type"] = mapping.get(key, parsed_type)
+        if parsed_id:
+            context["sample_identifier"] = context.get("sample_identifier") or parsed_id
+    context["sample_display"] = _format_sample_display(context)
 
     # Ajustes espec??ficos para template B (split de interpreta????o)
     if context.get("laudo_type") == "cancer_hereditario_144":
@@ -306,11 +548,97 @@ def _get_report_from_request(request):
         report_uuid = uuid.UUID(str(report_id))
     except ValueError:
         return None
+    if _is_admin(request.user):
+        return Report.objects.filter(id=report_uuid).first()
     return Report.objects.filter(id=report_uuid, workspace=request.workspace).first()
+
+
+def _is_admin(user):
+    return (
+        user.is_authenticated
+        and (
+            user.is_superuser
+            or user.is_staff
+            or user.groups.filter(name="admin").exists()
+        )
+    )
 
 
 def _update_report_from_request(report, request):
     data = _extract_report_data(request, report.data or {})
+    defaults = LAUDO_MODELOS.get(
+        data.get("laudo_type"),
+        LAUDO_MODELOS["cancer_hereditario_144"],
+    )["defaults"]
+    if "vus_variant_c" not in request.POST:
+        data["vus_variant_c"] = defaults.get("vus_variant_c", "")
+    if _to_bool(data.get("requester_not_identified")):
+        for key in [
+            "requester_name",
+            "requester_reg_type",
+            "requester_reg_type_other",
+            "requester_reg_number",
+            "requester_reg_state",
+        ]:
+            data[key] = ""
+
+    if data.get("sample_type") != "Outro":
+        data["sample_type_other"] = ""
+
+    data["metrics_text"] = defaults.get("metrics_text", data.get("metrics_text", ""))
+    data["notes_text"] = defaults.get("notes_text", data.get("notes_text", ""))
+    data["methodology_text"] = defaults.get("methodology_text", data.get("methodology_text", ""))
+    data["limitations_text"] = defaults.get("limitations_text", data.get("limitations_text", ""))
+    data["observations_text"] = defaults.get("observations_text", data.get("observations_text", ""))
+    data["references_text"] = defaults.get("references_text", data.get("references_text", ""))
+    if not _is_admin(request.user):
+        data["recommendations_text"] = (report.data or {}).get(
+            "recommendations_text",
+            defaults.get("recommendations_text", ""),
+        )
+        data["genes_analyzed_list"] = (report.data or {}).get(
+            "genes_analyzed_list",
+            defaults.get("genes_analyzed_list", ""),
+        )
+    else:
+        data["genes_analyzed_list"] = data.get(
+            "genes_analyzed_list",
+            defaults.get("genes_analyzed_list", ""),
+        )
+    if not data.get("analyst_name"):
+        data["analyst_name"] = defaults.get("analyst_name", "")
+    if not data.get("analyst_registry"):
+        data["analyst_registry"] = defaults.get("analyst_registry", "")
+    if not data.get("lab_tech_name"):
+        data["lab_tech_name"] = data.get("tech_professional") or defaults.get("lab_tech_name", "")
+    if not data.get("lab_tech_registry"):
+        data["lab_tech_registry"] = data.get("tech_professional_crbm") or defaults.get("lab_tech_registry", "")
+    if not data.get("geneticist_name"):
+        data["geneticist_name"] = data.get("md_responsible") or defaults.get("geneticist_name", "")
+    if not data.get("geneticist_registry"):
+        data["geneticist_registry"] = data.get("md_responsible_crm") or defaults.get("geneticist_registry", "")
+    if not data.get("director_name"):
+        data["director_name"] = data.get("md_technical") or defaults.get("director_name", "")
+    if not data.get("director_registry"):
+        data["director_registry"] = data.get("md_technical_crm") or defaults.get("director_registry", "")
+
+    if data.get("lab_tech_name"):
+        data["tech_professional"] = data["lab_tech_name"]
+    if data.get("lab_tech_registry"):
+        data["tech_professional_crbm"] = data["lab_tech_registry"]
+    if data.get("geneticist_name"):
+        data["md_responsible"] = data["geneticist_name"]
+    if data.get("geneticist_registry"):
+        data["md_responsible_crm"] = data["geneticist_registry"]
+    if data.get("director_name"):
+        data["md_technical"] = data["director_name"]
+    if data.get("director_registry"):
+        data["md_technical_crm"] = data["director_registry"]
+
+    sample_display = _format_sample_display(data)
+    if sample_display:
+        data["sample_description"] = sample_display
+
     report.data = data
     report.report_type = data.get("laudo_type", report.report_type)
     if not report.title or report.title.strip() == DEFAULT_REPORT_TITLE:
@@ -321,9 +649,14 @@ def _update_report_from_request(report, request):
     return data
 
 
+@login_required
 def dashboard(request):
     query = request.GET.get("q", "").strip()
-    reports = Report.objects.filter(workspace=request.workspace)
+    is_admin = _is_admin(request.user)
+    if is_admin:
+        reports = Report.objects.all().select_related("created_by")
+    else:
+        reports = Report.objects.filter(workspace=request.workspace)
     if query:
         reports = reports.filter(
             Q(title__icontains=query)
@@ -335,16 +668,24 @@ def dashboard(request):
     type_labels = {opt["key"]: opt["label"] for opt in report_types}
     for report in recent_reports:
         report.type_label = type_labels.get(report.report_type, report.report_type)
-    folders = Folder.objects.filter(workspace=request.workspace).prefetch_related("reports")
+        if is_admin and report.created_by:
+            display = report.created_by.get_full_name().strip()
+            report.analyst_name = display or report.created_by.username
+    if is_admin:
+        folders = Folder.objects.all().prefetch_related("reports")
+    else:
+        folders = Folder.objects.filter(workspace=request.workspace).prefetch_related("reports")
     context = {
         "recent_reports": recent_reports,
         "folders": folders,
         "query": query,
         "report_types": report_types,
+        "is_admin": is_admin,
     }
     return render(request, "editor/dashboard.html", context)
 
 
+@login_required
 @require_http_methods(["POST"])
 def create_folder(request):
     name = request.POST.get("name", "").strip()
@@ -353,6 +694,7 @@ def create_folder(request):
     return redirect("dashboard")
 
 
+@login_required
 @require_http_methods(["GET", "POST"])
 def report_new(request):
     if request.method == "POST":
@@ -361,12 +703,16 @@ def report_new(request):
         folder_id = request.POST.get("folder_id")
         folder = None
         if folder_id:
-            folder = Folder.objects.filter(id=folder_id, workspace=request.workspace).first()
+            folder_qs = Folder.objects.filter(id=folder_id)
+            if not _is_admin(request.user):
+                folder_qs = folder_qs.filter(workspace=request.workspace)
+            folder = folder_qs.first()
         report = Report.objects.create(
             workspace=request.workspace,
             folder=folder,
             title=title,
             report_type=report_type,
+            created_by=request.user,
             data={"laudo_type": report_type},
         )
         return redirect("report_editor", report_id=report.id)
@@ -378,15 +724,28 @@ def report_new(request):
     return render(request, "editor/report_new.html", context)
 
 
+@login_required
 def folder_detail(request, folder_id):
-    folder = get_object_or_404(Folder, id=folder_id, workspace=request.workspace)
+    is_admin = _is_admin(request.user)
+    if is_admin:
+        folder = get_object_or_404(Folder, id=folder_id)
+    else:
+        folder = get_object_or_404(Folder, id=folder_id, workspace=request.workspace)
     query = request.GET.get("q", "").strip()
-    reports = list(
-        Report.objects.filter(workspace=request.workspace, folder=folder).order_by("-updated_at")
-    )
+    if is_admin:
+        reports = list(
+            Report.objects.filter(folder=folder).select_related("created_by").order_by("-updated_at")
+        )
+    else:
+        reports = list(
+            Report.objects.filter(workspace=request.workspace, folder=folder).order_by("-updated_at")
+        )
     type_labels = {opt["key"]: opt["label"] for opt in _get_report_type_options()}
     for report in reports:
         report.type_label = type_labels.get(report.report_type, report.report_type)
+        if is_admin and report.created_by:
+            display = report.created_by.get_full_name().strip()
+            report.analyst_name = display or report.created_by.username
     if query:
         reports = [
             report
@@ -399,23 +758,37 @@ def folder_detail(request, folder_id):
         "folder": folder,
         "reports": reports,
         "query": query,
+        "is_admin": is_admin,
     }
     return render(request, "editor/folder_detail.html", context)
 
 
+@login_required
 def report_editor(request, report_id):
-    report = get_object_or_404(Report, id=report_id, workspace=request.workspace)
+    if _is_admin(request.user):
+        report = get_object_or_404(Report, id=report_id)
+    else:
+        report = get_object_or_404(Report, id=report_id, workspace=request.workspace)
     base_data = dict(report.data or {})
     base_data.setdefault("laudo_type", report.report_type)
     context = _build_context(request, base_data=base_data)
     context["report"] = report
     context["report_types"] = _get_report_type_options()
+    context["requester_reg_types"] = REQUESTER_REG_TYPES
+    context["requester_uf_list"] = REQUESTER_UF_LIST
+    context["sample_types"] = SAMPLE_TYPES
+    context["professional_options"] = PROFESSIONAL_OPTIONS
+    context["is_admin"] = _is_admin(request.user)
     return render(request, "editor/editor_laudo.html", context)
 
 
+@login_required
 @require_http_methods(["POST"])
 def report_delete(request, report_id):
-    report = get_object_or_404(Report, id=report_id, workspace=request.workspace)
+    if _is_admin(request.user):
+        report = get_object_or_404(Report, id=report_id)
+    else:
+        report = get_object_or_404(Report, id=report_id, workspace=request.workspace)
     redirect_target = "dashboard"
     if report.folder_id:
         redirect_target = "folder_detail"
@@ -426,20 +799,26 @@ def report_delete(request, report_id):
     return redirect(redirect_target)
 
 
+@login_required
 @require_http_methods(["POST"])
 def report_duplicate(request, report_id):
-    report = get_object_or_404(Report, id=report_id, workspace=request.workspace)
+    if _is_admin(request.user):
+        report = get_object_or_404(Report, id=report_id)
+    else:
+        report = get_object_or_404(Report, id=report_id, workspace=request.workspace)
     copy_title = f"Copia de {report.title}" if report.title else DEFAULT_REPORT_TITLE
     new_report = Report.objects.create(
-        workspace=request.workspace,
+        workspace=report.workspace,
         folder=report.folder,
         title=copy_title,
         report_type=report.report_type,
+        created_by=request.user,
         data=dict(report.data or {}),
     )
     return redirect("report_editor", report_id=new_report.id)
 
 
+@login_required
 @require_POST
 def preview_laudo(request):
     report = _get_report_from_request(request)
@@ -450,6 +829,64 @@ def preview_laudo(request):
     if context.get("laudo_type") == "cancer_hereditario_144":
         template_name = "editor/preview_sample_b.html"
     return render(request, template_name, context)
+
+
+@login_required
+def user_manage(request):
+    if not _is_admin(request.user):
+        return HttpResponseForbidden("Acesso negado.")
+    form_error = ""
+    form_success = ""
+    if request.method == "POST":
+        username = request.POST.get("username", "").strip()
+        password = request.POST.get("password", "").strip()
+        full_name = request.POST.get("full_name", "").strip()
+        email = request.POST.get("email", "").strip()
+        role = request.POST.get("role", "analyst")
+
+        if not username or not password:
+            form_error = "Usuario e senha sao obrigatorios."
+        elif User.objects.filter(username=username).exists():
+            form_error = "Usuario ja existe."
+        else:
+            first_name = full_name
+            last_name = ""
+            if full_name and " " in full_name:
+                parts = full_name.split()
+                first_name = parts[0]
+                last_name = " ".join(parts[1:])
+            user = User.objects.create_user(
+                username=username,
+                email=email,
+                password=password,
+                first_name=first_name,
+                last_name=last_name,
+            )
+            if role == "admin":
+                user.is_staff = True
+                user.save(update_fields=["is_staff"])
+            form_success = "Usuario criado com sucesso."
+
+    users = User.objects.all().order_by("username")
+    context = {
+        "users": users,
+        "form_error": form_error,
+        "form_success": form_success,
+    }
+    return render(request, "editor/user_manage.html", context)
+
+
+@login_required
+@require_http_methods(["POST"])
+def user_toggle_active(request, user_id):
+    if not _is_admin(request.user):
+        return HttpResponseForbidden("Acesso negado.")
+    user = get_object_or_404(User, id=user_id)
+    if user == request.user:
+        return redirect("user_manage")
+    user.is_active = not user.is_active
+    user.save(update_fields=["is_active"])
+    return redirect("user_manage")
 
 
 def get_pdfkit_config():
@@ -467,6 +904,7 @@ def get_pdfkit_config():
     return None
 
 
+@login_required
 @require_http_methods(["POST"])
 def export_pdf(request):
     # Usa o mesmo contexto da pr?via

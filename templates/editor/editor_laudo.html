@@ -28,7 +28,8 @@
                         <!-- Tipo de Laudo -->
                         <div class="mb-3">
                             <h6 class="text-uppercase small text-muted mb-2">Tipo de laudo</h6>
-                            <select name="laudo_type" class="form-select">
+                            <input type="hidden" name="laudo_type" value="{{ laudo_type }}">
+                            <select name="laudo_type" class="form-select" disabled aria-disabled="true">
                                 {% for option in report_types %}
                                     <option value="{{ option.key }}"
                                             {% if laudo_type == option.key %}selected{% endif %}>
@@ -36,6 +37,7 @@
                                     </option>
                                 {% endfor %}
                             </select>
+                            <div class="form-text">Definido pelo modelo do laudo.</div>
                         </div>
 
                         <hr class="my-3">
@@ -88,13 +90,65 @@
                                     <input type="text" name="exam_release_date" class="form-control" placeholder="dd/mm/aaaa" value="{{ exam_release_date }}">
                                 </div>
                             </div>
-                            <div class="mb-2">
-                                <label class="form-label">Solicitante</label>
-                                <input type="text" name="requester_name" class="form-control" value="{{ requester_name }}">
+                            <h6 class="text-uppercase small text-muted mb-2 mt-3">Solicitante e amostra</h6>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" name="requester_not_identified" id="requester-not-identified" {% if requester_not_identified %}checked{% endif %}>
+                                <label class="form-check-label" for="requester-not-identified">Nao identificado</label>
+                            </div>
+                            <div class="requester-fields {% if requester_not_identified %}d-none{% endif %}">
+                                <div class="mb-2">
+                                    <label class="form-label">Nome do solicitante</label>
+                                    <input type="text" name="requester_name" class="form-control" value="{{ requester_name }}" {% if requester_not_identified %}disabled{% endif %}>
+                                </div>
+                                <div class="row">
+                                    <div class="col-6 mb-2">
+                                        <label class="form-label">Tipo de registro</label>
+                                        <select name="requester_reg_type" id="requester-reg-type" class="form-select" {% if requester_not_identified %}disabled{% endif %}>
+                                            <option value="">Selecione</option>
+                                            {% for reg in requester_reg_types %}
+                                                <option value="{{ reg }}" {% if requester_reg_type == reg %}selected{% endif %}>{{ reg }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-6 mb-2 requester-reg-other {% if requester_reg_type != 'Outro' %}d-none{% endif %}">
+                                        <label class="form-label">Outro registro</label>
+                                        <input type="text" name="requester_reg_type_other" id="requester-reg-type-other" class="form-control" value="{{ requester_reg_type_other }}" {% if requester_not_identified or requester_reg_type != 'Outro' %}disabled{% endif %}>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-6 mb-2">
+                                        <label class="form-label">Numero do registro</label>
+                                        <input type="text" name="requester_reg_number" class="form-control" value="{{ requester_reg_number }}" {% if requester_not_identified %}disabled{% endif %}>
+                                    </div>
+                                    <div class="col-6 mb-2">
+                                        <label class="form-label">UF</label>
+                                        <select name="requester_reg_state" class="form-select" {% if requester_not_identified %}disabled{% endif %}>
+                                            <option value="">Selecione</option>
+                                            {% for uf in requester_uf_list %}
+                                                <option value="{{ uf }}" {% if requester_reg_state == uf %}selected{% endif %}>{{ uf }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-6 mb-2">
+                                    <label class="form-label">Tipo de amostra</label>
+                                    <select name="sample_type" id="sample-type" class="form-select">
+                                        <option value="">Selecione</option>
+                                        {% for sample in sample_types %}
+                                            <option value="{{ sample }}" {% if sample_type == sample %}selected{% endif %}>{{ sample }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-6 mb-2 sample-type-other {% if sample_type != 'Outro' %}d-none{% endif %}">
+                                    <label class="form-label">Outro tipo</label>
+                                    <input type="text" name="sample_type_other" id="sample-type-other" class="form-control" value="{{ sample_type_other }}" {% if sample_type != 'Outro' %}disabled{% endif %}>
+                                </div>
                             </div>
                             <div class="mb-2">
-                                <label class="form-label">Amostra</label>
-                                <input type="text" name="sample_description" class="form-control" value="{{ sample_description }}">
+                                <label class="form-label">Identificador da amostra</label>
+                                <input type="text" name="sample_identifier" class="form-control" value="{{ sample_identifier }}">
                             </div>
                             <div class="mb-2">
                                 <label class="form-label">Indicação clínica</label>
@@ -118,13 +172,9 @@
                                 </div>
                             </div>
                             <div class="row">
-                                <div class="col-6 mb-2">
+                                <div class="col-12 mb-2">
                                     <label class="form-label">Variante (c.)</label>
                                     <input type="text" name="main_variant_c" class="form-control" value="{{ main_variant_c }}">
-                                </div>
-                                <div class="col-6 mb-2">
-                                    <label class="form-label">Proteína (p.)</label>
-                                    <input type="text" name="main_variant_p" class="form-control" value="{{ main_variant_p }}">
                                 </div>
                             </div>
                             <div class="row">
@@ -182,16 +232,6 @@
                             </div>
                             <div class="row">
                                 <div class="col-6 mb-2">
-                                    <label class="form-label">Variante (c.) VUS</label>
-                                    <input type="text" name="vus_variant_c" class="form-control" value="{{ vus_variant_c }}">
-                                </div>
-                                <div class="col-6 mb-2">
-                                    <label class="form-label">Proteína (p.) VUS</label>
-                                    <input type="text" name="vus_variant_p" class="form-control" value="{{ vus_variant_p }}">
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-6 mb-2">
                                     <label class="form-label">dbSNP VUS</label>
                                     <input type="text" name="vus_dbsnp" class="form-control" value="{{ vus_dbsnp }}">
                                 </div>
@@ -218,6 +258,19 @@
 
                         <hr class="my-3">
 
+                        {% if is_admin %}
+                        <!-- Genes analisados (admin) -->
+                        <div class="mb-3">
+                            <h6 class="text-uppercase small text-muted mb-2">Genes analisados</h6>
+                            <div class="mb-2">
+                                <label class="form-label">Genes analisados</label>
+                                <textarea name="genes_analyzed_list" rows="4" class="form-control">{{ genes_analyzed_list }}</textarea>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <hr class="my-3">
+
                         <!-- Métricas, recomendações e notas -->
                         <div class="mb-3">
                             <h6 class="text-uppercase small text-muted mb-2">Métricas, recomendações e notas</h6>
@@ -231,52 +284,12 @@
                                     <input type="text" name="metrics_coverage_50x" class="form-control" value="{{ metrics_coverage_50x }}">
                                 </div>
                             </div>
-                            <div class="mb-2">
-                                <label class="form-label">Texto de métricas</label>
-                                <textarea name="metrics_text" rows="3" class="form-control">{{ metrics_text }}</textarea>
-                            </div>
+                            {% if is_admin %}
                             <div class="mb-2">
                                 <label class="form-label">Recomendações</label>
                                 <textarea name="recommendations_text" rows="3" class="form-control">{{ recommendations_text }}</textarea>
                             </div>
-                            <div class="mb-2">
-                                <label class="form-label">Notas</label>
-                                <textarea name="notes_text" rows="3" class="form-control">{{ notes_text }}</textarea>
-                            </div>
-                        </div>
-
-                        <hr class="my-3">
-
-                        <!-- Metodologia e limitações -->
-                        <div class="mb-3">
-                            <h6 class="text-uppercase small text-muted mb-2">Metodologia e limitações</h6>
-                            <div class="mb-2">
-                                <label class="form-label">Metodologia</label>
-                                <textarea name="methodology_text" rows="3" class="form-control">{{ methodology_text }}</textarea>
-                            </div>
-                            <div class="mb-2">
-                                <label class="form-label">Limitações</label>
-                                <textarea name="limitations_text" rows="3" class="form-control">{{ limitations_text }}</textarea>
-                            </div>
-                            <div class="mb-2">
-                                <label class="form-label">Observações</label>
-                                <textarea name="observations_text" rows="3" class="form-control">{{ observations_text }}</textarea>
-                            </div>
-                        </div>
-
-                        <hr class="my-3">
-
-                        <!-- Genes analisados e referências -->
-                        <div class="mb-3">
-                            <h6 class="text-uppercase small text-muted mb-2">Genes analisados e referências</h6>
-                            <div class="mb-2">
-                                <label class="form-label">Genes analisados</label>
-                                <textarea name="genes_analyzed_list" rows="4" class="form-control">{{ genes_analyzed_list }}</textarea>
-                            </div>
-                            <div class="mb-2">
-                                <label class="form-label">Referências</label>
-                                <textarea name="references_text" rows="4" class="form-control">{{ references_text }}</textarea>
-                            </div>
+                            {% endif %}
                         </div>
 
                         <hr class="my-3">
@@ -285,28 +298,60 @@
                         <div class="mb-3">
                             <h6 class="text-uppercase small text-muted mb-2">Profissionais</h6>
                             <div class="mb-2">
-                                <label class="form-label">Profissional técnico</label>
-                                <input type="text" name="tech_professional" class="form-control" value="{{ tech_professional }}">
+                                <label class="form-label">Analista responsavel</label>
+                                <select class="form-select professional-select" data-name-field="analyst_name" data-reg-field="analyst_registry">
+                                    <option value="">Selecione</option>
+                                    {% for option in professional_options.analyst %}
+                                        <option value="{{ option.name }}" data-registry="{{ option.registry }}"
+                                                {% if analyst_name == option.name and analyst_registry == option.registry %}selected{% endif %}>
+                                            {{ option.label }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                                <input type="hidden" name="analyst_name" value="{{ analyst_name }}">
+                                <input type="hidden" name="analyst_registry" value="{{ analyst_registry }}">
                             </div>
                             <div class="mb-2">
-                                <label class="form-label">CRBM</label>
-                                <input type="text" name="tech_professional_crbm" class="form-control" value="{{ tech_professional_crbm }}">
+                                <label class="form-label">Tecnico de laboratorio</label>
+                                <select class="form-select professional-select" data-name-field="lab_tech_name" data-reg-field="lab_tech_registry">
+                                    <option value="">Selecione</option>
+                                    {% for option in professional_options.lab_tech %}
+                                        <option value="{{ option.name }}" data-registry="{{ option.registry }}"
+                                                {% if lab_tech_name == option.name and lab_tech_registry == option.registry %}selected{% endif %}>
+                                            {{ option.label }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                                <input type="hidden" name="lab_tech_name" value="{{ lab_tech_name }}">
+                                <input type="hidden" name="lab_tech_registry" value="{{ lab_tech_registry }}">
                             </div>
                             <div class="mb-2">
-                                <label class="form-label">Médico responsável</label>
-                                <input type="text" name="md_responsible" class="form-control" value="{{ md_responsible }}">
+                                <label class="form-label">Medico geneticista</label>
+                                <select class="form-select professional-select" data-name-field="geneticist_name" data-reg-field="geneticist_registry">
+                                    <option value="">Selecione</option>
+                                    {% for option in professional_options.geneticist %}
+                                        <option value="{{ option.name }}" data-registry="{{ option.registry }}"
+                                                {% if geneticist_name == option.name and geneticist_registry == option.registry %}selected{% endif %}>
+                                            {{ option.label }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                                <input type="hidden" name="geneticist_name" value="{{ geneticist_name }}">
+                                <input type="hidden" name="geneticist_registry" value="{{ geneticist_registry }}">
                             </div>
                             <div class="mb-2">
-                                <label class="form-label">CRM médico responsável</label>
-                                <input type="text" name="md_responsible_crm" class="form-control" value="{{ md_responsible_crm }}">
-                            </div>
-                            <div class="mb-2">
-                                <label class="form-label">Responsável técnico</label>
-                                <input type="text" name="md_technical" class="form-control" value="{{ md_technical }}">
-                            </div>
-                            <div class="mb-2">
-                                <label class="form-label">CRM responsável técnico</label>
-                                <input type="text" name="md_technical_crm" class="form-control" value="{{ md_technical_crm }}">
+                                <label class="form-label">Diretor tecnico</label>
+                                <select class="form-select professional-select" data-name-field="director_name" data-reg-field="director_registry">
+                                    <option value="">Selecione</option>
+                                    {% for option in professional_options.director %}
+                                        <option value="{{ option.name }}" data-registry="{{ option.registry }}"
+                                                {% if director_name == option.name and director_registry == option.registry %}selected{% endif %}>
+                                            {{ option.label }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                                <input type="hidden" name="director_name" value="{{ director_name }}">
+                                <input type="hidden" name="director_registry" value="{{ director_registry }}">
                             </div>
                         </div>
 
@@ -587,6 +632,85 @@
     loadOverrides();
     applyOverrides();
     updateHelper();
+})();
+
+
+(function() {
+    const notIdentified = document.getElementById('requester-not-identified');
+    const fieldsWrap = document.querySelector('.requester-fields');
+    const regType = document.getElementById('requester-reg-type');
+    const otherWrap = document.querySelector('.requester-reg-other');
+    const otherInput = document.getElementById('requester-reg-type-other');
+
+    function setFieldsDisabled(disabled) {
+        if (!fieldsWrap) return;
+        fieldsWrap.querySelectorAll('input, select, textarea').forEach((el) => {
+            if (el === otherInput) return;
+            el.disabled = disabled;
+        });
+    }
+
+    function updateOther() {
+        if (!otherWrap || !otherInput || !regType || !notIdentified) return;
+        const showOther = regType.value === 'Outro' && !notIdentified.checked;
+        otherWrap.classList.toggle('d-none', !showOther);
+        otherInput.disabled = !showOther;
+    }
+
+    function updateRequester() {
+        if (!notIdentified || !fieldsWrap) return;
+        const hidden = notIdentified.checked;
+        fieldsWrap.classList.toggle('d-none', hidden);
+        setFieldsDisabled(hidden);
+        updateOther();
+    }
+
+    if (notIdentified) {
+        notIdentified.addEventListener('change', updateRequester);
+    }
+    if (regType) {
+        regType.addEventListener('change', updateOther);
+    }
+    updateRequester();
+})();
+
+
+(function() {
+    const sampleType = document.getElementById('sample-type');
+    const otherWrap = document.querySelector('.sample-type-other');
+    const otherInput = document.getElementById('sample-type-other');
+
+    function updateSampleOther() {
+        if (!sampleType || !otherWrap || !otherInput) return;
+        const showOther = sampleType.value === 'Outro';
+        otherWrap.classList.toggle('d-none', !showOther);
+        otherInput.disabled = !showOther;
+    }
+
+    if (sampleType) {
+        sampleType.addEventListener('change', updateSampleOther);
+    }
+    updateSampleOther();
+})();
+
+(function() {
+    const selects = document.querySelectorAll('.professional-select');
+
+    function syncSelect(select) {
+        const nameField = select.dataset.nameField;
+        const regField = select.dataset.regField;
+        const nameInput = document.querySelector(`input[name="${nameField}"]`);
+        const regInput = document.querySelector(`input[name="${regField}"]`);
+        if (!nameInput || !regInput) return;
+        const option = select.selectedOptions[0];
+        nameInput.value = option ? option.value : '';
+        regInput.value = option ? (option.dataset.registry || '') : '';
+    }
+
+    selects.forEach((select) => {
+        select.addEventListener('change', () => syncSelect(select), true);
+        syncSelect(select);
+    });
 })();
 </script>
 {% endblock %}

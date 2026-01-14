@@ -91,6 +91,56 @@
     font-weight: 600;
 }
 
+.field-p2-gene,
+.field-p2-transcript {
+    color: #ffffff !important;
+    font-weight: 600;
+}
+
+.field-p2-gene,
+.field-p2-transcript,
+.field-p2-dbsnp,
+.field-p2-zygosity,
+.field-p2-inheritance,
+.field-p2-classification,
+.field-p3-vus-gene,
+.field-p3-vus-transcript,
+.field-p3-vus-variant-c,
+.field-p3-vus-dbsnp,
+.field-p3-vus-zygosity,
+.field-p3-vus-inheritance,
+.field-p3-vus-classification {
+    font-size: 10pt;
+    line-height: 1.1;
+}
+
+.field-p2-dbsnp,
+.field-p2-zygosity,
+.field-p2-inheritance,
+.field-p2-classification,
+.field-p3-vus-dbsnp,
+.field-p3-vus-zygosity,
+.field-p3-vus-inheritance,
+.field-p3-vus-classification {
+    text-align: center;
+}
+
+.field-p3-vus-variant-c {
+    text-align: left;
+    white-space: normal;
+    overflow: hidden;
+    word-break: break-word;
+}
+
+.field-p2-inheritance,
+.field-p2-classification,
+.field-p3-vus-inheritance,
+.field-p3-vus-classification {
+    white-space: normal;
+    overflow: hidden;
+    word-break: break-word;
+}
+
 /* Capa e headers: cor institucional */
 [class*="field-p2-header-"],
 [class*="field-p3-header-"],
@@ -171,9 +221,13 @@
 .field-p2-clinical,
 .field-p2-exam,
 .field-p2-gene,
+.field-p2-transcript,
 .field-p2-variant-c,
-.field-p2-variant-p,
+.field-p2-dbsnp,
+.field-p2-zygosity,
+.field-p2-inheritance,
 .field-p2-classification,
+.field-p2-condition,
 .field-p2-results,
 .field-p2-interpretation,
 .field-p3-interpretation,
@@ -181,7 +235,6 @@
 .field-p3-vus-gene,
 .field-p3-vus-transcript,
 .field-p3-vus-variant-c,
-.field-p3-vus-variant-p,
 .field-p3-vus-dbsnp,
 .field-p3-vus-zygosity,
 .field-p3-vus-inheritance,
@@ -189,10 +242,19 @@
 .field-p4-genes,
 .field-p5-notes,
 .field-p5-recommendations,
-.field-p5-metrics,
+.field-p5-metrics-title,
+.field-p5-metrics-label-mean,
+.field-p5-metrics-label-50x,
+.field-p5-metrics-note,
 .field-p5-coverage-mean,
 .field-p5-coverage-50x,
 .field-p6-methodology {
+    display: block;
+}
+
+.field-footer-tech,
+.field-footer-md,
+.field-footer-director {
     display: block;
 }
 
@@ -272,27 +334,51 @@
 
 /* Linha do RESULTADO PRINCIPAL */
 .field-p2-gene {
-    top: 161mm;
-    left: 12mm;
-    width: 26mm;
+    top: 174mm;
+    left: 14mm;
+    width: 22mm;
+}
+
+.field-p2-transcript {
+    top: 181mm;
+    left: 14mm;
+    width: 22mm;
 }
 
 .field-p2-variant-c {
-    top: 161mm;
+    top: 174mm;
     left: 40mm;
     width: 36mm;
 }
 
-.field-p2-variant-p {
-    top: 168mm;
-    left: 40mm;
-    width: 36mm;
+.field-p2-dbsnp {
+    top: 174mm;
+    left: 90mm;
+    width: 20mm;
+}
+
+.field-p2-zygosity {
+    top: 174mm;
+    left: 115mm;
+    width: 20mm;
+}
+
+.field-p2-inheritance {
+    top: 174mm;
+    left: 140mm;
+    width: 26mm;
 }
 
 .field-p2-classification {
-    top: 161mm;
+    top: 174mm;
     left: 170mm;
     width: 26mm;
+}
+
+.field-p2-condition {
+    top: 188mm;
+    left: 40mm;
+    width: 150mm;
 }
 
 /* Bloco RESULTADOS */
@@ -345,51 +431,45 @@
 
 /* Tabela VUS */
 .field-p3-vus-gene {
-    top: 228mm;
+    top: 240mm;
     left: 14mm;
     width: 22mm;
 }
 
 .field-p3-vus-transcript {
-    top: 234mm;
-    left: 36mm;
+    top: 246mm;
+    left: 14mm;
     width: 22mm;
 }
 
 .field-p3-vus-variant-c {
-    top: 228mm;
-    left: 58mm;
-    width: 26mm;
-}
-
-.field-p3-vus-variant-p {
-    top: 234mm;
-    left: 84mm;
-    width: 26mm;
+    top: 240mm;
+    left: 40mm;
+    width: 36mm;
 }
 
 .field-p3-vus-dbsnp {
-    top: 228mm;
-    left: 110mm;
-    width: 22mm;
+    top: 240mm;
+    left: 90mm;
+    width: 20mm;
 }
 
 .field-p3-vus-zygosity {
-    top: 228mm;
-    left: 132mm;
+    top: 240mm;
+    left: 115mm;
     width: 20mm;
 }
 
 .field-p3-vus-inheritance {
-    top: 228mm;
-    left: 152mm;
-    width: 22mm;
+    top: 240mm;
+    left: 140mm;
+    width: 26mm;
 }
 
 .field-p3-vus-classification {
-    top: 228mm;
-    left: 174mm;
-    width: 21mm;
+    top: 240mm;
+    left: 170mm;
+    width: 26mm;
 }
 
 /* ============================================
@@ -419,23 +499,62 @@
     height: 24mm;
 }
 
-.field-p5-metrics {
-    top: 200mm;
-    left: 14mm;
-    width: 182mm;
-    height: 30mm;
+.field-p5-metrics-title {
+    top: 205mm;
+    left: 16mm;
+    width: 130mm;
+    display: block !important;
+    z-index: 3;
+}
+
+.field-p5-metrics-label-mean {
+    top: 210mm;
+    left: 16mm;
+    width: 132mm;
+    display: block !important;
+    z-index: 3;
+}
+
+.field-p5-metrics-label-50x {
+    top: 217mm;
+    left: 16mm;
+    width: 132mm;
+    display: block !important;
+    z-index: 3;
+}
+
+.field-p5-metrics-note {
+    top: 224mm;
+    left: 16mm;
+    width: 132mm;
+    font-size: 9pt;
+    line-height: 1.2;
+    display: block !important;
+    z-index: 3;
+}
+
+.field-p5-metrics-title,
+.field-p5-metrics-label-mean,
+.field-p5-metrics-label-50x,
+.field-p5-metrics-note {
+    color: #753bbd;
+}
+
+.field-p5-coverage-mean,
+.field-p5-coverage-50x {
+    left: 162mm !important;
+    width: 32mm;
+    text-align: center;
+    display: block !important;
+    z-index: 3;
 }
 
 .field-p5-coverage-mean {
-    top: 204mm;
-    left: 16mm;
-    width: 40mm;
+    top: 209mm;
 }
 
 .field-p5-coverage-50x {
-    top: 204mm;
-    left: 80mm;
-    width: 40mm;
+    top: 218mm;
 }
 
 /* ============================================
@@ -446,6 +565,36 @@
     left: 14mm;
     width: 182mm;
     height: 44mm;
+}
+
+/* ============================================
+   FOOTER PROFISSIONAIS (PAGES 01-06)
+   ============================================ */
+.field-footer-tech {
+    top: 270mm;
+    left: 30mm;
+    width: 160mm;
+    font-size: 9pt;
+    line-height: 1.15;
+    color: #753bbd;
+}
+
+.field-footer-md {
+    top: 274mm;
+    left: 30mm;
+    width: 160mm;
+    font-size: 9pt;
+    line-height: 1.15;
+    color: #753bbd;
+}
+
+.field-footer-director {
+    top: 278mm;
+    left: 30mm;
+    width: 160mm;
+    font-size: 9pt;
+    line-height: 1.15;
+    color: #753bbd;
 }
 
 /* ============================================

@@ -1,7 +1,12 @@
 from django.urls import path
+from django.contrib.auth import views as auth_views
 from . import views
 
 urlpatterns = [
+    path('login/', auth_views.LoginView.as_view(template_name='registration/login.html'), name='login'),
+    path('logout/', auth_views.LogoutView.as_view(), name='logout'),
+    path('users/', views.user_manage, name='user_manage'),
+    path('users/<int:user_id>/toggle/', views.user_toggle_active, name='user_toggle_active'),
     path('', views.dashboard, name='dashboard'),
     path('folders/new/', views.create_folder, name='folder_create'),
     path('folders/<uuid:folder_id>/', views.folder_detail, name='folder_detail'),

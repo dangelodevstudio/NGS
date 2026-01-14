@@ -1,0 +1,83 @@
+{% extends 'editor/base.html' %}
+
+{% block content %}
+<div class="dashboard-wrap">
+    <div class="row g-4">
+        <div class="col-lg-4">
+            <div class="card bioma-card dashboard-card">
+                <div class="card-body">
+                    <h5 class="dashboard-title">Novo usuario</h5>
+                    <p class="dashboard-muted">Crie analistas ou admins para o sistema.</p>
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label class="form-label">Usuario</label>
+                            <input type="text" name="username" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Nome completo</label>
+                            <input type="text" name="full_name" class="form-control">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Email</label>
+                            <input type="email" name="email" class="form-control">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Senha</label>
+                            <input type="password" name="password" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Tipo</label>
+                            <select name="role" class="form-select">
+                                <option value="analyst">Analista</option>
+                                <option value="admin">Admin</option>
+                            </select>
+                        </div>
+                        {% if form_error %}
+                            <div class="alert alert-danger py-2 small">{{ form_error }}</div>
+                        {% endif %}
+                        {% if form_success %}
+                            <div class="alert alert-success py-2 small">{{ form_success }}</div>
+                        {% endif %}
+                        <button type="submit" class="btn bioma-primary-btn w-100">Criar usuario</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="card bioma-card dashboard-card">
+                <div class="card-body">
+                    <h5 class="dashboard-title">Usuarios</h5>
+                    <div class="list-group dashboard-list">
+                        {% for user in users %}
+                            <div class="list-group-item d-flex flex-wrap align-items-center justify-content-between gap-3">
+                                <div>
+                                    <div class="report-title">{{ user.username }}</div>
+                                    <div class="report-meta">
+                                        {% if user.is_staff or user.is_superuser %}Admin{% else %}Analista{% endif %}
+                                        | {{ user.email|default:"-" }}
+                                        | {% if user.is_active %}Ativo{% else %}Inativo{% endif %}
+                                    </div>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    {% if user != request.user %}
+                                        <form method="post" action="{% url 'user_toggle_active' user.id %}">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-sm btn-outline-secondary">
+                                                {% if user.is_active %}Desativar{% else %}Ativar{% endif %}
+                                            </button>
+                                        </form>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% empty %}
+                            <p class="dashboard-muted mb-0">Nenhum usuario cadastrado.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

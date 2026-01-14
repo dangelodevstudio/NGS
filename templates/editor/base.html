@@ -17,7 +17,21 @@
             <a class="navbar-brand mb-0 h1 text-white text-decoration-none" href="{% url 'dashboard' %}">
                 Painel NGS - Editor de Laudos
             </a>
-            <a class="btn bioma-home-btn" href="{% url 'dashboard' %}">Home</a>
+            <div class="d-flex align-items-center gap-2">
+                {% if request.user.is_authenticated %}
+                    {% if request.user.is_staff or request.user.is_superuser %}
+                        <a class="btn btn-light btn-sm" href="{% url 'user_manage' %}">Usuarios</a>
+                    {% endif %}
+                    <span class="text-white small">Olá, {{ request.user.get_short_name|default:request.user.username }}</span>
+                    <a class="btn bioma-home-btn" href="{% url 'dashboard' %}">Home</a>
+                    <form method="post" action="{% url 'logout' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-light btn-sm">Sair</button>
+                    </form>
+                {% else %}
+                    <a class="btn bioma-home-btn" href="{% url 'login' %}">Entrar</a>
+                {% endif %}
+            </div>
         </div>
     </nav>
 

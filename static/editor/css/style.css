@@ -5,6 +5,7 @@
     --bioma-gray-box: #ebe7f2;
     --bioma-gray-text: #595959;
     --bioma-table-alt: #efefef;
+    --bioma-block-radius: 14px;
     --navbar-height: 64px;
     --preview-scale: 0.72;
 }
@@ -226,6 +227,19 @@ body {
     background-color: #e7ebf5;
 }
 
+.login-wrap {
+    min-height: calc(100vh - var(--navbar-height) - 32px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+}
+
+.login-card {
+    width: 100%;
+    max-width: 420px;
+}
+
 .laudo-document {
     padding: 1.5rem 0;
 }
@@ -276,7 +290,7 @@ body {
     margin-top: 1.5rem;
     background: #ffffff;
     border: 1px solid #e6dcfb;
-    border-radius: 1rem;
+    border-radius: var(--bioma-block-radius);
     padding: 1rem;
 }
 
@@ -310,7 +324,7 @@ body {
 
 .highlight-card {
     background: #f4f6ff;
-    border-radius: 0.9rem;
+    border-radius: var(--bioma-block-radius);
     padding: 0.75rem 1rem;
     border: 1px solid #d7ddff;
     display: flex;
@@ -347,7 +361,7 @@ body {
 
 .notes-box {
     background-color: #f5edff;
-    border-radius: 0.75rem;
+    border-radius: var(--bioma-block-radius);
     border: 1px solid #d9ccff;
     padding: 0.75rem 1rem;
     font-size: 0.9rem;
@@ -356,7 +370,7 @@ body {
 
 .laudo-patient-box {
     background-color: #ffffff;
-    border-radius: 1rem;
+    border-radius: var(--bioma-block-radius);
     padding: 1rem 1.25rem;
     box-shadow: 0 0 0 1px rgba(111, 93, 185, 0.15);
     min-width: 260px;
@@ -373,7 +387,7 @@ body {
 .bioma-logo {
     width: 120px;
     height: 60px;
-    border-radius: 1rem;
+    border-radius: var(--bioma-block-radius);
     border-style: dashed;
     font-weight: 700;
     font-size: 1.1rem;
@@ -561,7 +575,7 @@ body {
 
 .laudo-method-patient-box {
     background: #ffffff;
-    border-radius: 1rem;
+    border-radius: var(--bioma-block-radius);
     border: 1px solid #e1ddff;
     padding: 1rem 1.25rem;
     min-width: 260px;
@@ -590,7 +604,7 @@ body {
 }
 
 .notes-box-method {
-    border-radius: 1rem;
+    border-radius: var(--bioma-block-radius);
     border-color: #c9b8ff;
     background-color: #faf7ff;
 }
