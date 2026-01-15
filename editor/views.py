@@ -8,20 +8,14 @@ from django.db.models import Q
 from django.contrib.auth.models import User
 from pathlib import Path
 import uuid
-import pdfkit
 import os
 import logging
 import re
 import textwrap
+from weasyprint import HTML, CSS
+from weasyprint.text.fonts import FontConfiguration
 from .models import Folder, Report
 
-# Wkhtmltopdf (versão dos repositórios do Ubuntu) depende dos plugins Qt.
-# No Heroku eles ficam em /app/.apt/usr/lib/...; configuramos o caminho aqui
-# para evitar o erro "Could not find the Qt platform plugin offscreen".
-QT_PLATFORM_PATH = "/app/.apt/usr/lib/x86_64-linux-gnu/qt5/plugins/platforms"
-if os.path.isdir(QT_PLATFORM_PATH):
-    os.environ.setdefault("QT_QPA_PLATFORM_PLUGIN_PATH", QT_PLATFORM_PATH)
-    os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
 # Modelos de laudo e respectivos valores padrÃ£o
 LAUDO_MODELOS = {
@@ -889,25 +883,11 @@ def user_toggle_active(request, user_id):
     return redirect("user_manage")
 
 
-def get_pdfkit_config():
-    # Ajuste este caminho se o wkhtmltopdf estiver instalado em outro lugar
-    candidate_paths = [
-        os.environ.get("WKHTMTOPDF_PATH"),
-        os.environ.get("WKHTMLTOPDF_PATH"),
-        r"C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe",
-        "/usr/bin/wkhtmltopdf",
-    ]
-    for path in candidate_paths:
-        if path and os.path.isfile(path):
-            return pdfkit.configuration(wkhtmltopdf=path)
-    # Se nÃ£o encontrar o executÃ¡vel nesse caminho, tente usar o wkhtmltopdf do PATH
-    return None
-
 
 @login_required
 @require_http_methods(["POST"])
 def export_pdf(request):
-    # Usa o mesmo contexto da pr?via
+    # Usa o mesmo contexto da previa
     report = _get_report_from_request(request)
     if report:
         _update_report_from_request(report, request)
@@ -916,22 +896,13 @@ def export_pdf(request):
     # Seleciona o template e CSS conforme o tipo de laudo
     template_name = "editor/preview_pdf.html"
     css_files = []
-    pdf_options = {
-        "page-size": "A4",
-        "encoding": "UTF-8",
-        "margin-top": "10mm",
-        "margin-right": "10mm",
-        "margin-bottom": "10mm",
-        "margin-left": "10mm",
-        "enable-local-file-access": "",
-    }
 
     if context.get("laudo_type") == "cancer_hereditario_144":
         template_name = "editor/preview_sample_b.html"
         css_b = finders.find("editor/css/pdf_template_b.css")
         if css_b:
             css_files = [css_b]
-        # Monta caminhos absolutos para os fundos das 8 p?ginas
+        # Monta caminhos absolutos para os fundos das 8 paginas
         bg_pages = []
         for i in range(1, 9):
             path_bg = finders.find(f"editor/img/templates/laudo144_pg0{i}.png")
@@ -940,19 +911,6 @@ def export_pdf(request):
             else:
                 bg_pages.append(f"/static/editor/img/templates/laudo144_pg0{i}.png")
         context = dict(context, bg_pages=bg_pages)
-        pdf_options = {
-            "page-size": "A4",
-            "encoding": "UTF-8",
-            "margin-top": "0mm",
-            "margin-right": "0mm",
-            "margin-bottom": "0mm",
-            "margin-left": "0mm",
-            "enable-local-file-access": True,
-            "disable-smart-shrinking": "",
-            "print-media-type": "",
-            "load-error-handling": "ignore",
-            "load-media-error-handling": "ignore",
-        }
     else:
         main_css = finders.find("editor/css/style.css")
         pdf_override_css = finders.find("editor/css/pdf_overrides.css")
@@ -961,26 +919,14 @@ def export_pdf(request):
     # Renderiza o template escolhido
     html_string = render_to_string(template_name, context, request=request)
 
-    # Configura??o do wkhtmltopdf
-    config = get_pdfkit_config()
-
     try:
-        if config is not None:
-            pdf_bytes = pdfkit.from_string(
-                html_string,
-                False,
-                options=pdf_options,
-                configuration=config,
-                css=css_files
-            )
-        else:
-            # Tenta sem config expl?cita, assumindo wkhtmltopdf no PATH
-            pdf_bytes = pdfkit.from_string(
-                html_string,
-                False,
-                options=pdf_options,
-                css=css_files
-            )
+        font_config = FontConfiguration()
+        stylesheets = [CSS(filename=path, font_config=font_config) for path in css_files]
+        base_url = request.build_absolute_uri("/")
+        pdf_bytes = HTML(string=html_string, base_url=base_url).write_pdf(
+            stylesheets=stylesheets,
+            font_config=font_config,
+        )
     except Exception:
         logging.exception("Erro ao gerar PDF (Template B? %s)", context.get("laudo_type"))
         raise
