@@ -12,6 +12,7 @@ import os
 import logging
 import re
 import textwrap
+import json
 from weasyprint import HTML, CSS
 from weasyprint.text.fonts import FontConfiguration
 from .models import Folder, Report
@@ -64,8 +65,16 @@ LAUDO_MODELOS = {
                 "para síndrome de Li-Fraumeni. Avaliar testagem em familiares de primeiro grau."
             ),
             "notes_text": (
-                "O laudo deve ser correlacionado ao quadro clínico e histórico familiar informado. "
-                "Atualizações futuras podem ser necessárias conforme novas evidências científicas."
+                "A análise genômica por sequenciamento de nova geração (NGS) foi realizada com o objetivo de "
+                "identificar variantes genéticas potencialmente associadas ao fenótipo investigado. Essa metodologia "
+                "abrange as regiões codificantes e limites exon–intron dos genes avaliados, permitindo a detecção da "
+                "maioria das variantes relacionadas a condições monogênicas.\n\n"
+                "Os dados também foram analisados quanto à presença de grandes deleções e duplicações intragênicas "
+                "(CNVs), com alta correlação em relação à técnica de MLPA, embora pequenas discrepâncias "
+                "metodológicas possam ocorrer.\n\n"
+                "Este resultado não exclui a possibilidade de alterações em regiões não avaliadas por esta metodologia, "
+                "como expansões de repetição, variantes intrônicas profundas, rearranjos estruturais complexos ou "
+                "condições de etiologia multifatorial, que não são plenamente detectáveis pelo NGS."
             ),
             "methodology_text": (
                 "Sequenciamento de nova geração (NGS) com captura híbrida de regiões codificantes e "
@@ -350,18 +359,90 @@ def _split_text_by_lines(text, max_lines, max_chars):
     return "\n\n".join(part1).strip(), "\n\n".join(part2).strip()
 
 
-def _split_interpretation_for_template_b(text, max_lines_p2=8, max_chars_per_line=88):
+def _split_text_to_chunks(text, max_lines, max_chars_per_line):
+    if not text:
+        return []
+    remaining = text.strip()
+    if not remaining:
+        return []
+    chunks = []
+    while remaining:
+        part1, part2 = _split_text_by_lines(remaining, max_lines, max_chars_per_line)
+        if part1:
+            chunks.append(part1)
+        remaining = part2.strip() if part2 else ""
+    return chunks
+
+
+def _split_interpretation_for_template_b(text, max_lines_p2=8, max_lines_p3=17, max_chars_per_line=88):
     """
-    Divide o texto de interpreta??o pelo limite aproximado de linhas da caixa da pagina 2.
-    Mantem par?grafos e evita abrir a pagina 3 sem necessidade.
+    Divide o texto de interpretação pelo limite aproximado de linhas da caixa da página 2.
+    Mantém parágrafos e evita abrir a página 3 sem necessidade.
     """
     if not text:
-        return "", ""
+        return "", "", []
     cleaned = text.strip()
     if not cleaned:
-        return "", ""
-    part1, part2 = _split_text_by_lines(cleaned, max_lines_p2, max_chars_per_line)
-    return part1, part2
+        return "", "", []
+    part1, remaining = _split_text_by_lines(cleaned, max_lines_p2, max_chars_per_line)
+    part2, remaining = _split_text_by_lines(remaining, max_lines_p3, max_chars_per_line)
+    overflow_chunks = _split_text_to_chunks(remaining, 34, max_chars_per_line)
+    return part1, part2, overflow_chunks
+
+
+def _split_text_with_overflow(text, first_lines, overflow_lines, max_chars_per_line=88):
+    if not text:
+        return "", []
+    cleaned = text.strip()
+    if not cleaned:
+        return "", []
+    part1, remaining = _split_text_by_lines(cleaned, first_lines, max_chars_per_line)
+    overflow_chunks = _split_text_to_chunks(remaining, overflow_lines, max_chars_per_line)
+    return part1, overflow_chunks
+
+
+def _parse_layout_overflow(request):
+    if request.method != "POST":
+        return {}
+    raw = request.POST.get("layout_overflow")
+    if not raw:
+        return {}
+    try:
+        data = json.loads(raw)
+    except json.JSONDecodeError:
+        return {}
+    return data if isinstance(data, dict) else {}
+
+
+def _get_layout_section(layout, section):
+    if not isinstance(layout, dict):
+        return None
+    value = layout.get(section)
+    return value if isinstance(value, dict) else None
+
+
+def _normalize_overflow_chunks(value):
+    if not isinstance(value, list):
+        return []
+    return [str(item) for item in value if str(item).strip()]
+
+
+def _normalize_text_for_layout(text):
+    if not text:
+        return ""
+    if not isinstance(text, str):
+        text = str(text)
+    normalized = text.replace("\r\n", "\n").strip()
+    if not normalized:
+        return ""
+    parts = re.split(r"\n\s*\n", normalized)
+    cleaned = []
+    for part in parts:
+        line = re.sub(r"\s*\n\s*", " ", part.strip())
+        line = re.sub(r"\s+", " ", line)
+        if line:
+            cleaned.append(line)
+    return "\n\n".join(cleaned)
 
 
 
@@ -386,7 +467,7 @@ def _extract_report_data(request, base_data=None):
 
 
 def _build_context(request, base_data=None):
-    # tipo de laudo selecionado (default = c??ncer heredit??rio 144 genes)
+    # tipo de laudo selecionado (default = câncer hereditário 144 genes)
     laudo_type = _resolve_laudo_type(request, base_data)
     modelo = LAUDO_MODELOS.get(laudo_type, LAUDO_MODELOS["cancer_hereditario_144"])
     defaults = modelo["defaults"]
@@ -402,10 +483,10 @@ def _build_context(request, base_data=None):
         return fallback
 
     context = {
-        # manter tipo de laudo no contexto (para o select e para a pr??via)
+        # manter tipo de laudo no contexto (para o select e para a prévia)
         "laudo_type": laudo_type,
 
-        # dados do paciente (sempre edit??veis, com placeholders)
+        # dados do paciente (sempre editáveis, com placeholders)
         "patient_name": get_field("patient_name", "NOME COMPLETO PACIENTE"),
         "patient_birth_date": get_field("patient_birth_date", "00/00/0000"),
         "patient_sex": get_field("patient_sex", "Feminino"),
@@ -429,7 +510,7 @@ def _build_context(request, base_data=None):
         "sample_description": get_field("sample_description", "Swab bucal (00000000000000)"),
         "clinical_indication": get_field(
             "clinical_indication",
-            "Hist??ria pessoal/familiar de c??ncer, etc.",
+            "História pessoal/familiar de câncer, etc.",
         ),
 
         # resultado principal
@@ -458,19 +539,19 @@ def _build_context(request, base_data=None):
         "vus_inheritance": get_field("vus_inheritance"),
         "vus_classification": get_field("vus_classification"),
 
-        # m??tricas e recomenda????es
+        # métricas e recomendações
         "metrics_coverage_mean": get_field("metrics_coverage_mean"),
         "metrics_coverage_50x": get_field("metrics_coverage_50x"),
         "metrics_text": defaults.get("metrics_text", ""),
         "recommendations_text": get_field("recommendations_text"),
         "notes_text": defaults.get("notes_text", ""),
 
-        # metodologia e limita????es
+        # metodologia e limitações
         "methodology_text": defaults.get("methodology_text", ""),
         "limitations_text": defaults.get("limitations_text", ""),
         "observations_text": defaults.get("observations_text", ""),
 
-        # genes analisados e refer??ncias
+        # genes analisados e referências
         "genes_analyzed_list": defaults.get("genes_analyzed_list", ""),
         "references_text": defaults.get("references_text", ""),
 
@@ -487,7 +568,7 @@ def _build_context(request, base_data=None):
         "tech_professional_crbm": get_field("tech_professional_crbm", "CRBM-SP: 26338"),
         "md_responsible": get_field("md_responsible", "Dr. Guilherme Lugo"),
         "md_responsible_crm": get_field("md_responsible_crm", "CRM-SP: 256188"),
-        "md_technical": get_field("md_technical", "Dra. ??ngela F. L. Waitzberg"),
+        "md_technical": get_field("md_technical", "Dra. Ângela F. L. Waitzberg"),
         "md_technical_crm": get_field("md_technical_crm", "CRM-SP: 69504"),
     }
 
@@ -522,14 +603,83 @@ def _build_context(request, base_data=None):
             context["sample_identifier"] = context.get("sample_identifier") or parsed_id
     context["sample_display"] = _format_sample_display(context)
 
-    # Ajustes espec??ficos para template B (split de interpreta????o)
+    for field in [
+        "interpretation_text",
+        "additional_findings_text",
+        "genes_analyzed_list",
+        "notes_text",
+        "recommendations_text",
+        "methodology_text",
+        "limitations_text",
+        "observations_text",
+        "references_text",
+        "main_result_intro",
+    ]:
+        context[field] = _normalize_text_for_layout(context.get(field, ""))
+
+    layout_overflow = _parse_layout_overflow(request)
+
+    # Template B: allow client-side layout overrides for overflow
     if context.get("laudo_type") == "cancer_hereditario_144":
-        part1, part2 = _split_interpretation_for_template_b(context.get("interpretation_text", ""))
-        context["interpretation_p2"] = part1
-        context["interpretation_p3"] = part2
+        layout_interpretation = _get_layout_section(layout_overflow, "interpretation")
+        if layout_interpretation and "p2" in layout_interpretation:
+            interpretation_p2 = layout_interpretation.get("p2", "")
+            interpretation_p3 = layout_interpretation.get("p3", "")
+            interpretation_overflow = _normalize_overflow_chunks(
+                layout_interpretation.get("overflow")
+            )
+        else:
+            interpretation_p2, interpretation_p3, interpretation_overflow = _split_interpretation_for_template_b(
+                context.get("interpretation_text", "")
+            )
+        context["interpretation_p2"] = interpretation_p2
+        context["interpretation_p3"] = interpretation_p3
+
+        layout_additional = _get_layout_section(layout_overflow, "additional")
+        if layout_additional and "p3" in layout_additional:
+            additional_p3 = layout_additional.get("p3", "")
+            additional_overflow = _normalize_overflow_chunks(
+                layout_additional.get("overflow")
+            )
+        else:
+            additional_p3, additional_overflow = _split_text_with_overflow(
+                context.get("additional_findings_text", ""),
+                first_lines=4,
+                overflow_lines=34,
+            )
+        context["additional_findings_p3"] = additional_p3
+
+        layout_genes = _get_layout_section(layout_overflow, "genes")
+        if layout_genes and "p4" in layout_genes:
+            genes_p4 = layout_genes.get("p4", "")
+            genes_overflow = _normalize_overflow_chunks(
+                layout_genes.get("overflow")
+            )
+        else:
+            genes_p4, genes_overflow = _split_text_with_overflow(
+                context.get("genes_analyzed_list", ""),
+                first_lines=10,
+                overflow_lines=34,
+            )
+        context["genes_analyzed_p4"] = genes_p4
+
+        overflow_pages = []
+
+        def add_overflow_pages(title, chunks):
+            for chunk in chunks:
+                if chunk.strip():
+                    overflow_pages.append({"title": title, "text": chunk})
+
+        add_overflow_pages("INTERPRETACAO (continuacao)", interpretation_overflow)
+        add_overflow_pages("ACHADOS ADICIONAIS (continuacao)", additional_overflow)
+        add_overflow_pages("GENES ANALISADOS (continuacao)", genes_overflow)
+        context["overflow_pages"] = overflow_pages
     else:
         context["interpretation_p2"] = context.get("interpretation_text", "")
         context["interpretation_p3"] = ""
+        context["additional_findings_p3"] = context.get("additional_findings_text", "")
+        context["genes_analyzed_p4"] = context.get("genes_analyzed_list", "")
+        context["overflow_pages"] = []
 
     return context
 
@@ -883,6 +1033,32 @@ def user_toggle_active(request, user_id):
     return redirect("user_manage")
 
 
+def _build_pdf_font_css(font_config):
+    font_files = {
+        300: "editor/fonts/RedHatDisplay-Regular.ttf",
+        400: "editor/fonts/RedHatDisplay-Regular.ttf",
+        500: "editor/fonts/RedHatDisplay-Regular.ttf",
+        600: "editor/fonts/RedHatDisplay-SemiBold.ttf",
+        700: "editor/fonts/RedHatDisplay-SemiBold.ttf",
+    }
+    font_faces = []
+    for weight, rel_path in font_files.items():
+        font_path = finders.find(rel_path)
+        if not font_path:
+            continue
+        font_uri = Path(font_path).resolve().as_uri()
+        font_faces.append(
+            "@font-face {"
+            f" font-family: 'Red Hat Display';"
+            f" src: url('{font_uri}') format('truetype');"
+            f" font-weight: {weight};"
+            " font-style: normal;"
+            " }"
+        )
+    if not font_faces:
+        return None
+    return CSS(string="\n".join(font_faces), font_config=font_config)
+
 
 @login_required
 @require_http_methods(["POST"])
@@ -922,6 +1098,9 @@ def export_pdf(request):
     try:
         font_config = FontConfiguration()
         stylesheets = [CSS(filename=path, font_config=font_config) for path in css_files]
+        font_css = _build_pdf_font_css(font_config)
+        if font_css:
+            stylesheets.insert(0, font_css)
         base_url = request.build_absolute_uri("/")
         pdf_bytes = HTML(string=html_string, base_url=base_url).write_pdf(
             stylesheets=stylesheets,

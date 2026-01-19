@@ -24,6 +24,7 @@
                         {% if report %}
                             <input type="hidden" name="report_id" value="{{ report.id }}">
                         {% endif %}
+                        <input type="hidden" name="layout_overflow" id="layout-overflow" value="">
 
                         <!-- Tipo de Laudo -->
                         <div class="mb-3">
@@ -710,6 +711,189 @@
     selects.forEach((select) => {
         select.addEventListener('change', () => syncSelect(select), true);
         syncSelect(select);
+    });
+})();
+
+(function() {
+    const form = document.getElementById('editor-form');
+    const layoutInput = document.getElementById('layout-overflow');
+    const preview = document.getElementById('preview-container');
+    if (!form || !layoutInput || !preview) return;
+
+    const measureCache = new Map();
+
+    function getPxPerMm() {
+        const page = preview.querySelector('.pdf-page');
+        if (!page) return 3.78;
+        const widthPx = parseFloat(getComputedStyle(page).width);
+        return widthPx && widthPx > 0 ? widthPx / 210 : 3.78;
+    }
+
+    function getMeasureEl(sampleEl) {
+        const key = sampleEl.className;
+        if (measureCache.has(key)) {
+            return measureCache.get(key);
+        }
+        const el = document.createElement('div');
+        el.style.position = 'absolute';
+        el.style.visibility = 'hidden';
+        el.style.left = '-10000px';
+        el.style.top = '0';
+        el.style.whiteSpace = 'pre-wrap';
+        el.style.wordBreak = 'break-word';
+        document.body.appendChild(el);
+        measureCache.set(key, el);
+        return el;
+    }
+
+    function syncMeasureStyles(sampleEl, measureEl) {
+        const cs = getComputedStyle(sampleEl);
+        measureEl.style.fontFamily = cs.fontFamily;
+        measureEl.style.fontSize = cs.fontSize;
+        measureEl.style.fontWeight = cs.fontWeight;
+        measureEl.style.lineHeight = cs.lineHeight;
+        measureEl.style.letterSpacing = cs.letterSpacing;
+        measureEl.style.wordSpacing = cs.wordSpacing;
+        measureEl.style.textTransform = cs.textTransform;
+        measureEl.style.textIndent = cs.textIndent;
+        measureEl.style.textAlign = cs.textAlign;
+        measureEl.style.paddingTop = cs.paddingTop;
+        measureEl.style.paddingRight = cs.paddingRight;
+        measureEl.style.paddingBottom = cs.paddingBottom;
+        measureEl.style.paddingLeft = cs.paddingLeft;
+        measureEl.style.boxSizing = cs.boxSizing;
+        measureEl.style.width = cs.width;
+    }
+
+    function splitByHeight(text, sampleEl, maxHeight) {
+        const normalized = (text || '').replace(/\r\n/g, '\n');
+        if (!normalized.trim()) {
+            return { fit: '', rest: '' };
+        }
+        const measureEl = getMeasureEl(sampleEl);
+        syncMeasureStyles(sampleEl, measureEl);
+
+        let low = 0;
+        let high = normalized.length;
+        let best = 0;
+
+        while (low <= high) {
+            const mid = Math.floor((low + high) / 2);
+            measureEl.textContent = normalized.slice(0, mid);
+            if (measureEl.scrollHeight <= maxHeight) {
+                best = mid;
+                low = mid + 1;
+            } else {
+                high = mid - 1;
+            }
+        }
+
+        if (!best) {
+            return { fit: '', rest: normalized.trimStart() };
+        }
+
+        let cut = best;
+        while (cut > 0 && !/\s/.test(normalized[cut - 1])) {
+            cut -= 1;
+        }
+        if (cut < Math.max(1, best - 20)) {
+            cut = best;
+        }
+        const fit = normalized.slice(0, cut).trimEnd();
+        const rest = normalized.slice(cut).trimStart();
+        return { fit, rest };
+    }
+
+    function splitToChunks(text, sampleEl, maxHeight) {
+        const chunks = [];
+        let remaining = (text || '').replace(/\r\n/g, '\n').trim();
+        while (remaining) {
+            const { fit, rest } = splitByHeight(remaining, sampleEl, maxHeight);
+            if (!fit) {
+                chunks.push(remaining);
+                break;
+            }
+            chunks.push(fit);
+            remaining = rest.trim();
+        }
+        return chunks;
+    }
+
+    function buildLayoutOverflow() {
+        const laudoType = form.querySelector('input[name="laudo_type"]')?.value;
+        if (laudoType !== 'cancer_hereditario_144') return {};
+
+        function normalizeText(text) {
+            const normalized = (text || '').replace(/\r\n/g, '\n').trim();
+            if (!normalized) return '';
+            const parts = normalized.split(/\n\s*\n/);
+            const cleaned = parts
+                .map((part) => part.replace(/\s*\n\s*/g, ' ').replace(/\s+/g, ' ').trim())
+                .filter(Boolean);
+            return cleaned.join('\n\n');
+        }
+
+        const interpretationText = normalizeText(
+            form.querySelector('[name="interpretation_text"]')?.value || ''
+        );
+        const additionalText = normalizeText(
+            form.querySelector('[name="additional_findings_text"]')?.value || ''
+        );
+        const genesText = normalizeText(
+            form.querySelector('[name="genes_analyzed_list"]')?.value || ''
+        );
+
+        const p2El = preview.querySelector('.field-p2-interpretation');
+        const p3El = preview.querySelector('.field-p3-interpretation');
+        const addEl = preview.querySelector('.field-p3-additional');
+        const genesEl = preview.querySelector('.field-p4-genes');
+        if (!p2El || !p3El || !addEl || !genesEl) return {};
+
+        const p2Height = parseFloat(getComputedStyle(p2El).height) || 0;
+        const p3Height = parseFloat(getComputedStyle(p3El).height) || 0;
+        const addHeight = parseFloat(getComputedStyle(addEl).height) || 0;
+        const genesHeight = parseFloat(getComputedStyle(genesEl).height) || 0;
+
+        const pxPerMm = getPxPerMm();
+        const overflowHeight = 190 * pxPerMm;
+
+        const interpretationP2 = splitByHeight(interpretationText, p2El, p2Height);
+        const interpretationP3 = splitByHeight(interpretationP2.rest, p3El, p3Height);
+        const interpretationOverflow = splitToChunks(interpretationP3.rest, p3El, overflowHeight);
+
+        const additionalP3 = splitByHeight(additionalText, addEl, addHeight);
+        const additionalOverflow = splitToChunks(additionalP3.rest, addEl, overflowHeight);
+
+        const genesP4 = splitByHeight(genesText, genesEl, genesHeight);
+        const genesOverflow = splitToChunks(genesP4.rest, genesEl, overflowHeight);
+
+        return {
+            interpretation: {
+                p2: interpretationP2.fit,
+                p3: interpretationP3.fit,
+                overflow: interpretationOverflow,
+            },
+            additional: {
+                p3: additionalP3.fit,
+                overflow: additionalOverflow,
+            },
+            genes: {
+                p4: genesP4.fit,
+                overflow: genesOverflow,
+            },
+        };
+    }
+
+    function updateLayoutInput() {
+        const payload = buildLayoutOverflow();
+        layoutInput.value = JSON.stringify(payload);
+    }
+
+    form.addEventListener('submit', updateLayoutInput);
+    document.addEventListener('htmx:configRequest', (evt) => {
+        if (evt.detail.elt === form) {
+            updateLayoutInput();
+        }
     });
 })();
 </script>

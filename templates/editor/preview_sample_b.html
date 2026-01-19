@@ -33,7 +33,7 @@
         <div class="field field-p2-zygosity txt-table">{{ main_zygosity }}</div>
         <div class="field field-p2-inheritance txt-table">{{ main_inheritance }}</div>
         <div class="field field-p2-classification txt-table">{{ main_classification }}</div>
-        <div class="field field-p2-condition txt-table">Condi??o: {{ main_condition }}</div>
+        <div class="field field-p2-condition txt-table">Condição: {{ main_condition }}</div>
         
         <!-- Bloco RESULTADOS (texto curto) -->
         <div class="field field-p2-results box txt-paragraph">{{ main_result_intro }}</div>
@@ -59,7 +59,7 @@
         
         <!-- Bloco ACHADOS ADICIONAIS -->
         <div class="field field-p3-additional box txt-paragraph">
-            {{ additional_findings_text|linebreaksbr }}
+            {{ additional_findings_p3|linebreaksbr }}
         </div>
         
         <!-- Tabela VUS -->
@@ -78,7 +78,7 @@
         <img class="page-bg" src="{{ bg_pages.3|default:'/static/editor/img/templates/laudo144_pg04.png' }}" alt="">
         {% include 'editor/_header_patient.html' with page='p4' %}
         <div class="field field-p4-genes box txt-paragraph">
-            {{ genes_analyzed_list|linebreaksbr }}
+            {{ genes_analyzed_p4|linebreaksbr }}
         </div>
         {% include 'editor/_footer_professionals.html' %}
     </div>
@@ -88,7 +88,7 @@
         <img class="page-bg" src="{{ bg_pages.4|default:'/static/editor/img/templates/laudo144_pg05.png' }}" alt="">
         {% include 'editor/_header_patient.html' with page='p5' %}
         <div class="field field-p5-notes box txt-paragraph">
-            {{ notes_text|linebreaksbr }}
+            {{ notes_text|linebreaks }}
         </div>
         {% if is_admin %}
         <div class="field field-p5-recommendations box txt-paragraph">
@@ -118,15 +118,29 @@
         {% include 'editor/_footer_professionals.html' %}
     </div>
 
-    <!-- PAGE 07: Apenas fundo -->
-    <div class="pdf-page page-07">
-        <img class="page-bg" src="{{ bg_pages.6|default:'/static/editor/img/templates/laudo144_pg07.png' }}" alt="">
-        {% include 'editor/_header_patient.html' with page='p7' %}
-        {% include 'editor/_footer_professionals.html' %}
-    </div>
+    {% if overflow_pages %}
+        {% for page in overflow_pages %}
+        <div class="pdf-page page-overflow">
+            <img class="page-bg" src="{{ bg_pages.7|default:'/static/editor/img/templates/laudo144_pg08.png' }}" alt="">
+            {% include 'editor/_header_patient.html' with page='p7' %}
+            <div class="overflow-title txt-section">{{ page.title }}</div>
+            <div class="overflow-body txt-paragraph">
+                {{ page.text|linebreaksbr }}
+            </div>
+            {% include 'editor/_footer_professionals.html' %}
+        </div>
+        {% endfor %}
+    {% else %}
+        <!-- PAGE 07: Apenas fundo -->
+        <div class="pdf-page page-07">
+            <img class="page-bg" src="{{ bg_pages.6|default:'/static/editor/img/templates/laudo144_pg07.png' }}" alt="">
+            {% include 'editor/_header_patient.html' with page='p7' %}
+            {% include 'editor/_footer_professionals.html' %}
+        </div>
 
-    <!-- PAGE 08: Apenas fundo -->
-    <div class="pdf-page page-08">
-        <img class="page-bg" src="{{ bg_pages.7|default:'/static/editor/img/templates/laudo144_pg08.png' }}" alt="">
-    </div>
+        <!-- PAGE 08: Apenas fundo -->
+        <div class="pdf-page page-08">
+            <img class="page-bg" src="{{ bg_pages.7|default:'/static/editor/img/templates/laudo144_pg08.png' }}" alt="">
+        </div>
+    {% endif %}
 </div>

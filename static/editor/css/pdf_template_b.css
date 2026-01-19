@@ -1,6 +1,46 @@
 /* ============================================
    LAYOUT A4 - TRAVADO
    ============================================ */
+/* Local font files so PDF/Weasyprint doesn't fall back to system fonts. */
+@font-face {
+    font-family: "Red Hat Display";
+    src: url("../fonts/RedHatDisplay-Regular.ttf") format("truetype");
+    font-weight: 300;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Red Hat Display";
+    src: url("../fonts/RedHatDisplay-Regular.ttf") format("truetype");
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Red Hat Display";
+    src: url("../fonts/RedHatDisplay-Regular.ttf") format("truetype");
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Red Hat Display";
+    src: url("../fonts/RedHatDisplay-SemiBold.ttf") format("truetype");
+    font-weight: 600;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Red Hat Display";
+    src: url("../fonts/RedHatDisplay-SemiBold.ttf") format("truetype");
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+}
 @page {
     size: A4;
     margin: 0;
@@ -76,6 +116,9 @@
     font-weight: 600;
     line-height: 1.35;
     color: #595959 !important;
+    text-align: justify;
+    text-align-last: left;
+    hyphens: auto;
 }
 
 /* Tabela */
@@ -204,6 +247,15 @@
     min-height: 12mm;
     writing-mode: horizontal-tb;
     color: #595959 !important;
+    box-sizing: border-box;
+    padding: 0 3.4mm;
+    font-size: 10.5pt;
+    line-height: 1.25;
+    font-weight: 400;
+    text-align: justify;
+    text-align-last: left;
+    text-justify: inter-word;
+    hyphens: auto;
 }
 
 /* Campos liberados (páginas 1-5) */
@@ -334,67 +386,75 @@
 
 /* Linha do RESULTADO PRINCIPAL */
 .field-p2-gene {
-    top: 174mm;
-    left: 14mm;
-    width: 22mm;
+    top: 177.26mm;
+    left: 23.68mm;
+    width: 21.68mm;
+    height: 3.88mm;
 }
 
 .field-p2-transcript {
-    top: 181mm;
-    left: 14mm;
-    width: 22mm;
+    top: 181.39mm;
+    left: 17.77mm;
+    width: 21.77mm;
+    height: 3.88mm;
 }
 
 .field-p2-variant-c {
-    top: 174mm;
-    left: 40mm;
-    width: 36mm;
+    top: 170.83mm;
+    left: 53.68mm;
+    width: 35.39mm;
+    height: 4.64mm;
 }
 
 .field-p2-dbsnp {
-    top: 174mm;
-    left: 90mm;
-    width: 20mm;
+    top: 172.50mm;
+    left: 84.31mm;
+    width: 19.77mm;
+    height: 3.88mm;
 }
 
 .field-p2-zygosity {
-    top: 174mm;
-    left: 115mm;
-    width: 20mm;
+    top: 172.32mm;
+    left: 111.10mm;
+    width: 19.90mm;
+    height: 3.88mm;
 }
 
 .field-p2-inheritance {
-    top: 174mm;
-    left: 140mm;
-    width: 26mm;
+    top: 171.54mm;
+    left: 139.95mm;
+    width: 25.69mm;
+    height: 3.88mm;
 }
 
 .field-p2-classification {
-    top: 174mm;
-    left: 170mm;
-    width: 26mm;
+    top: 172.01mm;
+    left: 166.10mm;
+    width: 25.85mm;
+    height: 3.88mm;
 }
 
 .field-p2-condition {
-    top: 188mm;
-    left: 40mm;
-    width: 150mm;
+    top: 184.95mm;
+    left: 43.70mm;
+    width: 149.10mm;
+    height: 4.64mm;
 }
 
 /* Bloco RESULTADOS */
 .field-p2-results {
-    top: 130mm;
-    left: 15mm;
-    width: 182mm;
-    height: 12mm;
+    top: 135.65mm;
+    left: 16.33mm;
+    width: 180.81mm;
+    height: 11.99mm;
 }
 
 /* Bloco INTERPRETAÇÃO (parte 1) */
 .field-p2-interpretation {
-    top: 214mm;
-    left: 15mm;
-    width: 182mm;
-    height: 44mm;
+    top: 214.60mm;
+    left: 15.95mm;
+    width: 181.65mm;
+    height: 43.90mm;
 }
 
 /* ============================================
@@ -423,23 +483,25 @@
 
 /* Bloco ACHADOS ADICIONAIS */
 .field-p3-additional {
-    top: 190mm;
-    left: 14mm;
-    width: 182mm;
-    height: 24mm;
+    top: 193.60mm;
+    left: 16.30mm;
+    width: 180.60mm;
+    height: 23.80mm;
 }
 
 /* Tabela VUS */
 .field-p3-vus-gene {
-    top: 240mm;
-    left: 14mm;
-    width: 22mm;
+    top: 237.89mm;
+    left: 23.21mm;
+    width: 21.71mm;
+    height: 3.88mm;
 }
 
 .field-p3-vus-transcript {
-    top: 246mm;
-    left: 14mm;
-    width: 22mm;
+    top: 241.45mm;
+    left: 19.05mm;
+    width: 21.55mm;
+    height: 3.88mm;
 }
 
 .field-p3-vus-variant-c {
@@ -449,84 +511,106 @@
 }
 
 .field-p3-vus-dbsnp {
-    top: 240mm;
-    left: 90mm;
-    width: 20mm;
+    top: 239.83mm;
+    left: 84.61mm;
+    width: 19.87mm;
+    height: 3.88mm;
 }
 
 .field-p3-vus-zygosity {
-    top: 240mm;
-    left: 115mm;
-    width: 20mm;
+    top: 239.60mm;
+    left: 111.60mm;
+    width: 19.90mm;
+    height: 3.88mm;
 }
 
 .field-p3-vus-inheritance {
-    top: 240mm;
-    left: 140mm;
-    width: 26mm;
+    top: 239.69mm;
+    left: 137.05mm;
+    width: 25.91mm;
+    height: 3.88mm;
 }
 
 .field-p3-vus-classification {
-    top: 240mm;
-    left: 170mm;
-    width: 26mm;
+    top: 239.70mm;
+    left: 164.80mm;
+    width: 25.80mm;
+    height: 3.88mm;
 }
 
 /* ============================================
    PAGE 04: GENES ANALISADOS
    ============================================ */
 .field-p4-genes {
-    top: 94mm;
-    left: 14mm;
-    width: 182mm;
-    height: 55mm;
+    top: 90.61mm;
+    left: 14.89mm;
+    width: 181.23mm;
+    height: 54.78mm;
 }
 
 /* ============================================
    PAGE 05: NOTAS + RECOMENDAÇÕES + MÉTRICAS
    ============================================ */
 .field-p5-notes {
-    top: 86mm;
-    left: 14mm;
-    width: 182mm;
-    height: 45mm;
+    top: 88.64mm;
+    left: 16.38mm;
+    width: 181.16mm;
+    height: 44.76mm;
+    font-size: 10pt;
+    line-height: 1.2;
+    text-align: justify;
+    text-align-last: left;
+    text-justify: inter-word;
+    hyphens: auto;
+}
+
+.field-p5-notes p {
+    margin: 0 0 0.2em;
+}
+
+.field-p5-notes p:last-child {
+    margin-bottom: 0;
 }
 
 .field-p5-recommendations {
-    top: 156mm;
-    left: 14mm;
-    width: 182mm;
-    height: 24mm;
+    top: 157.96mm;
+    left: 15.41mm;
+    width: 181.37mm;
+    height: 23.91mm;
 }
 
 .field-p5-metrics-title {
-    top: 205mm;
-    left: 16mm;
-    width: 130mm;
+    top: 202.98mm;
+    left: 17.31mm;
+    width: 129.05mm;
+    height: 5.04mm;
     display: block !important;
     z-index: 3;
 }
 
 .field-p5-metrics-label-mean {
-    top: 210mm;
-    left: 16mm;
-    width: 132mm;
+    top: 207.30mm;
+    left: 17.35mm;
+    width: 131.25mm;
+    height: 4.59mm;
     display: block !important;
     z-index: 3;
 }
 
 .field-p5-metrics-label-50x {
-    top: 217mm;
-    left: 16mm;
-    width: 132mm;
+    top: 213.30mm;
+    left: 17.35mm;
+    width: 131.25mm;
+    height: 4.59mm;
     display: block !important;
     z-index: 3;
 }
 
 .field-p5-metrics-note {
-    top: 224mm;
-    left: 16mm;
-    width: 132mm;
+    top: 217.98mm;
+    left: 17.31mm;
+    width: 131.05mm;
+    height: 3.81mm;
     font-size: 9pt;
     line-height: 1.2;
     display: block !important;
@@ -550,11 +634,17 @@
 }
 
 .field-p5-coverage-mean {
-    top: 209mm;
+    top: 205.28mm;
+    left: 161.94mm !important;
+    width: 31.91mm;
+    height: 5.45mm;
 }
 
 .field-p5-coverage-50x {
-    top: 218mm;
+    top: 215.28mm;
+    left: 161.94mm !important;
+    width: 31.91mm;
+    height: 5.45mm;
 }
 
 /* ============================================
@@ -565,6 +655,25 @@
     left: 14mm;
     width: 182mm;
     height: 44mm;
+}
+
+/* ============================================
+   PAGE OVERFLOW: CONTINUAÇÕES
+   ============================================ */
+.page-overflow .overflow-title {
+    position: absolute;
+    top: 72mm;
+    left: 14mm;
+    width: 182mm;
+}
+
+.page-overflow .overflow-body {
+    position: absolute;
+    top: 82mm;
+    left: 14mm;
+    width: 182mm;
+    height: 190mm;
+    overflow: hidden;
 }
 
 /* ============================================
