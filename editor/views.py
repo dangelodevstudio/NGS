@@ -879,7 +879,14 @@ def report_new(request):
         folder_id = request.POST.get("folder_id")
         folder = None
         if folder_id:
-            folder_qs = Folder.objects.filter(id=folder_id)
+            try:
+                folder_uuid = uuid.UUID(str(folder_id))
+            except ValueError:
+                folder_uuid = None
+            if folder_uuid:
+                folder_qs = Folder.objects.filter(uuid=folder_uuid)
+            else:
+                folder_qs = Folder.objects.none()
             if not _is_admin(request.user):
                 folder_qs = folder_qs.filter(workspace=request.workspace)
             folder = folder_qs.first()
@@ -904,9 +911,9 @@ def report_new(request):
 def folder_detail(request, folder_id):
     is_admin = _is_admin(request.user)
     if is_admin:
-        folder = get_object_or_404(Folder, id=folder_id)
+        folder = get_object_or_404(Folder, uuid=folder_id)
     else:
-        folder = get_object_or_404(Folder, id=folder_id, workspace=request.workspace)
+        folder = get_object_or_404(Folder, uuid=folder_id, workspace=request.workspace)
     query = request.GET.get("q", "").strip()
     if is_admin:
         reports = Report.objects.filter(folder=folder).select_related("created_by")
@@ -963,7 +970,7 @@ def report_delete(request, report_id):
     redirect_target = "dashboard"
     if report.folder_id:
         redirect_target = "folder_detail"
-        folder_id = report.folder_id
+        folder_id = report.folder.uuid
     report.delete()
     if redirect_target == "folder_detail":
         return redirect(redirect_target, folder_id=folder_id)
