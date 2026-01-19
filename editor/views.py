@@ -17,6 +17,8 @@ from weasyprint import HTML, CSS
 from weasyprint.text.fonts import FontConfiguration
 from .models import Folder, Report
 
+logger = logging.getLogger(__name__)
+
 
 # Modelos de laudo e respectivos valores padrÃ£o
 LAUDO_MODELOS = {
@@ -444,12 +446,32 @@ def _normalize_text_for_layout(text):
             cleaned.append(line)
     return "\n\n".join(cleaned)
 
+def _normalize_report_data(value, report_id=None):
+    if isinstance(value, dict):
+        return value
+    if value is None:
+        return {}
+    if isinstance(value, str):
+        try:
+            parsed = json.loads(value)
+        except json.JSONDecodeError:
+            if report_id:
+                logger.warning("Report %s has invalid JSON data; using empty data.", report_id)
+            return {}
+        if isinstance(parsed, dict):
+            return parsed
+        if report_id:
+            logger.warning("Report %s data is not a JSON object; using empty data.", report_id)
+        return {}
+    if report_id:
+        logger.warning("Report %s data has unexpected type %s; using empty data.", report_id, type(value).__name__)
+    return {}
 
 
 
 def _extract_report_data(request, base_data=None):
     data = {}
-    source = base_data or {}
+    source = _normalize_report_data(base_data)
     for field in REPORT_FIELDS:
         if field == "requester_not_identified":
             if request.method == "POST":
@@ -467,6 +489,7 @@ def _extract_report_data(request, base_data=None):
 
 
 def _build_context(request, base_data=None):
+    base_data = _normalize_report_data(base_data)
     # tipo de laudo selecionado (default = câncer hereditário 144 genes)
     laudo_type = _resolve_laudo_type(request, base_data)
     modelo = LAUDO_MODELOS.get(laudo_type, LAUDO_MODELOS["cancer_hereditario_144"])
@@ -913,7 +936,7 @@ def report_editor(request, report_id):
         report = get_object_or_404(Report, id=report_id)
     else:
         report = get_object_or_404(Report, id=report_id, workspace=request.workspace)
-    base_data = dict(report.data or {})
+    base_data = _normalize_report_data(report.data, report.id)
     base_data.setdefault("laudo_type", report.report_type)
     context = _build_context(request, base_data=base_data)
     context["report"] = report
@@ -957,7 +980,7 @@ def report_duplicate(request, report_id):
         title=copy_title,
         report_type=report.report_type,
         created_by=request.user,
-        data=dict(report.data or {}),
+        data=_normalize_report_data(report.data, report.id),
     )
     return redirect("report_editor", report_id=new_report.id)
 
