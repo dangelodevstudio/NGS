@@ -19,7 +19,7 @@ class Workspace(models.Model):
 
 
 class Folder(models.Model):
-    workspace = models.ForeignKey(Workspace, on_delete=models.CASCADE, related_name="folders")
+    workspace = models.ForeignKey(Workspace, on_delete=models.CASCADE,  related_name="folders")
     name = models.CharField(max_length=255)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

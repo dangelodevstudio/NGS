@@ -1,16 +1,49 @@
 from pathlib import Path
 import os
 import dj_database_url
+from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-bioma-editor-demo-secret-key')
-DEBUG = os.environ.get('DJANGO_DEBUG', 'True').lower() == 'true'
+env_file = None
+explicit_env = os.environ.get("DJANGO_ENV")
+if explicit_env:
+    candidate = BASE_DIR / f".env.{explicit_env}"
+    if candidate.exists():
+        env_file = candidate
+    elif (BASE_DIR / ".env").exists():
+        env_file = BASE_DIR / ".env"
+elif (BASE_DIR / ".env.development").exists():
+    env_file = BASE_DIR / ".env.development"
+elif (BASE_DIR / ".env").exists():
+    env_file = BASE_DIR / ".env"
 
-default_allowed = 'localhost,127.0.0.1'
-ALLOWED_HOSTS = [host.strip() for host in os.environ.get('DJANGO_ALLOWED_HOSTS', default_allowed).split(',') if host.strip()]
+if env_file:
+    load_dotenv(env_file)
 
-csrf_hosts = os.environ.get('DJANGO_CSRF_TRUSTED_ORIGINS', '')
+ENVIRONMENT = os.environ.get("DJANGO_ENV", "development").lower()
+raw_debug = os.environ.get("DJANGO_DEBUG")
+is_heroku = os.environ.get("DYNO") is not None
+if raw_debug is None:
+    DEBUG = not (ENVIRONMENT == "production" or is_heroku)
+else:
+    DEBUG = raw_debug.lower() == "true"
+
+SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
+if not SECRET_KEY:
+    if DEBUG:
+        SECRET_KEY = "django-insecure-bioma-editor-demo-secret-key"
+    else:
+        raise RuntimeError("DJANGO_SECRET_KEY is required when DEBUG is False")
+
+default_allowed = "localhost,127.0.0.1" if DEBUG else ""
+ALLOWED_HOSTS = [
+    host.strip()
+    for host in os.environ.get("DJANGO_ALLOWED_HOSTS", default_allowed).split(",")
+    if host.strip()
+]
+
+csrf_hosts = os.environ.get("DJANGO_CSRF_TRUSTED_ORIGINS", "")
 CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in csrf_hosts.split(',') if origin.strip()]
 
 INSTALLED_APPS = [
@@ -78,6 +111,18 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+SECURE_SSL_REDIRECT = (
+    os.environ.get("DJANGO_SECURE_SSL_REDIRECT", "True").lower() == "true"
+    if not DEBUG
+    else False
+)
+SESSION_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = not DEBUG
+SECURE_HSTS_SECONDS = int(os.environ.get("DJANGO_SECURE_HSTS_SECONDS", "3600")) if not DEBUG else 0
+SECURE_HSTS_INCLUDE_SUBDOMAINS = not DEBUG
+SECURE_HSTS_PRELOAD = not DEBUG
 
 LOGIN_URL = "login"
 LOGIN_REDIRECT_URL = "dashboard"
