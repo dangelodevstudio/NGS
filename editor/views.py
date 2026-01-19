@@ -820,29 +820,37 @@ def _update_report_from_request(report, request):
 def dashboard(request):
     query = request.GET.get("q", "").strip()
     is_admin = _is_admin(request.user)
-    if is_admin:
-        reports = Report.objects.all().select_related("created_by").defer("data")
-    else:
-        reports = Report.objects.filter(workspace=request.workspace).defer("data")
-    if query:
-        reports = reports.filter(
-            Q(title__icontains=query)
-            | Q(data__patient_name__icontains=query)
-            | Q(data__patient_code__icontains=query)
-        )
-    recent_reports = list(reports.order_by("-updated_at")[:10])
     report_types = _get_report_type_options()
     type_labels = {opt["key"]: opt["label"] for opt in report_types}
+    recent_reports = []
+    try:
+        if is_admin:
+            reports = Report.objects.all().select_related("created_by").defer("data")
+        else:
+            reports = Report.objects.filter(workspace=request.workspace).defer("data")
+        if query:
+            reports = reports.filter(
+                Q(title__icontains=query)
+                | Q(data__patient_name__icontains=query)
+                | Q(data__patient_code__icontains=query)
+            )
+        recent_reports = list(reports.order_by("-updated_at")[:10])
+    except Exception:
+        logger.exception("Dashboard reports failed for user_id=%s", request.user.id)
     for report in recent_reports:
         report.type_label = type_labels.get(report.report_type, report.report_type)
         if is_admin and report.created_by:
             display = report.created_by.get_full_name().strip()
             report.analyst_name = display or report.created_by.username
-    if is_admin:
-        folders = Folder.objects.all()
-    else:
-        folders = Folder.objects.filter(workspace=request.workspace)
-    folders = folders.annotate(report_count=Count("reports"))
+    try:
+        if is_admin:
+            folders = Folder.objects.all()
+        else:
+            folders = Folder.objects.filter(workspace=request.workspace)
+        folders = folders.annotate(report_count=Count("reports"))
+    except Exception:
+        logger.exception("Dashboard folders failed for user_id=%s", request.user.id)
+        folders = Folder.objects.none()
     context = {
         "recent_reports": recent_reports,
         "folders": folders,
