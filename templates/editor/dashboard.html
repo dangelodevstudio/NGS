@@ -106,7 +106,7 @@
                             {% for folder in folders %}
                                 <a class="folder-chip" href="{% url 'folder_detail' folder.id %}">
                                     <div class="folder-name">{{ folder.name }}</div>
-                                    <div class="folder-count">{{ folder.reports.count }} laudos</div>
+                                    <div class="folder-count">{{ folder.report_count }} laudos</div>
                                 </a>
                             {% endfor %}
                         </div>

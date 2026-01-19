@@ -4,7 +4,7 @@ from django.http import HttpResponse, HttpResponseForbidden
 from django.template.loader import render_to_string
 from django.contrib.staticfiles import finders
 from django.contrib.auth.decorators import login_required
-from django.db.models import Q
+from django.db.models import Q, Count
 from django.contrib.auth.models import User
 from pathlib import Path
 import uuid
@@ -839,9 +839,10 @@ def dashboard(request):
             display = report.created_by.get_full_name().strip()
             report.analyst_name = display or report.created_by.username
     if is_admin:
-        folders = Folder.objects.all().prefetch_related("reports")
+        folders = Folder.objects.all()
     else:
-        folders = Folder.objects.filter(workspace=request.workspace).prefetch_related("reports")
+        folders = Folder.objects.filter(workspace=request.workspace)
+    folders = folders.annotate(report_count=Count("reports"))
     context = {
         "recent_reports": recent_reports,
         "folders": folders,
