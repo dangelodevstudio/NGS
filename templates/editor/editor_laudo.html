@@ -891,7 +891,7 @@
 
     form.addEventListener('submit', updateLayoutInput);
     document.addEventListener('htmx:configRequest', (evt) => {
-        if (evt.detail.elt === form) {
+        if (form && (evt.detail.elt === form || form.contains(evt.detail.elt))) {
             updateLayoutInput();
         }
     });
