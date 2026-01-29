@@ -983,6 +983,7 @@ def report_editor(request, report_id):
     context["sample_types"] = SAMPLE_TYPES
     context["professional_options"] = PROFESSIONAL_OPTIONS
     context["is_admin"] = _is_admin(request.user)
+    context["preview_pdf_url"] = _get_preview_pdf_url(report.id)
     return render(request, "editor/editor_laudo.html", context)
 
 

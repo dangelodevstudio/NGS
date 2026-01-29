@@ -9,17 +9,14 @@
             <div class="card shadow-sm bioma-card">
                 <div class="card-header bioma-card-header d-flex justify-content-between align-items-center">
                     <h6 class="mb-0 text-white">Configuracao do Laudo</h6>
-                    <div class="form-check form-switch text-white mb-0">
+                    <div class="form-check form-switch text-white mb-0 d-none">
                         <input class="form-check-input" type="checkbox" id="calibration-toggle">
                         <label class="form-check-label small" for="calibration-toggle">Modo calibracao</label>
                     </div>
                 </div>
                 <div class="card-body">
                     <form id="editor-form"
-                          method="post"
-                          hx-post="{% url 'preview_laudo' %}"
-                          hx-target="#preview-container"
-                          hx-trigger="keyup change input delay:400ms from:input,textarea,select">
+                          method="post">
                         {% csrf_token %}
                         {% if report %}
                             <input type="hidden" name="report_id" value="{{ report.id }}">
@@ -358,7 +355,7 @@
                         </div>
 
                         <div class="d-grid gap-2">
-                            <button type="submit" class="btn bioma-primary-btn">
+                            <button type="button" class="btn bioma-primary-btn" id="preview-refresh-btn" data-preview-url="{% url 'preview_pdf' %}">
                                 Atualizar prévia
                             </button>
                             <button type="submit"
@@ -378,20 +375,26 @@
         <div class="col-lg-8 editor-preview-pane">
             <div class="card shadow-sm bioma-card">
                 <div class="card-header bioma-card-header d-flex justify-content-between align-items-center">
-                    <h6 class="mb-0 text-white">Prévia do Laudo (HTML → Demo)</h6>
-                    <span class="badge bg-light text-primary fw-semibold small">Modo visual → Similar ao PDF</span>
+                    <h6 class="mb-0 text-white">Prévia do Laudo (PDF)</h6>
+                    <div class="d-flex align-items-center gap-2">
+                        <span id="preview-loading" class="text-white small preview-loading is-hidden">
+                            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                            Gerando...
+                        </span>
+                        <span id="preview-error" class="text-warning small d-none"></span>
+                    </div>
                 </div>
                 <div class="card-body bioma-preview-bg preview-viewport" id="preview-viewport">
                     <div class="preview-shell" id="preview-shell">
-                        <div class="preview-scale" id="preview-scale">
-                            <div class="a4-grid"></div>
-                            <div id="preview-container">
-                                {% if laudo_type == 'cancer_hereditario_144' %}
-                                    {% include 'editor/preview_sample_b.html' %}
-                                {% else %}
-                                    {% include 'editor/preview_sample.html' %}
-                                {% endif %}
+                        <div id="preview-container" class="preview-pdf-wrapper" data-initial-url="{{ preview_pdf_url|default:'' }}">
+                            <div id="preview-empty" class="preview-empty {% if preview_pdf_url %}d-none{% endif %}">
+                                Clique em “Atualizar prévia” para gerar o PDF.
                             </div>
+                            <iframe id="preview-pdf-frame"
+                                    class="preview-pdf-frame"
+                                    title="Prévia do laudo"
+                                    src="{% if preview_pdf_url %}{{ preview_pdf_url }}{% else %}about:blank{% endif %}">
+                            </iframe>
                         </div>
                     </div>
                 </div>
@@ -402,42 +405,67 @@
 
 <script>
 (function() {
-    const viewport = document.getElementById('preview-viewport');
-    const scaleEl = document.getElementById('preview-scale');
-    const shell = document.getElementById('preview-shell');
-    const toggle = document.getElementById('calibration-toggle');
-    const PAGE_WIDTH_PX = 794; // 210mm @ 96dpi
+    const form = document.getElementById('editor-form');
+    const button = document.getElementById('preview-refresh-btn');
+    const iframe = document.getElementById('preview-pdf-frame');
+    const emptyState = document.getElementById('preview-empty');
+    const loadingEl = document.getElementById('preview-loading');
+    const errorEl = document.getElementById('preview-error');
+    if (!form || !button || !iframe) return;
 
-    function updateScale() {
-        if (!viewport || !scaleEl) return;
-        const available = viewport.clientWidth - 32; // padding guard
-        const scale = Math.min(1, Math.max(0.3, available / PAGE_WIDTH_PX));
-        scaleEl.style.setProperty('--preview-scale', scale.toFixed(3));
-        scaleEl.style.transform = `scale(${scale})`;
+    function setLoading(isLoading) {
+        if (!loadingEl) return;
+        loadingEl.classList.toggle('is-hidden', !isLoading);
     }
 
-    function applyCalibration() {
-        if (!shell || !toggle) return;
-        shell.classList.toggle('is-calibrating', !!toggle.checked);
+    function setError(message) {
+        if (!errorEl) return;
+        if (!message) {
+            errorEl.textContent = '';
+            errorEl.classList.add('d-none');
+            return;
+        }
+        errorEl.textContent = message;
+        errorEl.classList.remove('d-none');
     }
 
-    window.addEventListener('resize', updateScale);
-    updateScale();
-
-    if (toggle && shell) {
-        toggle.addEventListener('change', () => {
-            applyCalibration();
-        });
+    function setPreviewUrl(url) {
+        const cacheBust = `v=${Date.now()}`;
+        const nextUrl = url.includes('?') ? `${url}&${cacheBust}` : `${url}?${cacheBust}`;
+        iframe.src = nextUrl;
+        if (emptyState) {
+            emptyState.classList.add('d-none');
+        }
     }
 
-    document.addEventListener('htmx:afterSwap', (evt) => {
-        if (evt.target && evt.target.id === 'preview-container') {
-            updateScale();
-            applyCalibration();
+    button.addEventListener('click', async () => {
+        setError('');
+        setLoading(true);
+
+        const formData = new FormData(form);
+        const csrfToken = form.querySelector('input[name="csrfmiddlewaretoken"]')?.value || '';
+
+        try {
+            const response = await fetch(button.dataset.previewUrl, {
+                method: 'POST',
+                body: formData,
+                headers: csrfToken ? { 'X-CSRFToken': csrfToken } : {},
+            });
+            if (!response.ok) {
+                const fallback = await response.text();
+                throw new Error(fallback || 'Falha ao gerar a prévia.');
+            }
+            const payload = await response.json();
+            if (!payload.url) {
+                throw new Error('Resposta inválida da prévia.');
+            }
+            setPreviewUrl(payload.url);
+        } catch (err) {
+            setError(err.message || 'Erro ao gerar a prévia.');
+        } finally {
+            setLoading(false);
         }
     });
-
-    applyCalibration();
 })();
 
 (function() {
