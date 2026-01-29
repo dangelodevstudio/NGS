@@ -42,7 +42,7 @@
     font-display: swap;
 }
 @page {
-    size: A4;
+    size: 190.5mm 275mm;
     margin: 0;
 }
 
@@ -55,12 +55,12 @@
 }
 
 .pdf-document {
-    width: 210mm;
+    width: 190.50mm;
 }
 
 .pdf-page {
-    width: 210mm;
-    height: 297mm;
+    width: 190.50mm;
+    height: 275.00mm;
     position: relative;
     overflow: hidden;
     page-break-after: always;
@@ -126,9 +126,9 @@
 
 /* Parágrafo */
 .txt-paragraph {
-    font-size: 11pt;
-    font-weight: 600;
-    line-height: 1.35;
+    font-size: 10.5pt;
+    font-weight: 400;
+    line-height: 1.25;
     color: #595959 !important;
     text-align: justify;
     text-align-last: left;
@@ -137,7 +137,7 @@
 
 /* Tabela */
 .txt-table {
-    font-size: 11pt;
+    font-size: 10pt;
     font-weight: 400;
     line-height: 1.2;
     color: #595959;
@@ -257,8 +257,8 @@
 .box {
     white-space: normal;
     overflow: hidden;
-    width: 182mm;
-    min-height: 12mm;
+    width: 165.10mm;
+    min-height: 11.11mm;
     writing-mode: horizontal-tb;
     color: #595959 !important;
     box-sizing: border-box;
@@ -318,6 +318,12 @@
     display: block;
 }
 
+.field-p5-notes-subtitle,
+.field-p6-limitations,
+.field-p6-observations {
+    display: block;
+}
+
 .field-footer-tech,
 .field-footer-md,
 .field-footer-director {
@@ -367,108 +373,108 @@
 /* ============================================
    PAGE 01: CAPA
    ============================================ */
-.field-p1-name { top: 148.73mm; left: 31.60mm; width: 154.44mm; height: 4.57mm; }
+.field-p1-name { top: 135.16mm; left: 26.05mm; width: 140.10mm; height: 4.23mm; }
 
-.field-p1-birth { top: 159.57mm; left: 32.08mm; width: 55.61mm; height: 4.57mm; }
+.field-p1-birth { top: 148.75mm; left: 24.89mm; width: 60.00mm; height: 4.23mm; }
 
-.field-p1-code { top: 167.59mm; left: 32.15mm; width: 59.62mm; height: 5.57mm; }
+.field-p1-code { top: 155.73mm; left: 24.89mm; width: 80.00mm; height: 5.16mm; }
 
 /* ============================================
    PAGE 02: HEADER + DADOS + RESULTADO + INTERPRETAÇÃO
    ============================================ */
 /* Header do paciente (caixa superior) */
-.field-p2-header-name { top: 13.97mm; left: 81.91mm; width: 109.87mm; height: 4.57mm; }
+.field-p2-header-name { top: 13.72mm; left: 72.25mm; width: 101.00mm; height: 4.23mm; }
 
-.field-p2-header-birth { top: 19.97mm; left: 81.91mm; width: 109.87mm; height: 4.57mm; }
+.field-p2-header-birth { top: 19.16mm; left: 72.25mm; width: 101.00mm; height: 4.23mm; }
 
-.field-p2-header-sex { top: 25.97mm; left: 81.91mm; width: 109.87mm; height: 4.57mm; }
+.field-p2-header-sex { top: 23.82mm; left: 72.25mm; width: 101.00mm; height: 4.23mm; }
 
-.field-p2-header-code { top: 31.97mm; left: 81.91mm; width: 109.87mm; height: 4.57mm; }
+.field-p2-header-code { top: 28.81mm; left: 72.25mm; width: 101.00mm; height: 4.23mm; }
 
-.field-p2-header-entry { top: 37.96mm; left: 81.91mm; width: 109.87mm; height: 4.57mm; }
+.field-p2-header-entry { top: 33.55mm; left: 72.25mm; width: 101.00mm; height: 4.23mm; }
 
-.field-p2-header-release { top: 43.52mm; left: 81.78mm; width: 105.53mm; height: 4.07mm; }
+.field-p2-header-release { top: 38.21mm; left: 72.25mm; width: 101.00mm; height: 4.23mm; }
 
 /* Bloco DADOS */
-.field-p2-requester { top: 81.91mm; left: 16.97mm; width: 181.79mm; height: 4.57mm; }
+.field-p2-requester { top: 78.01mm; left: 13.61mm; width: 164.91mm; height: 4.23mm; }
 
-.field-p2-sample { top: 88.44mm; left: 16.98mm; width: 181.86mm; height: 4.57mm; }
+.field-p2-sample { top: 82.24mm; left: 13.61mm; width: 164.97mm; height: 4.23mm; }
 
-.field-p2-clinical { top: 95.06mm; left: 16.64mm; width: 186.48mm; height: 11.99mm; }
+.field-p2-clinical { top: 86.48mm; left: 13.61mm; width: 169.16mm; height: 11.10mm; }
 
-.field-p2-exam { top: 108.86mm; left: 16.84mm; width: 177.38mm; height: 4.57mm; }
+.field-p2-exam { top: 99.18mm; left: 13.61mm; width: 160.91mm; height: 4.23mm; }
 
 /* Linha do RESULTADO PRINCIPAL */
 .field-p2-gene {
-    top: 177.26mm;
-    left: 23.68mm;
-    width: 21.68mm;
-    height: 3.88mm;
+    top: 164.25mm;
+    left: 20.86mm;
+    width: 19.67mm;
+    height: 3.59mm;
 }
 
 .field-p2-transcript {
-    top: 181.39mm;
-    left: 17.77mm;
-    width: 21.77mm;
-    height: 3.88mm;
+    top: 168.08mm;
+    left: 15.38mm;
+    width: 19.75mm;
+    height: 3.59mm;
 }
 
 .field-p2-variant-c {
-    top: 170.83mm;
-    left: 53.68mm;
-    width: 35.39mm;
-    height: 4.64mm;
+    top: 158.50mm;
+    left: 48.48mm;
+    width: 32.10mm;
+    height: 7.50mm;
 }
 
 .field-p2-dbsnp {
-    top: 172.50mm;
-    left: 84.31mm;
-    width: 19.77mm;
-    height: 3.88mm;
+    top: 160.19mm;
+    left: 78.26mm;
+    width: 17.93mm;
+    height: 3.59mm;
 }
 
 .field-p2-zygosity {
-    top: 172.32mm;
-    left: 111.10mm;
-    width: 19.90mm;
-    height: 3.88mm;
+    top: 160.19mm;
+    left: 102.47mm;
+    width: 18.05mm;
+    height: 3.59mm;
 }
 
 .field-p2-inheritance {
-    top: 171.54mm;
-    left: 139.95mm;
-    width: 25.69mm;
-    height: 3.88mm;
+    top: 158.50mm;
+    left: 128.61mm;
+    width: 23.30mm;
+    height: 3.59mm;
 }
 
 .field-p2-classification {
-    top: 172.01mm;
-    left: 166.10mm;
-    width: 25.85mm;
-    height: 3.88mm;
+    top: 160.19mm;
+    left: 156.79mm;
+    width: 23.45mm;
+    height: 3.59mm;
 }
 
 .field-p2-condition {
-    top: 184.95mm;
-    left: 43.70mm;
-    width: 149.10mm;
-    height: 4.64mm;
+    top: 172.16mm;
+    left: 39.40mm;
+    width: 135.25mm;
+    height: 4.30mm;
 }
 
 /* Bloco RESULTADOS */
 .field-p2-results {
-    top: 135.65mm;
-    left: 16.33mm;
-    width: 180.81mm;
-    height: 11.99mm;
+    top: 128.00mm;
+    left: 12.99mm;
+    width: 164.02mm;
+    height: 11.10mm;
 }
 
 /* Bloco INTERPRETAÇÃO (parte 1) */
 .field-p2-interpretation {
-    top: 214.60mm;
-    left: 15.95mm;
-    width: 181.65mm;
-    height: 43.90mm;
+    top: 200.14mm;
+    left: 13.08mm;
+    width: 163.63mm;
+    height: 34.30mm;
 }
 
 /* ============================================
@@ -476,106 +482,148 @@
    ============================================ */
 /* Continuação da INTERPRETAÇÃO */
 
-.field-p3-header-name { top: 13.97mm; left: 81.91mm; width: 109.87mm; height: 4.57mm; }
+.field-p3-header-name { top: 13.72mm; left: 72.25mm; width: 101.00mm; height: 4.23mm; }
 
-.field-p3-header-birth { top: 19.97mm; left: 81.91mm; width: 109.87mm; height: 4.57mm; }
+.field-p3-header-birth { top: 19.16mm; left: 72.25mm; width: 101.00mm; height: 4.23mm; }
 
-.field-p3-header-sex { top: 25.97mm; left: 81.91mm; width: 109.87mm; height: 4.57mm; }
+.field-p3-header-sex { top: 23.82mm; left: 72.25mm; width: 101.00mm; height: 4.23mm; }
 
-.field-p3-header-code { top: 31.97mm; left: 81.91mm; width: 109.87mm; height: 4.57mm; }
+.field-p3-header-code { top: 28.81mm; left: 72.25mm; width: 101.00mm; height: 4.23mm; }
 
-.field-p3-header-entry { top: 37.96mm; left: 81.91mm; width: 109.87mm; height: 4.57mm; }
+.field-p3-header-entry { top: 33.55mm; left: 72.25mm; width: 101.00mm; height: 4.23mm; }
 
-.field-p3-header-release { top: 43.52mm; left: 81.78mm; width: 105.53mm; height: 4.07mm; }
+.field-p3-header-release { top: 38.21mm; left: 72.25mm; width: 101.00mm; height: 4.23mm; }
+
+.field-p4-header-name,
+.field-p5-header-name,
+.field-p6-header-name,
+.field-p7-header-name { top: 13.72mm; left: 72.25mm; width: 101.00mm; height: 4.23mm; }
+
+.field-p4-header-birth,
+.field-p5-header-birth,
+.field-p6-header-birth,
+.field-p7-header-birth { top: 19.16mm; left: 72.25mm; width: 101.00mm; height: 4.23mm; }
+
+.field-p4-header-sex,
+.field-p5-header-sex,
+.field-p6-header-sex,
+.field-p7-header-sex { top: 23.82mm; left: 72.25mm; width: 101.00mm; height: 4.23mm; }
+
+.field-p4-header-code,
+.field-p5-header-code,
+.field-p6-header-code,
+.field-p7-header-code { top: 28.81mm; left: 72.25mm; width: 101.00mm; height: 4.23mm; }
+
+.field-p4-header-entry,
+.field-p5-header-entry,
+.field-p6-header-entry,
+.field-p7-header-entry { top: 33.55mm; left: 72.25mm; width: 101.00mm; height: 4.23mm; }
+
+.field-p4-header-release,
+.field-p5-header-release,
+.field-p6-header-release,
+.field-p7-header-release { top: 38.21mm; left: 72.25mm; width: 101.00mm; height: 4.23mm; }
 
 .field-p3-interpretation {
-    top: 78mm;
-    left: 14mm;
-    width: 182mm;
-    height: 90mm;
+    top: 72.22mm;
+    left: 12.70mm;
+    width: 165.10mm;
+    height: 83.33mm;
 }
 
 /* Bloco ACHADOS ADICIONAIS */
 .field-p3-additional {
-    top: 193.60mm;
-    left: 16.30mm;
-    width: 180.60mm;
-    height: 23.80mm;
+    top: 183.69mm;
+    left: 12.77mm;
+    width: 164.38mm;
+    height: 22.04mm;
 }
 
 /* Tabela VUS */
 .field-p3-vus-gene {
-    top: 237.89mm;
-    left: 23.21mm;
-    width: 21.71mm;
-    height: 3.88mm;
+    top: 220.52mm;
+    left: 20.74mm;
+    width: 19.69mm;
+    height: 3.59mm;
 }
 
 .field-p3-vus-transcript {
-    top: 241.45mm;
-    left: 19.05mm;
-    width: 21.55mm;
-    height: 3.88mm;
+    top: 224.35mm;
+    left: 16.03mm;
+    width: 19.55mm;
+    height: 3.59mm;
 }
 
 .field-p3-vus-variant-c {
-    top: 240mm;
-    left: 40mm;
-    width: 36mm;
+    top: 222.45mm;
+    left: 40.00mm;
+    width: 36.00mm;
 }
 
 .field-p3-vus-dbsnp {
-    top: 239.83mm;
-    left: 84.61mm;
-    width: 19.87mm;
-    height: 3.88mm;
+    top: 222.45mm;
+    left: 77.30mm;
+    width: 18.02mm;
+    height: 3.59mm;
 }
 
 .field-p3-vus-zygosity {
-    top: 239.60mm;
-    left: 111.60mm;
-    width: 19.90mm;
-    height: 3.88mm;
+    top: 222.45mm;
+    left: 102.67mm;
+    width: 18.05mm;
+    height: 3.59mm;
 }
 
 .field-p3-vus-inheritance {
-    top: 239.69mm;
-    left: 137.05mm;
-    width: 25.91mm;
-    height: 3.88mm;
+    top: 220.76mm;
+    left: 128.81mm;
+    width: 23.50mm;
+    height: 3.59mm;
 }
 
 .field-p3-vus-classification {
-    top: 239.70mm;
-    left: 164.80mm;
-    width: 25.80mm;
-    height: 3.88mm;
+    top: 222.45mm;
+    left: 161.21mm;
+    width: 23.40mm;
+    height: 3.59mm;
 }
 
 /* ============================================
    PAGE 04: GENES ANALISADOS
    ============================================ */
 .field-p4-genes {
-    top: 90.61mm;
-    left: 14.89mm;
-    width: 181.23mm;
-    height: 54.78mm;
+    top: 82.99mm;
+    left: 12.90mm;
+    width: 164.24mm;
+    height: 47.00mm;
+    font-size: 9pt;
+    line-height: 1.2;
 }
 
 /* ============================================
    PAGE 05: NOTAS + RECOMENDAÇÕES + MÉTRICAS
    ============================================ */
 .field-p5-notes {
-    top: 88.64mm;
-    left: 16.38mm;
-    width: 181.16mm;
-    height: 44.76mm;
+    top: 84.73mm;
+    left: 13.33mm;
+    width: 164.34mm;
+    height: 38.53mm;
     font-size: 10pt;
     line-height: 1.2;
     text-align: justify;
     text-align-last: left;
     text-justify: inter-word;
     hyphens: auto;
+}
+
+.field-p5-notes-subtitle {
+    top: 76.95mm;
+    left: 18.45mm;
+    width: 140mm;
+    height: 4.67mm;
+    font-size: 11pt;
+    font-weight: 600;
+    color: #753bbd;
 }
 
 .field-p5-notes p {
@@ -587,44 +635,44 @@
 }
 
 .field-p5-recommendations {
-    top: 157.96mm;
-    left: 15.41mm;
-    width: 181.37mm;
-    height: 23.91mm;
+    top: 146.42mm;
+    left: 13.44mm;
+    width: 164.53mm;
+    height: 17.37mm;
 }
 
 .field-p5-metrics-title {
-    top: 202.98mm;
-    left: 17.31mm;
-    width: 129.05mm;
-    height: 5.04mm;
+    top: 189.19mm;
+    left: 15.13mm;
+    width: 117.07mm;
+    height: 4.67mm;
     display: block !important;
     z-index: 3;
 }
 
 .field-p5-metrics-label-mean {
-    top: 207.30mm;
-    left: 17.35mm;
-    width: 131.25mm;
-    height: 4.59mm;
+    top: 193.43mm;
+    left: 15.13mm;
+    width: 119.06mm;
+    height: 4.25mm;
     display: block !important;
     z-index: 3;
 }
 
 .field-p5-metrics-label-50x {
-    top: 213.30mm;
-    left: 17.35mm;
-    width: 131.25mm;
-    height: 4.59mm;
+    top: 199.78mm;
+    left: 15.13mm;
+    width: 119.06mm;
+    height: 4.25mm;
     display: block !important;
     z-index: 3;
 }
 
 .field-p5-metrics-note {
-    top: 217.98mm;
-    left: 17.31mm;
-    width: 131.05mm;
-    height: 3.81mm;
+    top: 204.01mm;
+    left: 15.13mm;
+    width: 118.88mm;
+    height: 3.53mm;
     font-size: 9pt;
     line-height: 1.2;
     display: block !important;
@@ -640,35 +688,59 @@
 
 .field-p5-coverage-mean,
 .field-p5-coverage-50x {
-    left: 162mm !important;
-    width: 32mm;
+    left: 156.49mm !important;
+    width: 20.00mm;
     text-align: center;
     display: block !important;
     z-index: 3;
 }
 
 .field-p5-coverage-mean {
-    top: 205.28mm;
-    left: 161.94mm !important;
-    width: 31.91mm;
-    height: 5.45mm;
+    top: 191.10mm;
+    left: 156.49mm !important;
+    width: 20.00mm;
+    height: 5.05mm;
 }
 
 .field-p5-coverage-50x {
-    top: 215.28mm;
-    left: 161.94mm !important;
-    width: 31.91mm;
-    height: 5.45mm;
+    top: 202.64mm;
+    left: 156.49mm !important;
+    width: 20.00mm;
+    height: 5.05mm;
 }
 
 /* ============================================
    PAGE 06: METODOLOGIA
    ============================================ */
 .field-p6-methodology {
-    top: 82mm;
-    left: 14mm;
-    width: 182mm;
-    height: 44mm;
+    top: 75.99mm;
+    left: 13.11mm;
+    width: 163.84mm;
+    height: 38.53mm;
+}
+
+.field-p6-limitations {
+    top: 133.45mm;
+    left: 13.03mm;
+    width: 164.38mm;
+    height: 47.00mm;
+    font-size: 9pt;
+    line-height: 1.2;
+}
+
+.field-p6-observations {
+    top: 188.64mm;
+    left: 12.83mm;
+    width: 164.56mm;
+    height: 21.60mm;
+    font-size: 9pt;
+    line-height: 1.2;
+}
+
+.field-p6-methodology p,
+.field-p6-limitations p,
+.field-p6-observations p {
+    margin: 0;
 }
 
 /* ============================================
@@ -676,17 +748,17 @@
    ============================================ */
 .page-overflow .overflow-title {
     position: absolute;
-    top: 72mm;
-    left: 14mm;
-    width: 182mm;
+    top: 66.67mm;
+    left: 12.70mm;
+    width: 165.10mm;
 }
 
 .page-overflow .overflow-body {
     position: absolute;
-    top: 82mm;
-    left: 14mm;
-    width: 182mm;
-    height: 190mm;
+    top: 75.93mm;
+    left: 12.70mm;
+    width: 165.10mm;
+    height: 175.93mm;
     overflow: hidden;
 }
 
@@ -694,27 +766,27 @@
    FOOTER PROFISSIONAIS (PAGES 01-06)
    ============================================ */
 .field-footer-tech {
-    top: 270mm;
-    left: 30mm;
-    width: 160mm;
+    top: 250.00mm;
+    left: 27.21mm;
+    width: 145.14mm;
     font-size: 9pt;
     line-height: 1.15;
     color: #753bbd;
 }
 
 .field-footer-md {
-    top: 274mm;
-    left: 30mm;
-    width: 160mm;
+    top: 253.70mm;
+    left: 27.21mm;
+    width: 145.14mm;
     font-size: 9pt;
     line-height: 1.15;
     color: #753bbd;
 }
 
 .field-footer-director {
-    top: 278mm;
-    left: 30mm;
-    width: 160mm;
+    top: 257.41mm;
+    left: 27.21mm;
+    width: 145.14mm;
     font-size: 9pt;
     line-height: 1.15;
     color: #753bbd;

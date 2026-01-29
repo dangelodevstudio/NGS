@@ -1,6 +1,8 @@
-<div class="field field-p3-header-name txt-value"><strong>Nome:</strong> {{ patient_name }}</div>
-<div class="field field-p3-header-birth txt-value"><strong>Data de Nascimento:</strong> {{ patient_birth_date }}</div>
-<div class="field field-p3-header-sex txt-value"><strong>Sexo:</strong> {{ patient_sex }}</div>
-<div class="field field-p3-header-code txt-value"><strong>Código ID:</strong> {{ patient_code }}</div>
-<div class="field field-p3-header-entry txt-value"><strong>Data de Entrada:</strong> {{ exam_entry_date }}</div>
-<div class="field field-p3-header-release txt-value"><strong>Data de Liberação:</strong> {{ exam_release_date }}</div>
+{% with p=page|default:"p3" %}
+<div class="field field-{{ p }}-header-name txt-value"><strong>Nome:</strong> {{ patient_name }}</div>
+<div class="field field-{{ p }}-header-birth txt-value"><strong>Data de Nascimento:</strong> {{ patient_birth_date }}</div>
+<div class="field field-{{ p }}-header-sex txt-value"><strong>Sexo:</strong> {{ patient_sex }}</div>
+<div class="field field-{{ p }}-header-code txt-value"><strong>Código ID:</strong> {{ patient_code }}</div>
+<div class="field field-{{ p }}-header-entry txt-value"><strong>Data de Entrada:</strong> {{ exam_entry_date }}</div>
+<div class="field field-{{ p }}-header-release txt-value"><strong>Data de Liberação:</strong> {{ exam_release_date }}</div>
+{% endwith %}

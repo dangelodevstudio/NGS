@@ -58,6 +58,7 @@
                                 <div class="col-6 mb-2">
                                     <label class="form-label">Sexo</label>
                                     <select name="patient_sex" class="form-select">
+                                        <option value="Masculino/Feminino" {% if patient_sex == 'Masculino/Feminino' %}selected{% endif %}>Masculino/Feminino</option>
                                         <option value="Feminino" {% if patient_sex == 'Feminino' %}selected{% endif %}>Feminino</option>
                                         <option value="Masculino" {% if patient_sex == 'Masculino' %}selected{% endif %}>Masculino</option>
                                         <option value="Outro" {% if patient_sex == 'Outro' %}selected{% endif %}>Outro</option>
@@ -726,7 +727,9 @@
         const page = preview.querySelector('.pdf-page');
         if (!page) return 3.78;
         const widthPx = parseFloat(getComputedStyle(page).width);
-        return widthPx && widthPx > 0 ? widthPx / 210 : 3.78;
+        const doc = preview.querySelector('.pdf-document');
+        const widthMm = doc ? parseFloat(doc.dataset.pageWidthMm || '') : NaN;
+        return widthPx && widthPx > 0 ? widthPx / (widthMm || 210) : 3.78;
     }
 
     function getMeasureEl(sampleEl) {
@@ -854,8 +857,8 @@
         const addHeight = parseFloat(getComputedStyle(addEl).height) || 0;
         const genesHeight = parseFloat(getComputedStyle(genesEl).height) || 0;
 
-        const pxPerMm = getPxPerMm();
-        const overflowHeight = 190 * pxPerMm;
+        const overflowEl = preview.querySelector('.page-overflow .overflow-body');
+        const overflowHeight = overflowEl ? (parseFloat(getComputedStyle(overflowEl).height) || 0) : (190 * getPxPerMm());
 
         const interpretationP2 = splitByHeight(interpretationText, p2El, p2Height);
         const interpretationP3 = splitByHeight(interpretationP2.rest, p3El, p3Height);

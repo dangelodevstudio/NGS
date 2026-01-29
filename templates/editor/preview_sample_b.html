@@ -1,15 +1,15 @@
 {% load static %}
-<div class="pdf-document">
+<div class="pdf-document" data-page-width-mm="190.5">
     <!-- PAGE 01: CAPA -->
     <div class="pdf-page page-01" style="background-image: url('{{ bg_pages.0|default:'/static/editor/img/templates/laudo144_pg01.png' }}');">
         <div class="field field-p1-name txt-value">
             <strong>Nome:</strong> {{ patient_name }}
         </div>
         <div class="field field-p1-birth txt-value">
-            <strong>Data de Nascimento:</strong> {{ patient_birth_date }}
+            <strong>Data de Nascimento:</strong> {{ patient_birth_date_cover }}
         </div>
         <div class="field field-p1-code txt-value">
-            <strong>Código ID:</strong> {{ patient_code }}
+            <strong>Código ID:</strong> {{ patient_code_cover }}
         </div>
     </div>
 
@@ -26,7 +26,9 @@
         <!-- Linha do RESULTADO PRINCIPAL -->
         <div class="field field-p2-gene txt-table">{{ main_gene }}</div>
         <div class="field field-p2-transcript txt-table">{{ main_transcript }}</div>
-        <div class="field field-p2-variant-c txt-table">{{ main_variant_c }}</div>
+        <div class="field field-p2-variant-c txt-table">
+            {{ main_variant_c }}<br>{{ main_variant_p }}
+        </div>
         <div class="field field-p2-dbsnp txt-table">{{ main_dbsnp }}</div>
         <div class="field field-p2-zygosity txt-table">{{ main_zygosity }}</div>
         <div class="field field-p2-inheritance txt-table">{{ main_inheritance }}</div>
@@ -60,7 +62,9 @@
         <!-- Tabela VUS -->
         <div class="field field-p3-vus-gene txt-table">{{ vus_gene }}</div>
         <div class="field field-p3-vus-transcript txt-table">{{ vus_transcript }}</div>
-        <div class="field field-p3-vus-variant-c txt-table">{{ vus_variant_c }}</div>
+        <div class="field field-p3-vus-variant-c txt-table">
+            {{ vus_variant_c }} {{ vus_variant_p }}
+        </div>
         <div class="field field-p3-vus-dbsnp txt-table">{{ vus_dbsnp }}</div>
         <div class="field field-p3-vus-zygosity txt-table">{{ vus_zygosity }}</div>
         <div class="field field-p3-vus-inheritance txt-table">{{ vus_inheritance }}</div>
@@ -80,6 +84,7 @@
     <!-- PAGE 05: NOTAS + RECOMENDAÇÕES + MÉTRICAS/COBERTURA -->
     <div class="pdf-page page-05" style="background-image: url('{{ bg_pages.4|default:'/static/editor/img/templates/laudo144_pg05.png' }}');">
         {% include 'editor/_header_patient.html' with page='p5' %}
+        <div class="field field-p5-notes-subtitle txt-section">ACHADOS SECUNDÁRIOS</div>
         <div class="field field-p5-notes box txt-paragraph">
             {{ notes_text|linebreaks }}
         </div>
@@ -89,9 +94,9 @@
         </div>
         {% endif %}
         <div class="field field-p5-metrics-title txt-section">DNA Nuclear</div>
-        <div class="field field-p5-metrics-label-mean txt-label">Cobertura media da regiao alvo:</div>
-        <div class="field field-p5-metrics-label-50x txt-label">% da regiao alvo com cobertura maior ou igual a 50x:</div>
-        <div class="field field-p5-metrics-note txt-label">Regiao alvo refere-se a regiao codificante e sitios de splicing dos genes analisados.</div>
+        <div class="field field-p5-metrics-label-mean txt-label">Cobertura média da região alvo:</div>
+        <div class="field field-p5-metrics-label-50x txt-label">% da região alvo com cobertura maior ou igual a 50x:</div>
+        <div class="field field-p5-metrics-note txt-label">Região alvo refere-se a região codificante e sítios de splicing dos genes analisados.</div>
         <div class="field field-p5-coverage-mean txt-value">
             {{ metrics_coverage_mean }}
         </div>

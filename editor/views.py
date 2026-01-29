@@ -26,6 +26,7 @@ LAUDO_MODELOS = {
         "label": "PAINEL NGS PARA CÂNCER HEREDITÁRIO - 144 GENES",
         "defaults": {
             "exam_name": "PAINEL NGS PARA CÂNCER HEREDITÁRIO - 144 GENES",
+            "requester_name": "Dr(a). Fulana de Tal CRM - BR 8141",
             "main_gene": "TP53",
             "main_transcript": "NM_000546.5",
             "main_variant_c": "c.1010G>A",
@@ -39,32 +40,59 @@ LAUDO_MODELOS = {
                 "Foi identificada uma variante clinicamente relevante no gene TP53."
             ),
             "interpretation_text": (
-                "Variante germinativa patogênica em TP53 associada à síndrome de Li-Fraumeni. "
-                "O achado é consistente com predisposição hereditária a neoplasias. "
-                "Recomenda-se avaliação genética em familiares de primeiro grau e seguimento especializado.\n\n"
-                "Esta interpretação considera histórico pessoal/familiar informado e correlação clínico-genética."
+                "A variante c.1010G>A:p.(Arg337His) no gene TP53 é uma variante do tipo missense, causada pela "
+                "substituição de uma guanina por uma adenina, resultando na troca do aminoácido arginina por histidina "
+                "na posição 337 da proteína. De acordo com o banco de dados populacional gnomAD, que documenta dados "
+                "de sequenciamento de exomas e genomas de indivíduos não aparentados de diversas populações, esta "
+                "variante apresenta uma frequência alélica de aproximadamente 0,0003% na população geral. No ClinVar, "
+                "que compila variantes genéticas presentes em indivíduos com diversas patologias, esta variante é "
+                "classificada como patogênica (Variation ID: 12379), e está associada principalmente à síndrome de "
+                "Li-Fraumeni, uma condição de predisposição hereditária ao câncer.\n\n"
+                "A literatura científica contém diversos relatos da presença dessa variante em famílias brasileiras com "
+                "histórico de câncer precoce e múltiplos tumores, sendo considerada uma mutação fundadora no Brasil. De "
+                "acordo com o banco de dados PubMed, a variante c.1010G>A:p.(Arg337His) já foi reportada previamente "
+                "em pacientes com câncer de mama, sarcomas, tumores adrenocorticais, leucemias e outros tumores "
+                "relacionados à síndrome de Li-Fraumeni (PMID: 16494995, 10864200, 16033918, 21192060, 27714481, "
+                "16494995, 19046423, 22455664, 27223487, entre outros).\n\n"
+                "O gene TP53 codifica a proteína p53, um regulador central da resposta celular ao dano genético. Trata-se "
+                "de um importante gene supressor tumoral que atua promovendo parada do ciclo celular, reparo do DNA "
+                "ou apoptose em resposta a estresses celulares. Variantes patogênicas neste gene, como a c.1010G>A, "
+                "comprometem sua função de vigilância genômica, aumentando o risco de desenvolvimento de múltiplos "
+                "tipos de câncer ao longo da vida.\n\n"
+                "Este teste identificou variante clinicamente relevante nos genes TP53, associada ao aumento do risco "
+                "para o desenvolvimento de neoplasias. Trata-se de condições de herança autossômica dominante, o que "
+                "implica um risco de 50% de transmissão dessas variantes para cada descendente, além da possibilidade de "
+                "terem sido herdadas de um dos genitores, dado que a maioria dos casos é familiar.\n\n"
+                "Diante da importância de reconhecer familiares potencialmente em risco e orientar adequadamente sobre "
+                "as implicações dessas alterações, a critério médico, recomenda-se o aconselhamento genético para o(a) "
+                "paciente e seus familiares, bem como a oferta de estratégias de rastreamento precoce e medidas de "
+                "redução de risco quando indicadas."
             ),
-            "vus_gene": "—",
-            "vus_transcript": "—",
-            "vus_variant_c": "—",
-            "vus_variant_p": "—",
-            "vus_dbsnp": "—",
-            "vus_zygosity": "—",
-            "vus_inheritance": "—",
+            "vus_gene": "PTEN",
+            "vus_transcript": "NM_000314.8",
+            "vus_variant_c": "c.775C>T",
+            "vus_variant_p": "(p.His259Tyr)",
+            "vus_dbsnp": "rs2132277651",
+            "vus_zygosity": "Heterozigose",
+            "vus_inheritance": "Autossômica dominante",
             "vus_classification": "VUS",
             "additional_findings_text": (
-                "Não foram identificadas variantes adicionais clinicamente acionáveis. "
-                "Outras variantes classificadas como VUS devem ser reavaliadas conforme surgirem novos dados na literatura."
+                "Foram identificada(s) uma ou mais variante(s) de significado incerto nos genes analisados. Pelo "
+                "conhecimento atual não é possível definir a patogenicidade dessa(s) variante(s) abaixo. Portanto, "
+                "recomenda-se que essas informações não sejam usadas para fundamentar decisões clínicas. Sugere-se, "
+                "ainda, acompanhamento da literatura científica a respeito da(s) mesma(s)."
             ),
-            "metrics_coverage_mean": "350x",
-            "metrics_coverage_50x": "98%",
+            "metrics_coverage_mean": "656x",
+            "metrics_coverage_50x": "99,99%",
             "metrics_text": (
                 "Cobertura média do painel: 350x; 98% das bases com cobertura ≥50x. "
                 "Regiões com cobertura inferior foram avaliadas e não impactam a interpretação clínica principal."
             ),
             "recommendations_text": (
-                "Recomenda-se aconselhamento genético e rastreamento específico conforme diretrizes vigentes "
-                "para síndrome de Li-Fraumeni. Avaliar testagem em familiares de primeiro grau."
+                "A critério médico, recomenda-se aconselhamento genético, rastreamento oncológico periódico "
+                "conforme protocolos para portadores de variantes em genes e de predisposição a câncer e testagem dos "
+                "familiares de primeiro grau, visando esclarecimento do status genético e definição de medidas "
+                "preventivas e de vigilância adequadas."
             ),
             "notes_text": (
                 "A análise genômica por sequenciamento de nova geração (NGS) foi realizada com o objetivo de "
@@ -79,23 +107,48 @@ LAUDO_MODELOS = {
                 "condições de etiologia multifatorial, que não são plenamente detectáveis pelo NGS."
             ),
             "methodology_text": (
-                "Sequenciamento de nova geração (NGS) com captura híbrida de regiões codificantes e "
-                "splice-sites dos genes do painel. Alinhamento ao genoma de referência GRCh37/hg19 e "
-                "chamada de variantes por pipeline validado. Variantes confirmatórias por Sanger conforme necessidade."
+                "A amostra é submetida a processos de extração de DNA nuclear, fragmentação, indexação e captura com "
+                "kit específico, seguidos de enriquecimento das regiões de interesse. O sequenciamento é realizado em "
+                "equipamento Illumina, seguido por análise na plataforma Sophia DDM, contemplando a detecção de "
+                "variantes pontuais, indels e alterações de número de cópias (CNVs). Os parâmetros mínimos de qualidade "
+                "de análise são definidos por cobertura média >20x e ≥90% das bases. O alinhamento é realizado contra o "
+                "genoma de referência GRCh38/hg38 (nuclear). A anotação das variantes segue as recomendações da "
+                "Human Genome Variation Society (HGVS) e a classificação é realizada de acordo com os critérios do "
+                "American College of Medical Genetics and Genomics (ACMG), em consonância com as atualizações do "
+                "workgroup do ClinGen."
             ),
             "limitations_text": (
-                "O teste não detecta alterações estruturais complexas, expansões de repetições, "
-                "mosaicismo em baixos níveis ou variantes em regiões intrônicas profundas. "
-                "Cobertura incompleta pode ocorrer em regiões com alto conteúdo GC ou pseudogenes."
+                "Este exame não avalia regiões não codificantes do genoma, não sendo indicado para a investigação de "
+                "condições associadas a expansões de polinucleotídeos ou para a detecção de eventos genéticos "
+                "complexos, tais como inversões, translocações e expansões repetitivas. A presença de pseudogenes, "
+                "sequências altamente homólogas ou regiões ricas em repetições pode interferir na análise e impactar a "
+                "detecção de variantes genômicas. A análise de variações no número de cópias (CNVs) contempla "
+                "alterações que envolvem três ou mais éxons do genoma nuclear. Para CNVs, não são descritas as "
+                "coordenadas exatas dos pontos de quebra, e a acurácia na detecção pode ser influenciada pela "
+                "quantidade e qualidade do DNA disponível na amostra biológica. Este exame apresenta sensibilidade "
+                "superior a 99% para detecção de variantes do tipo SNV e pequenas inserções/deleções de até 20 pb. "
+                "Alterações maiores que 20 pb e menores que um éxon podem ser detectadas com sensibilidade reduzida. "
+                "A análise de CNVs que envolvem um ou mais éxons apresenta sensibilidade superior a 90%."
             ),
             "observations_text": (
-                "Interpretação realizada segundo guias ACMG/AMP e evidências disponíveis na data de emissão. "
-                "Resultados negativos não excluem completamente predisposição hereditária."
+                "A interpretação deste exame depende da correlação com dados clínicos e laboratoriais do(a) paciente. "
+                "Exames genéticos não constituem, isoladamente, ferramenta definitiva para diagnóstico, devendo integrar "
+                "o conjunto de informações utilizado pelo médico responsável. Este laudo reflete o conhecimento científico "
+                "atual e pode ser atualizado conforme novos avanços. Variantes benignas, provavelmente benignas, "
+                "intrônicas e sinônimas sem evidência de patogenicidade não são reportadas."
             ),
             "genes_analyzed_list": (
-                "Lista dos 144 genes analisados conforme painel Bioma Genetics para câncer hereditário. "
-                "Exemplos: TP53, BRCA1, BRCA2, PALB2, CHEK2, PTEN, CDH1, MLH1, MSH2, MSH6, PMS2, APC, "
-                "STK11, ATM, NBN, RAD51C, RAD51D, entre outros."
+                "AIP, ALK, APC, ATM, ATR, AXIN2, BAP1, BARD1, BLM, BMPR1A, BRCA1, BRCA2, BRIP1, BUB1B, CASR, "
+                "CDC73, CDH1, CDK4, CDKN1B, CDKN1C, CDKN2A, CEBPA, CEP57, CHEK2, CTC1, CTNNA1, CYLD, "
+                "DDB2, DICER1, DIS3L2, DKC1, EGFR, EGLN1, EPCAM, ERCC1, ERCC2, ERCC3, ERCC4, ERCC5, EXT1, "
+                "EXT2, EZH2, FAN1, FANCA, FANCB, FANCC, FANCD2, FANCE, FANCF, FANCG, FANCI, FANCL, FANCM, "
+                "FH, FLCN, GAA, GALNT12, GATA2, GBA, GLA, GPC3, GREM1, HDAC2, HNF1A, HOXB13, HRAS, IDUA, "
+                "KIF1B, KIT, KMT2D, LZTR1, MAX, MC1R, MDH2, MEN1, MERTK, MET, MITF, MLH1, MLH3, MRE11, MSH2, "
+                "MSH3, MSH6, MUTYH, NBN, NF1, NF2, NHP2, NOP10, NSD1, NTHL1, PALB2, PDGFRA, PHOX2B, PMS1, "
+                "PMS2, PMS2CL, POLD1, POLE, POLH, POT1, PRF1, PRKAR1A, PRSS1, PTCH1, PTCH2, PTEN, RAD50, "
+                "RAD51C, RAD51D, RB1, RECQL4, RET, RHBDF2, RUNX1, SBDS, SDHA, SDHAF2, SDHB, SDHC, SDHD, "
+                "SLX4, SMAD4, SMARCA4, SMARCB1, SMARCE1, STK11, SUFU, TERC, TERT, TINF2, TMEM127, TP53, "
+                "TSC1, TSC2, TYR, VHL, WRAP53, WRN, WT1, XPA, XPC e XRCC2 (144)"
             ),
             "references_text": (
                 "Referências: ACMG/AMP guidelines; ClinVar; gnomAD; NCCN Guidelines para predisposição hereditária ao câncer; "
@@ -107,7 +160,7 @@ LAUDO_MODELOS = {
             "lab_tech_registry": "CRBM-SP: 26338",
             "geneticist_name": "Dr. Guilherme Lugo",
             "geneticist_registry": "CRM-SP: 256188",
-            "director_name": "Dra. Angela F. L. Waitzberg",
+            "director_name": "Dra. Ângela F. L. Waitzberg",
             "director_registry": "CRM-SP: 69504",
         },
     },
@@ -201,7 +254,7 @@ REQUESTER_UF_LIST = [
 
 
 SAMPLE_TYPES = [
-    "Swab Oral",
+    "Swab bucal",
     "Sangue EDTA",
     "Liquido Amniotico",
     "Trofoblasto",
@@ -235,9 +288,9 @@ PROFESSIONAL_OPTIONS = {
     ],
     "director": [
         {
-            "name": "Dra. Angela F. L. Waitzberg",
+            "name": "Dra. Ângela F. L. Waitzberg",
             "registry": "CRM-SP: 69504",
-            "label": "Dra. Angela F. L. Waitzberg (CRM-SP: 69504)",
+            "label": "Dra. Ângela F. L. Waitzberg (CRM-SP: 69504)",
         },
     ],
 }
@@ -376,7 +429,7 @@ def _split_text_to_chunks(text, max_lines, max_chars_per_line):
     return chunks
 
 
-def _split_interpretation_for_template_b(text, max_lines_p2=8, max_lines_p3=17, max_chars_per_line=88):
+def _split_interpretation_for_template_b(text, max_lines_p2=8, max_lines_p3=19, max_chars_per_line=96):
     """
     Divide o texto de interpretação pelo limite aproximado de linhas da caixa da página 2.
     Mantém parágrafos e evita abrir a página 3 sem necessidade.
@@ -512,8 +565,10 @@ def _build_context(request, base_data=None):
         # dados do paciente (sempre editáveis, com placeholders)
         "patient_name": get_field("patient_name", "NOME COMPLETO PACIENTE"),
         "patient_birth_date": get_field("patient_birth_date", "00/00/0000"),
-        "patient_sex": get_field("patient_sex", "Feminino"),
+        "patient_sex": get_field("patient_sex", "Masculino/Feminino"),
         "patient_code": get_field("patient_code", "0000000000"),
+        "patient_birth_date_cover": get_field("patient_birth_date_cover", "00/00/000"),
+        "patient_code_cover": get_field("patient_code_cover", "000000000000000"),
 
         # dados do exame
         "exam_name": get_field("exam_name"),
@@ -521,7 +576,7 @@ def _build_context(request, base_data=None):
         "exam_release_date": get_field("exam_release_date", "00/00/0000"),
 
         # solicitante / amostra
-        "requester_name": get_field("requester_name", "Dr(a). Fulana de Tal"),
+        "requester_name": get_field("requester_name"),
         "requester_reg_type": get_field("requester_reg_type", ""),
         "requester_reg_type_other": get_field("requester_reg_type_other", ""),
         "requester_reg_number": get_field("requester_reg_number", ""),
@@ -533,7 +588,8 @@ def _build_context(request, base_data=None):
         "sample_description": get_field("sample_description", "Swab bucal (00000000000000)"),
         "clinical_indication": get_field(
             "clinical_indication",
-            "História pessoal/familiar de câncer, etc.",
+            "História pessoal de câncer de mama aos 45 anos e história familiar para casos "
+            "oncológicos (mãe com câncer de mama aos 49 anos).",
         ),
 
         # resultado principal
@@ -618,7 +674,7 @@ def _build_context(request, base_data=None):
 
     if not context.get("sample_type") and context.get("sample_description"):
         parsed_type, parsed_id = _parse_sample_description(context.get("sample_description"))
-        mapping = {"swab bucal": "Swab Oral", "swab oral": "Swab Oral"}
+        mapping = {"swab bucal": "Swab bucal", "swab oral": "Swab bucal"}
         if parsed_type:
             key = parsed_type.lower()
             context["sample_type"] = mapping.get(key, parsed_type)
@@ -642,61 +698,29 @@ def _build_context(request, base_data=None):
 
     layout_overflow = _parse_layout_overflow(request)
 
-    # Template B: allow client-side layout overrides for overflow
+    # Template B: use server-side split to keep total page count fixed at 8
     if context.get("laudo_type") == "cancer_hereditario_144":
-        layout_interpretation = _get_layout_section(layout_overflow, "interpretation")
-        if layout_interpretation and "p2" in layout_interpretation:
-            interpretation_p2 = layout_interpretation.get("p2", "")
-            interpretation_p3 = layout_interpretation.get("p3", "")
-            interpretation_overflow = _normalize_overflow_chunks(
-                layout_interpretation.get("overflow")
-            )
-        else:
-            interpretation_p2, interpretation_p3, interpretation_overflow = _split_interpretation_for_template_b(
-                context.get("interpretation_text", "")
-            )
+        interpretation_p2, interpretation_p3, interpretation_overflow = _split_interpretation_for_template_b(
+            context.get("interpretation_text", "")
+        )
         context["interpretation_p2"] = interpretation_p2
         context["interpretation_p3"] = interpretation_p3
 
-        layout_additional = _get_layout_section(layout_overflow, "additional")
-        if layout_additional and "p3" in layout_additional:
-            additional_p3 = layout_additional.get("p3", "")
-            additional_overflow = _normalize_overflow_chunks(
-                layout_additional.get("overflow")
-            )
-        else:
-            additional_p3, additional_overflow = _split_text_with_overflow(
-                context.get("additional_findings_text", ""),
-                first_lines=4,
-                overflow_lines=34,
-            )
+        additional_p3, additional_overflow = _split_text_with_overflow(
+            context.get("additional_findings_text", ""),
+            first_lines=4,
+            overflow_lines=34,
+        )
         context["additional_findings_p3"] = additional_p3
 
-        layout_genes = _get_layout_section(layout_overflow, "genes")
-        if layout_genes and "p4" in layout_genes:
-            genes_p4 = layout_genes.get("p4", "")
-            genes_overflow = _normalize_overflow_chunks(
-                layout_genes.get("overflow")
-            )
-        else:
-            genes_p4, genes_overflow = _split_text_with_overflow(
-                context.get("genes_analyzed_list", ""),
-                first_lines=10,
-                overflow_lines=34,
-            )
+        genes_p4, genes_overflow = _split_text_with_overflow(
+            context.get("genes_analyzed_list", ""),
+            first_lines=11,
+            overflow_lines=34,
+        )
         context["genes_analyzed_p4"] = genes_p4
 
-        overflow_pages = []
-
-        def add_overflow_pages(title, chunks):
-            for chunk in chunks:
-                if chunk.strip():
-                    overflow_pages.append({"title": title, "text": chunk})
-
-        add_overflow_pages("INTERPRETACAO (continuacao)", interpretation_overflow)
-        add_overflow_pages("ACHADOS ADICIONAIS (continuacao)", additional_overflow)
-        add_overflow_pages("GENES ANALISADOS (continuacao)", genes_overflow)
-        context["overflow_pages"] = overflow_pages
+        context["overflow_pages"] = []
     else:
         context["interpretation_p2"] = context.get("interpretation_text", "")
         context["interpretation_p3"] = ""
