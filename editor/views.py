@@ -1,8 +1,10 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.http import require_POST, require_http_methods
-from django.http import HttpResponse, HttpResponseForbidden
+from django.http import HttpResponse, HttpResponseForbidden, JsonResponse
 from django.template.loader import render_to_string
 from django.contrib.staticfiles import finders
+from django.core.files.base import ContentFile
+from django.core.files.storage import default_storage
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q, Count
 from django.contrib.auth.models import User
@@ -1118,25 +1120,14 @@ def _build_pdf_font_css(font_config):
     return CSS(string="\n".join(font_faces), font_config=font_config)
 
 
-@login_required
-@require_http_methods(["POST"])
-def export_pdf(request):
-    # Usa o mesmo contexto da previa
-    report = _get_report_from_request(request)
-    if report:
-        _update_report_from_request(report, request)
-    context = _build_context(request, base_data=report.data if report else None)
-
-    # Seleciona o template e CSS conforme o tipo de laudo
+def _prepare_pdf_render(context):
     template_name = "editor/preview_pdf.html"
     css_files = []
-
     if context.get("laudo_type") == "cancer_hereditario_144":
         template_name = "editor/preview_sample_b.html"
         css_b = finders.find("editor/css/pdf_template_b.css")
         if css_b:
             css_files = [css_b]
-        # Monta caminhos absolutos para os fundos das 8 paginas
         bg_pages = []
         for i in range(1, 9):
             path_bg = finders.find(f"editor/img/templates/laudo144_pg0{i}.png")
@@ -1149,21 +1140,46 @@ def export_pdf(request):
         main_css = finders.find("editor/css/style.css")
         pdf_override_css = finders.find("editor/css/pdf_overrides.css")
         css_files = [p for p in [main_css, pdf_override_css] if p]
+    return template_name, css_files, context
 
-    # Renderiza o template escolhido
+
+def _render_pdf_bytes(request, context):
+    template_name, css_files, context = _prepare_pdf_render(context)
     html_string = render_to_string(template_name, context, request=request)
+    font_config = FontConfiguration()
+    stylesheets = [CSS(filename=path, font_config=font_config) for path in css_files]
+    font_css = _build_pdf_font_css(font_config)
+    if font_css:
+        stylesheets.insert(0, font_css)
+    base_url = request.build_absolute_uri("/")
+    return HTML(string=html_string, base_url=base_url).write_pdf(
+        stylesheets=stylesheets,
+        font_config=font_config,
+    )
+
+
+def _preview_pdf_path(report_id):
+    return f"previews/{report_id}.pdf"
+
+
+def _get_preview_pdf_url(report_id):
+    path = _preview_pdf_path(report_id)
+    if default_storage.exists(path):
+        return default_storage.url(path)
+    return ""
+
+
+@login_required
+@require_http_methods(["POST"])
+def export_pdf(request):
+    # Usa o mesmo contexto da previa
+    report = _get_report_from_request(request)
+    if report:
+        _update_report_from_request(report, request)
+    context = _build_context(request, base_data=report.data if report else None)
 
     try:
-        font_config = FontConfiguration()
-        stylesheets = [CSS(filename=path, font_config=font_config) for path in css_files]
-        font_css = _build_pdf_font_css(font_config)
-        if font_css:
-            stylesheets.insert(0, font_css)
-        base_url = request.build_absolute_uri("/")
-        pdf_bytes = HTML(string=html_string, base_url=base_url).write_pdf(
-            stylesheets=stylesheets,
-            font_config=font_config,
-        )
+        pdf_bytes = _render_pdf_bytes(request, context)
     except Exception:
         logging.exception("Erro ao gerar PDF (Template B? %s)", context.get("laudo_type"))
         raise
@@ -1171,3 +1187,24 @@ def export_pdf(request):
     response = HttpResponse(pdf_bytes, content_type='application/pdf')
     response['Content-Disposition'] = 'inline; filename="laudo.pdf"'
     return response
+
+
+@login_required
+@require_http_methods(["POST"])
+def preview_pdf(request):
+    report = _get_report_from_request(request)
+    if report:
+        _update_report_from_request(report, request)
+    if not report:
+        return JsonResponse({"error": "Relatorio nao encontrado."}, status=404)
+    context = _build_context(request, base_data=report.data if report else None)
+    try:
+        pdf_bytes = _render_pdf_bytes(request, context)
+    except Exception:
+        logging.exception("Erro ao gerar PDF de previa (Template B? %s)", context.get("laudo_type"))
+        return JsonResponse({"error": "Falha ao gerar previa."}, status=500)
+    path = _preview_pdf_path(report.id)
+    if default_storage.exists(path):
+        default_storage.delete(path)
+    default_storage.save(path, ContentFile(pdf_bytes))
+    return JsonResponse({"url": _get_preview_pdf_url(report.id)})
