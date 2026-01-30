@@ -429,9 +429,19 @@
         errorEl.classList.remove('d-none');
     }
 
+    function toRelative(url) {
+        try {
+            const parsed = new URL(url, window.location.origin);
+            return `${parsed.pathname}${parsed.search}`;
+        } catch (err) {
+            return url;
+        }
+    }
+
     function setPreviewUrl(url) {
+        const relativeUrl = toRelative(url);
         const cacheBust = `v=${Date.now()}`;
-        const nextUrl = url.includes('?') ? `${url}&${cacheBust}` : `${url}?${cacheBust}`;
+        const nextUrl = relativeUrl.includes('?') ? `${relativeUrl}&${cacheBust}` : `${relativeUrl}?${cacheBust}`;
         iframe.src = nextUrl;
         if (emptyState) {
             emptyState.classList.add('d-none');
