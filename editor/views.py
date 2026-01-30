@@ -1147,6 +1147,9 @@ def _prepare_pdf_render(context):
 
 
 def _render_pdf_bytes(request, context):
+    if context.get("laudo_type") == "cancer_hereditario_144":
+        from .pdf_renderer import render_template_b_pdf
+        return render_template_b_pdf(context)
     template_name, css_files, context = _prepare_pdf_render(context)
     html_string = render_to_string(template_name, context, request=request)
     font_config = FontConfiguration()
