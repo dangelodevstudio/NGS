@@ -241,23 +241,31 @@ def render_template_b_pdf(context):
     _draw_footer(c, layout, context)
 
     # Interpretation (page 2)
-    _draw_paragraph(
+    leftover = _draw_paragraph(
         c,
         layout,
         "p2.interpretation",
-        context.get("interpretation_p2") or context.get("interpretation_text", ""),
+        context.get("interpretation_text", ""),
     )
     c.showPage()
 
     # Page 3
     _draw_background(c, 3, layout)
     _draw_header(c, layout, context)
-    _draw_paragraph(
-        c,
-        layout,
-        "p3.interpretation",
-        context.get("interpretation_p3", ""),
-    )
+    overflow = []
+    if leftover:
+        frame_leftover = Frame(
+            layout.fields["p3.interpretation"].x * mm,
+            (layout.page_height - layout.fields["p3.interpretation"].y - layout.fields["p3.interpretation"].h) * mm,
+            layout.fields["p3.interpretation"].w * mm,
+            layout.fields["p3.interpretation"].h * mm,
+            leftPadding=layout.fields["p3.interpretation"].padding_x * mm,
+            rightPadding=layout.fields["p3.interpretation"].padding_x * mm,
+            topPadding=layout.fields["p3.interpretation"].padding_y * mm,
+            bottomPadding=layout.fields["p3.interpretation"].padding_y * mm,
+            showBoundary=0,
+        )
+        overflow = frame_leftover.addFromList(leftover, c)
     _draw_paragraph(c, layout, "p3.additional", context.get("additional_findings_p3") or context.get("additional_findings_text", ""))
     _draw_table(c, layout, "vus", _build_vus_table(context, layout))
     _draw_footer(c, layout, context)
@@ -299,8 +307,31 @@ def render_template_b_pdf(context):
     _draw_footer(c, layout, context)
     c.showPage()
 
-    # Page 8 (background only)
-    _draw_background(c, 8, layout)
+    # Overflow pages for interpretation (if any)
+    used_overflow = False
+    while overflow:
+        used_overflow = True
+        _draw_background(c, 8, layout)
+        _draw_header(c, layout, context)
+        _draw_footer(c, layout, context)
+        frame_overflow = Frame(
+            12.70 * mm,
+            (layout.page_height - 75.93 - 175.93) * mm,
+            165.10 * mm,
+            175.93 * mm,
+            leftPadding=layout.padding_x * mm,
+            rightPadding=layout.padding_x * mm,
+            topPadding=layout.padding_y * mm,
+            bottomPadding=layout.padding_y * mm,
+            showBoundary=0,
+        )
+        overflow = frame_overflow.addFromList(overflow, c)
+        if overflow:
+            c.showPage()
+
+    # Page 8 (background only) if no overflow
+    if not used_overflow:
+        _draw_background(c, 8, layout)
 
     c.save()
     buffer.seek(0)
