@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.http import require_POST, require_http_methods
 from django.http import HttpResponse, HttpResponseForbidden, JsonResponse
 from django.template.loader import render_to_string
+from django.conf import settings
 from django.contrib.staticfiles import finders
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
@@ -1165,9 +1166,12 @@ def _preview_pdf_path(report_id):
 
 def _get_preview_pdf_url(report_id):
     path = _preview_pdf_path(report_id)
-    if default_storage.exists(path):
-        return default_storage.url(path)
-    return ""
+    if not default_storage.exists(path):
+        return ""
+    base = settings.MEDIA_URL or "/media/"
+    if not base.endswith("/"):
+        base += "/"
+    return f"{base}previews/{report_id}.pdf"
 
 
 @login_required
