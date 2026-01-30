@@ -121,7 +121,8 @@ def _build_results_table(context, layout):
         leading=12,
         textColor=Color(1, 1, 1),
         alignment=1,
-        wordWrap="CJK",
+        wordWrap="LTR",
+        splitLongWords=0,
     )
     cell_style = ParagraphStyle(
         "cell",
@@ -131,7 +132,8 @@ def _build_results_table(context, layout):
         leading=12,
         textColor=GRAY_TEXT,
         alignment=1,
-        wordWrap="CJK",
+        wordWrap="LTR",
+        splitLongWords=0,
     )
     data = [
         [
@@ -166,7 +168,8 @@ def _build_vus_table(context, layout):
         leading=12,
         textColor=Color(1, 1, 1),
         alignment=1,
-        wordWrap="CJK",
+        wordWrap="LTR",
+        splitLongWords=0,
     )
     cell_style = ParagraphStyle(
         "vus_cell",
@@ -176,7 +179,8 @@ def _build_vus_table(context, layout):
         leading=12,
         textColor=GRAY_TEXT,
         alignment=1,
-        wordWrap="CJK",
+        wordWrap="LTR",
+        splitLongWords=0,
     )
     data = [
         [
@@ -208,7 +212,13 @@ def _draw_header(c, layout, context):
     _draw_paragraph(c, layout, "header.release", f"<b>Data de Liberação:</b> {context.get('exam_release_date','')}")
 
 
-def _draw_footer(c, layout, context):
+def draw_footer(c, layout, context):
+    _draw_paragraph(
+        c,
+        layout,
+        "footer.analyst",
+        f"Analista responsável: {context.get('analyst_name','')} {context.get('analyst_registry','')}",
+    )
     _draw_paragraph(
         c,
         layout,
