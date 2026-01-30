@@ -56,8 +56,8 @@ def get_layout() -> ReportLayout:
     fields = {
         # Page 1 cover
         "p1.name": _field(26.05, 135.16, 140.10, 8.00, 16, 19.0, color="purple", font_name="bold"),
-        "p1.birth": _field(24.89, 148.75, 60.00, 6.00, 14, 17.0, color="purple", font_name="bold"),
-        "p1.code": _field(24.89, 155.73, 80.00, 6.00, 14, 17.0, color="purple", font_name="bold"),
+        "p1.birth": _field(24.89, 148.75, 140.10, 6.00, 14, 15.0, color="purple", font_name="bold"),
+        "p1.code": _field(24.89, 155.73, 140.10, 6.00, 14, 15.0, color="purple", font_name="bold"),
 
         # Header (pages 2-7)
         "header.name": _field(72.25, 13.72, 101.00, 6.00, 14, 16.0, color="purple", font_name="bold"),
@@ -68,10 +68,10 @@ def get_layout() -> ReportLayout:
         "header.release": _field(72.25, 38.21, 101.00, 6.00, 11, 13.0, color="purple"),
 
         # Page 2 content
-        "p2.requester": _field(13.61, 78.01, 164.91, 4.23, 12, 14.0),
-        "p2.sample": _field(13.61, 82.24, 164.97, 4.23, 12, 14.0),
+        "p2.requester": _field(13.61, 78.01, 164.91, 4.23, 12, 11.0),
+        "p2.sample": _field(13.61, 82.24, 164.97, 4.23, 12, 11.0),
         "p2.clinical": _field(13.61, 86.48, 169.16, 11.10, 10.5, 13.0, padding_x=padding_x, padding_y=padding_y, align=4),
-        "p2.exam": _field(13.61, 99.18, 160.91, 4.23, 12, 14.0),
+        "p2.exam": _field(13.61, 99.18, 160.91, 4.23, 12, 11.0),
         "p2.results": _field(12.99, 128.00, 164.02, 11.10, 10.5, 13.0, padding_x=padding_x, padding_y=padding_y, align=4),
         "p2.condition": _field(39.40, 172.16, 135.25, 4.30, 10, 12.0),
         "p2.interpretation": _field(13.08, 200.14, 163.63, 34.30, 10.5, 13.0, padding_x=padding_x, padding_y=padding_y, align=4),

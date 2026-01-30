@@ -57,6 +57,28 @@ def _style_for_field(layout, spec):
     )
 
 
+def _flow_in_frame(c, frame, flowables):
+    story = list(flowables)
+    frame._reset()
+    while story:
+        flowable = story[0]
+        available_width = frame._getAvailableWidth()
+        available_height = frame._y - frame._y1p
+        if available_height <= 0:
+            break
+        _, flow_height = flowable.wrap(available_width, available_height)
+        if flow_height <= available_height:
+            frame.add(flowable, c)
+            story.pop(0)
+            continue
+        parts = flowable.split(available_width, available_height)
+        if not parts:
+            break
+        frame.add(parts[0], c)
+        story = parts[1:] + story[1:]
+    return story
+
+
 def _draw_paragraph(c, layout, key, text):
     spec = layout.fields[key]
     frame = Frame(
@@ -71,7 +93,7 @@ def _draw_paragraph(c, layout, key, text):
         showBoundary=0,
     )
     paragraph = Paragraph(_format_text(text), _style_for_field(layout, spec))
-    return frame.addFromList([paragraph], c)
+    return _flow_in_frame(c, frame, [paragraph])
 
 
 def _table_style(layout):
@@ -254,18 +276,19 @@ def render_template_b_pdf(context):
     _draw_header(c, layout, context)
     overflow = []
     if leftover:
+        spec = layout.fields["p3.interpretation"]
         frame_leftover = Frame(
-            layout.fields["p3.interpretation"].x * mm,
-            (layout.page_height - layout.fields["p3.interpretation"].y - layout.fields["p3.interpretation"].h) * mm,
-            layout.fields["p3.interpretation"].w * mm,
-            layout.fields["p3.interpretation"].h * mm,
-            leftPadding=layout.fields["p3.interpretation"].padding_x * mm,
-            rightPadding=layout.fields["p3.interpretation"].padding_x * mm,
-            topPadding=layout.fields["p3.interpretation"].padding_y * mm,
-            bottomPadding=layout.fields["p3.interpretation"].padding_y * mm,
+            spec.x * mm,
+            (layout.page_height - spec.y - spec.h) * mm,
+            spec.w * mm,
+            spec.h * mm,
+            leftPadding=spec.padding_x * mm,
+            rightPadding=spec.padding_x * mm,
+            topPadding=spec.padding_y * mm,
+            bottomPadding=spec.padding_y * mm,
             showBoundary=0,
         )
-        overflow = frame_leftover.addFromList(leftover, c)
+        overflow = _flow_in_frame(c, frame_leftover, leftover)
     _draw_paragraph(c, layout, "p3.additional", context.get("additional_findings_p3") or context.get("additional_findings_text", ""))
     _draw_table(c, layout, "vus", _build_vus_table(context, layout))
     _draw_footer(c, layout, context)
@@ -325,7 +348,7 @@ def render_template_b_pdf(context):
             bottomPadding=layout.padding_y * mm,
             showBoundary=0,
         )
-        overflow = frame_overflow.addFromList(overflow, c)
+        overflow = _flow_in_frame(c, frame_overflow, overflow)
         if overflow:
             c.showPage()
 
