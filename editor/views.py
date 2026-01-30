@@ -16,6 +16,7 @@ import logging
 import re
 import textwrap
 import json
+from urllib.parse import urlparse
 from weasyprint import HTML, CSS
 from weasyprint.text.fonts import FontConfiguration
 from .models import Folder, Report
@@ -1169,9 +1170,12 @@ def _get_preview_pdf_url(report_id):
     if not default_storage.exists(path):
         return ""
     base = settings.MEDIA_URL or "/media/"
-    if not base.endswith("/"):
-        base += "/"
-    return f"{base}previews/{report_id}.pdf"
+    base_path = urlparse(base).path or "/media/"
+    if not base_path.startswith("/"):
+        base_path = f"/{base_path}"
+    if not base_path.endswith("/"):
+        base_path += "/"
+    return f"{base_path}previews/{report_id}.pdf"
 
 
 @login_required
