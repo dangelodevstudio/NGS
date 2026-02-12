@@ -42,6 +42,13 @@ def _format_text(text):
     return str(text).replace("\n", "<br/>")
 
 
+def _no_midword_break(text):
+    if not text:
+        return ""
+    # Keep compact genomic tokens (e.g. NM_000546.5 / p.His259Tyr) from splitting mid-word.
+    return str(text).replace(".", ".&#8288;")
+
+
 def _style_for_field(layout, spec):
     color = PURPLE if spec.color == "purple" else GRAY_TEXT
     font_name = layout.font_bold if spec.font_name == "bold" else layout.font_regular
@@ -158,9 +165,12 @@ def _build_results_table(context, layout):
     )
     data = [
         [
-            Paragraph(f"<b>{context.get('main_gene','')}</b><br/>{context.get('main_transcript','')}", gene_style),
             Paragraph(
-                f"{context.get('main_variant_c','')}<br/>{context.get('main_variant_p','')}",
+                f"<b>{context.get('main_gene','')}</b><br/>{_no_midword_break(context.get('main_transcript',''))}",
+                gene_style,
+            ),
+            Paragraph(
+                f"{context.get('main_variant_c','')}<br/>{_no_midword_break(context.get('main_variant_p',''))}",
                 cell_style,
             ),
             Paragraph(context.get("main_dbsnp", ""), cell_style),
@@ -205,8 +215,14 @@ def _build_vus_table(context, layout):
     )
     data = [
         [
-            Paragraph(f"<b>{context.get('vus_gene','')}</b><br/>{context.get('vus_transcript','')}", gene_style),
-            Paragraph(f"{context.get('vus_variant_c','')} {context.get('vus_variant_p','')}", cell_style),
+            Paragraph(
+                f"<b>{context.get('vus_gene','')}</b><br/>{_no_midword_break(context.get('vus_transcript',''))}",
+                gene_style,
+            ),
+            Paragraph(
+                f"{context.get('vus_variant_c','')}<br/>{_no_midword_break(context.get('vus_variant_p',''))}",
+                cell_style,
+            ),
             Paragraph(context.get("vus_dbsnp", ""), cell_style),
             Paragraph(context.get("vus_zygosity", ""), cell_style),
             Paragraph(context.get("vus_inheritance", ""), cell_style),
