@@ -96,6 +96,27 @@ def _draw_paragraph(c, layout, key, text):
     return _flow_in_frame(c, frame, [paragraph])
 
 
+def _draw_flowables_in_field(c, layout, key, flowables):
+    spec = layout.fields[key]
+    frame = Frame(
+        spec.x * mm,
+        (layout.page_height - spec.y - spec.h) * mm,
+        spec.w * mm,
+        spec.h * mm,
+        leftPadding=spec.padding_x * mm,
+        rightPadding=spec.padding_x * mm,
+        topPadding=spec.padding_y * mm,
+        bottomPadding=spec.padding_y * mm,
+        showBoundary=0,
+    )
+    return _flow_in_frame(c, frame, flowables)
+
+
+def _new_page(c, layout, context, bg_index):
+    _draw_background(c, bg_index, layout)
+    _draw_header(c, layout, context)
+
+
 def _table_style(layout):
     return TableStyle(
         [
@@ -313,12 +334,37 @@ def render_template_b_pdf(context):
     c.showPage()
 
     # Page 5
-    _draw_background(c, 5, layout)
-    _draw_header(c, layout, context)
+    _new_page(c, layout, context, 5)
     _draw_paragraph(c, layout, "p5.notes_subtitle", "ACHADOS SECUNDÁRIOS")
-    _draw_paragraph(c, layout, "p5.notes", context.get("notes_text", ""))
+    notes_overflow = _draw_paragraph(c, layout, "p5.notes", context.get("notes_text", ""))
+    had_section_break = False
+    while notes_overflow:
+        had_section_break = True
+        draw_footer(c, layout, context)
+        c.showPage()
+        _new_page(c, layout, context, 8)
+        _draw_paragraph(c, layout, "p5.notes_subtitle", "ACHADOS SECUNDÁRIOS (continuação)")
+        notes_overflow = _draw_flowables_in_field(c, layout, "p5.notes", notes_overflow)
+
     if context.get("is_admin"):
-        _draw_paragraph(c, layout, "p5.recommendations", context.get("recommendations_text", ""))
+        if had_section_break:
+            draw_footer(c, layout, context)
+            c.showPage()
+            _new_page(c, layout, context, 8)
+            had_section_break = False
+        recommendations_overflow = _draw_paragraph(c, layout, "p5.recommendations", context.get("recommendations_text", ""))
+        while recommendations_overflow:
+            had_section_break = True
+            draw_footer(c, layout, context)
+            c.showPage()
+            _new_page(c, layout, context, 8)
+            recommendations_overflow = _draw_flowables_in_field(c, layout, "p5.recommendations", recommendations_overflow)
+
+    if had_section_break:
+        draw_footer(c, layout, context)
+        c.showPage()
+        _new_page(c, layout, context, 8)
+
     _draw_paragraph(c, layout, "p5.metrics.title", "DNA Nuclear")
     _draw_paragraph(c, layout, "p5.metrics.label_mean", "Cobertura média da região alvo:")
     _draw_paragraph(c, layout, "p5.metrics.label_50x", "% da região alvo com cobertura maior ou igual a 50x:")
