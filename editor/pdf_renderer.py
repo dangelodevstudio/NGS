@@ -275,20 +275,24 @@ def render_template_b_pdf(context):
     _draw_header(c, layout, context)
     _draw_paragraph(c, layout, "p2.requester", f"<b>Solicitante:</b> {context.get('requester_display') or context.get('requester_name','')}")
     _draw_paragraph(c, layout, "p2.sample", f"<b>Amostra:</b> {context.get('sample_display') or context.get('sample_description','')}")
-    _draw_paragraph(c, layout, "p2.clinical", f"<b>Indicação clínica:</b> {context.get('clinical_indication','')}")
     _draw_paragraph(c, layout, "p2.exam", f"<b>Nome do exame:</b> {context.get('exam_name','')}")
-    _draw_paragraph(c, layout, "p2.results", context.get("main_result_intro", ""))
+    clinical_indication = (context.get("clinical_indication") or "").strip()
+    if clinical_indication:
+        _draw_paragraph(c, layout, "p2.clinical", f"<b>Indicação clínica:</b> {clinical_indication}")
+    result_intro = (
+        context.get("main_result_intro")
+        or "Foi identificada uma variante clinicamente relevante no gene TP53."
+    )
+    _draw_paragraph(c, layout, "p2.results", result_intro)
     _draw_paragraph(c, layout, "p2.condition", f"Condição: {context.get('main_condition','')}")
-    _draw_table(c, layout, "results", _build_results_table(context, layout))
-    draw_footer(c, layout, context)
-
-    # Interpretation (page 2)
     _draw_paragraph(
         c,
         layout,
         "p2.interpretation",
         context.get("interpretation_p2") or context.get("interpretation_text", ""),
     )
+    _draw_table(c, layout, "results", _build_results_table(context, layout))
+    draw_footer(c, layout, context)
     c.showPage()
 
     # Page 3
