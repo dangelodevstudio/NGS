@@ -95,9 +95,9 @@ def get_layout() -> ReportLayout:
         "p5.metrics.50x": _field(156.49, 202.64, 20.00, 5.05, 10.0, 12.0, align=1),
 
         # Page 6 content
-        "p6.methodology": _field(13.11, 75.99, 163.84, 38.53, 10.5, 13.0, padding_x=padding_x, padding_y=padding_y, align=4),
+        "p6.methodology": _field(13.11, 75.99, 163.84, 38.53, 10.5, 11.5, padding_x=1.2, padding_y=1.0, align=4),
 
-        # Footer (pages 1-7)
+        # Footer (internal pages: 2-7)
         "footer.analyst": _field(27.21, 246.30, 145.14, 4.10, 9.0, 10.0, color="purple", font_name="bold"),
         "footer.tech": _field(27.21, 250.00, 145.14, 4.10, 9.0, 10.0, color="purple", font_name="bold"),
         "footer.md": _field(27.21, 253.70, 145.14, 4.10, 9.0, 10.0, color="purple", font_name="bold"),

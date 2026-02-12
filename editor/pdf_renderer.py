@@ -268,7 +268,6 @@ def render_template_b_pdf(context):
     _draw_paragraph(c, layout, "p1.name", f"<b>Nome:</b> {context.get('patient_name','')}")
     _draw_paragraph(c, layout, "p1.birth", f"<b>Data de Nascimento:</b> {context.get('patient_birth_date_cover','')}")
     _draw_paragraph(c, layout, "p1.code", f"<b>Código ID:</b> {context.get('patient_code_cover','')}")
-    draw_footer(c, layout, context)
     c.showPage()
 
     # Page 2
@@ -337,10 +336,8 @@ def render_template_b_pdf(context):
     draw_footer(c, layout, context)
     c.showPage()
 
-    # Page 8
+    # Page 8 (institutional back cover)
     _draw_background(c, 8, layout)
-    _draw_header(c, layout, context)
-    draw_footer(c, layout, context)
 
     c.save()
     buffer.seek(0)
