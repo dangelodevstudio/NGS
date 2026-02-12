@@ -410,6 +410,9 @@ def render_template_b_pdf(context):
     # Page 6
     _draw_background(c, 6, layout)
     _draw_header(c, layout, context)
+    # Page 6 background already contains "CONSIDERAÇÕES E LIMITAÇÕES" and
+    # "OBSERVAÇÕES" blocks in this template family; only methodology text is
+    # overlaid here to avoid duplicated content.
     _draw_paragraph(c, layout, "p6.methodology", context.get("methodology_text", ""))
     draw_footer(c, layout, context)
     c.showPage()
@@ -417,6 +420,7 @@ def render_template_b_pdf(context):
     # Page 7
     _draw_background(c, 7, layout)
     _draw_header(c, layout, context)
+    # Page 7 background includes the references section for this template.
     draw_footer(c, layout, context)
     c.showPage()
 
