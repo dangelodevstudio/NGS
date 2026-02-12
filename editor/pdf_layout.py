@@ -74,11 +74,11 @@ def get_layout() -> ReportLayout:
         "p2.exam": _field(13.61, 99.18, 160.91, 4.23, 12, 11.0),
         "p2.results": _field(12.99, 128.00, 164.02, 11.10, 10.5, 13.0, padding_x=padding_x, padding_y=padding_y, align=4),
         "p2.condition": _field(39.40, 172.16, 135.25, 4.30, 10, 12.0),
-        "p2.interpretation": _field(13.08, 200.14, 163.63, 34.30, 10.5, 13.0, padding_x=padding_x, padding_y=padding_y, align=4),
+        "p2.interpretation": _field(13.08, 200.14, 163.63, 34.30, 10.0, 10.5, padding_x=padding_x, padding_y=0.0, align=4),
 
         # Page 3 content
-        "p3.interpretation": _field(12.70, 72.22, 165.10, 83.33, 10.5, 13.0, padding_x=padding_x, padding_y=padding_y, align=4),
-        "p3.additional": _field(12.77, 183.69, 164.38, 22.04, 10.5, 13.0, padding_x=padding_x, padding_y=padding_y, align=4),
+        "p3.interpretation": _field(12.70, 72.22, 165.10, 83.33, 10.0, 10.5, padding_x=padding_x, padding_y=0.0, align=4),
+        "p3.additional": _field(12.77, 183.69, 164.38, 22.04, 10.0, 11.0, padding_x=padding_x, padding_y=0.0, align=4),
 
         # Page 4 content
         "p4.genes": _field(12.90, 82.99, 164.24, 47.00, 9.0, 11.0, padding_x=padding_x, padding_y=padding_y, align=4),

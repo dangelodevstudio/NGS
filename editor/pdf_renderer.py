@@ -1,5 +1,6 @@
 """ReportLab-based PDF renderer for template B pages."""
 from io import BytesIO
+import re
 
 from django.contrib.staticfiles import finders
 from reportlab.lib.colors import Color
@@ -95,6 +96,74 @@ def _draw_paragraph(c, layout, key, text):
     )
     paragraph = Paragraph(_format_text(text), _style_for_field(layout, spec))
     return _flow_in_frame(c, frame, [paragraph])
+
+
+def _paragraph_fits(layout, key, text):
+    spec = layout.fields[key]
+    style = _style_for_field(layout, spec)
+    available_width = max((spec.w - (spec.padding_x * 2)) * mm, 1)
+    available_height = max((spec.h - (spec.padding_y * 2)) * mm, 1)
+    paragraph = Paragraph(_format_text(text), style)
+    _, needed_height = paragraph.wrap(available_width, available_height)
+    return needed_height <= available_height
+
+
+def _split_single_paragraph_to_fit(layout, key, text):
+    content = (text or "").strip()
+    if not content:
+        return "", ""
+    if _paragraph_fits(layout, key, content):
+        return content, ""
+
+    breakpoints = [match.end() for match in re.finditer(r"\s+", content)]
+    if not breakpoints or breakpoints[-1] != len(content):
+        breakpoints.append(len(content))
+
+    low = 0
+    high = len(breakpoints) - 1
+    best = 0
+    while low <= high:
+        middle = (low + high) // 2
+        idx = breakpoints[middle]
+        candidate = content[:idx].rstrip()
+        if candidate and _paragraph_fits(layout, key, candidate):
+            best = idx
+            low = middle + 1
+        else:
+            high = middle - 1
+
+    if best <= 0:
+        return "", content
+    return content[:best].rstrip(), content[best:].lstrip()
+
+
+def _split_text_to_fit(layout, key, text):
+    content = (text or "").strip()
+    if not content:
+        return "", ""
+    if _paragraph_fits(layout, key, content):
+        return content, ""
+
+    paragraphs = [p.strip() for p in re.split(r"\n\s*\n", content) if p.strip()]
+    if not paragraphs:
+        return "", ""
+
+    accepted = []
+    for index, paragraph in enumerate(paragraphs):
+        candidate = "\n\n".join(accepted + [paragraph]).strip()
+        if candidate and _paragraph_fits(layout, key, candidate):
+            accepted.append(paragraph)
+            continue
+
+        if not accepted:
+            head, tail = _split_single_paragraph_to_fit(layout, key, paragraph)
+            rest = [part for part in [tail] + paragraphs[index + 1 :] if part]
+            return head, "\n\n".join(rest).strip()
+
+        remaining = "\n\n".join(paragraphs[index:]).strip()
+        return "\n\n".join(accepted).strip(), remaining
+
+    return "\n\n".join(accepted).strip(), ""
 
 
 def _table_style(layout):
@@ -285,12 +354,14 @@ def render_template_b_pdf(context):
     )
     _draw_paragraph(c, layout, "p2.results", result_intro)
     _draw_paragraph(c, layout, "p2.condition", f"Condição: {context.get('main_condition','')}")
-    _draw_paragraph(
-        c,
+    interpretation_source = context.get("interpretation_text", "")
+    interpretation_p2, interpretation_remaining = _split_text_to_fit(
         layout,
         "p2.interpretation",
-        context.get("interpretation_p2") or context.get("interpretation_text", ""),
+        interpretation_source,
     )
+    if interpretation_p2:
+        _draw_paragraph(c, layout, "p2.interpretation", interpretation_p2)
     _draw_table(c, layout, "results", _build_results_table(context, layout))
     draw_footer(c, layout, context)
     c.showPage()
@@ -298,8 +369,18 @@ def render_template_b_pdf(context):
     # Page 3
     _draw_background(c, 3, layout)
     _draw_header(c, layout, context)
-    _draw_paragraph(c, layout, "p3.interpretation", context.get("interpretation_p3", ""))
-    _draw_paragraph(c, layout, "p3.additional", context.get("additional_findings_p3") or context.get("additional_findings_text", ""))
+    interpretation_p3, interpretation_overflow = _split_text_to_fit(
+        layout,
+        "p3.interpretation",
+        interpretation_remaining,
+    )
+    if interpretation_p3:
+        _draw_paragraph(c, layout, "p3.interpretation", interpretation_p3)
+
+    additional_text = context.get("additional_findings_text", "")
+    if interpretation_overflow:
+        additional_text = f"{interpretation_overflow}\n\n{additional_text}".strip()
+    _draw_paragraph(c, layout, "p3.additional", additional_text)
     _draw_table(c, layout, "vus", _build_vus_table(context, layout))
     draw_footer(c, layout, context)
     c.showPage()
