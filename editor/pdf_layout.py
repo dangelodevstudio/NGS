@@ -109,14 +109,14 @@ def get_layout() -> ReportLayout:
         "results": _table(
             x=12.53,
             y=151.72,
-            row_height=16.26,
+            row_height=14.20,
             col_widths=[24.384, 35.899, 25.061, 24.892, 26.416, 27.432],
         ),
         # VUS table (page 3).
         "vus": _table(
             x=12.53,
             y=219.80,
-            row_height=16.26,
+            row_height=14.20,
             col_widths=[24.384, 35.899, 25.061, 24.892, 26.416, 27.432],
         ),
     }
