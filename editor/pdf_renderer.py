@@ -229,13 +229,13 @@ def draw_footer(c, layout, context):
         c,
         layout,
         "footer.md",
-        f"Médico Responsável: {context.get('geneticist_name','')} | {context.get('geneticist_registry','')}",
+        f"Médico Responsável: {context.get('geneticist_name','')} {context.get('geneticist_registry','')}",
     )
     _draw_paragraph(
         c,
         layout,
         "footer.director",
-        f"Responsável técnico: {context.get('director_name','')} | {context.get('director_registry','')}",
+        f"Responsável técnico: {context.get('director_name','')} {context.get('director_registry','')}",
     )
 
 
@@ -258,6 +258,7 @@ def render_template_b_pdf(context):
     _draw_paragraph(c, layout, "p1.name", f"<b>Nome:</b> {context.get('patient_name','')}")
     _draw_paragraph(c, layout, "p1.birth", f"<b>Data de Nascimento:</b> {context.get('patient_birth_date_cover','')}")
     _draw_paragraph(c, layout, "p1.code", f"<b>Código ID:</b> {context.get('patient_code_cover','')}")
+    draw_footer(c, layout, context)
     c.showPage()
 
     # Page 2
@@ -270,7 +271,7 @@ def render_template_b_pdf(context):
     _draw_paragraph(c, layout, "p2.results", context.get("main_result_intro", ""))
     _draw_paragraph(c, layout, "p2.condition", f"Condição: {context.get('main_condition','')}")
     _draw_table(c, layout, "results", _build_results_table(context, layout))
-    _draw_footer(c, layout, context)
+    draw_footer(c, layout, context)
 
     # Interpretation (page 2)
     leftover = _draw_paragraph(
@@ -301,14 +302,14 @@ def render_template_b_pdf(context):
         overflow = _flow_in_frame(c, frame_leftover, leftover)
     _draw_paragraph(c, layout, "p3.additional", context.get("additional_findings_p3") or context.get("additional_findings_text", ""))
     _draw_table(c, layout, "vus", _build_vus_table(context, layout))
-    _draw_footer(c, layout, context)
+    draw_footer(c, layout, context)
     c.showPage()
 
     # Page 4
     _draw_background(c, 4, layout)
     _draw_header(c, layout, context)
     _draw_paragraph(c, layout, "p4.genes", context.get("genes_analyzed_p4") or context.get("genes_analyzed_list", ""))
-    _draw_footer(c, layout, context)
+    draw_footer(c, layout, context)
     c.showPage()
 
     # Page 5
@@ -324,20 +325,20 @@ def render_template_b_pdf(context):
     _draw_paragraph(c, layout, "p5.metrics.note", "Região alvo refere-se a região codificante e sítios de splicing dos genes analisados.")
     _draw_paragraph(c, layout, "p5.metrics.mean", context.get("metrics_coverage_mean", ""))
     _draw_paragraph(c, layout, "p5.metrics.50x", context.get("metrics_coverage_50x", ""))
-    _draw_footer(c, layout, context)
+    draw_footer(c, layout, context)
     c.showPage()
 
     # Page 6
     _draw_background(c, 6, layout)
     _draw_header(c, layout, context)
     _draw_paragraph(c, layout, "p6.methodology", context.get("methodology_text", ""))
-    _draw_footer(c, layout, context)
+    draw_footer(c, layout, context)
     c.showPage()
 
     # Page 7
     _draw_background(c, 7, layout)
     _draw_header(c, layout, context)
-    _draw_footer(c, layout, context)
+    draw_footer(c, layout, context)
     c.showPage()
 
     # Overflow pages for interpretation (if any)
@@ -346,7 +347,7 @@ def render_template_b_pdf(context):
         used_overflow = True
         _draw_background(c, 8, layout)
         _draw_header(c, layout, context)
-        _draw_footer(c, layout, context)
+        draw_footer(c, layout, context)
         frame_overflow = Frame(
             12.70 * mm,
             (layout.page_height - 75.93 - 175.93) * mm,
@@ -365,6 +366,8 @@ def render_template_b_pdf(context):
     # Page 8 (background only) if no overflow
     if not used_overflow:
         _draw_background(c, 8, layout)
+        _draw_header(c, layout, context)
+        draw_footer(c, layout, context)
 
     c.save()
     buffer.seek(0)
