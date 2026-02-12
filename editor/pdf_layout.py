@@ -84,15 +84,14 @@ def get_layout() -> ReportLayout:
         "p4.genes": _field(12.90, 82.99, 164.24, 47.00, 9.0, 11.0, padding_x=3.4, padding_y=0.0, align=4),
 
         # Page 5 content
-        "p5.notes": _field(13.33, 84.73, 164.34, 38.53, 10.0, 12.0, padding_x=padding_x, padding_y=padding_y, align=4),
-        "p5.notes_subtitle": _field(18.45, 76.95, 140.00, 4.67, 11.0, 13.0, color="purple", font_name="bold"),
-        "p5.recommendations": _field(13.44, 146.42, 164.53, 17.37, 10.0, 12.0, padding_x=padding_x, padding_y=padding_y, align=4),
+        "p5.notes": _field(13.33, 84.73, 164.34, 43.50, 9.0, 9.7, padding_x=1.8, padding_y=1.1, align=4),
+        "p5.recommendations": _field(13.44, 146.42, 164.53, 17.37, 9.3, 10.0, padding_x=2.2, padding_y=0.8, align=4),
         "p5.metrics.title": _field(15.13, 189.19, 117.07, 4.67, 11.0, 13.0, color="purple", font_name="bold"),
-        "p5.metrics.label_mean": _field(15.13, 193.43, 119.06, 4.25, 10.0, 12.0, color="purple", font_name="bold"),
-        "p5.metrics.label_50x": _field(15.13, 199.78, 119.06, 4.25, 10.0, 12.0, color="purple", font_name="bold"),
-        "p5.metrics.note": _field(15.13, 204.01, 118.88, 3.53, 9.0, 11.0, color="purple"),
-        "p5.metrics.mean": _field(156.49, 191.10, 20.00, 5.05, 10.0, 12.0, align=1),
-        "p5.metrics.50x": _field(156.49, 202.64, 20.00, 5.05, 10.0, 12.0, align=1),
+        "p5.metrics.label_mean": _field(15.13, 192.20, 119.06, 4.80, 9.3, 10.0, color="purple", font_name="bold"),
+        "p5.metrics.label_50x": _field(15.13, 198.55, 119.06, 4.80, 9.3, 10.0, color="purple", font_name="bold"),
+        "p5.metrics.note": _field(15.13, 204.00, 118.88, 3.80, 8.0, 8.6, color="purple"),
+        "p5.metrics.mean": _field(156.49, 191.70, 20.00, 5.00, 9.8, 10.0, align=1),
+        "p5.metrics.50x": _field(156.49, 203.25, 20.00, 5.00, 9.8, 10.0, align=1),
 
         # Page 6 content
         "p6.methodology": _field(13.11, 75.99, 163.84, 38.53, 10.5, 11.5, padding_x=1.2, padding_y=1.0, align=4),

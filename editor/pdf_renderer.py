@@ -395,16 +395,15 @@ def render_template_b_pdf(context):
     # Page 5
     _draw_background(c, 5, layout)
     _draw_header(c, layout, context)
-    _draw_paragraph(c, layout, "p5.notes_subtitle", "ACHADOS SECUNDÁRIOS")
-    _draw_paragraph(c, layout, "p5.notes", context.get("notes_text", ""))
-    if context.get("is_admin"):
-        _draw_paragraph(c, layout, "p5.recommendations", context.get("recommendations_text", ""))
     _draw_paragraph(c, layout, "p5.metrics.title", "DNA Nuclear")
     _draw_paragraph(c, layout, "p5.metrics.label_mean", "Cobertura média da região alvo:")
     _draw_paragraph(c, layout, "p5.metrics.label_50x", "% da região alvo com cobertura maior ou igual a 50x:")
     _draw_paragraph(c, layout, "p5.metrics.note", "Região alvo refere-se a região codificante e sítios de splicing dos genes analisados.")
     _draw_paragraph(c, layout, "p5.metrics.mean", context.get("metrics_coverage_mean", ""))
     _draw_paragraph(c, layout, "p5.metrics.50x", context.get("metrics_coverage_50x", ""))
+    if context.get("is_admin"):
+        _draw_paragraph(c, layout, "p5.recommendations", context.get("recommendations_text", ""))
+    _draw_paragraph(c, layout, "p5.notes", context.get("notes_text", ""))
     draw_footer(c, layout, context)
     c.showPage()
 
