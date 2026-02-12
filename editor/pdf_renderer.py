@@ -42,13 +42,6 @@ def _format_text(text):
     return str(text).replace("\n", "<br/>")
 
 
-def _no_midword_break(text):
-    if not text:
-        return ""
-    # Keep compact genomic tokens (e.g. NM_000546.5 / p.His259Tyr) from splitting mid-word.
-    return str(text).replace(".", ".&#8288;")
-
-
 def _style_for_field(layout, spec):
     color = PURPLE if spec.color == "purple" else GRAY_TEXT
     font_name = layout.font_bold if spec.font_name == "bold" else layout.font_regular
@@ -60,7 +53,8 @@ def _style_for_field(layout, spec):
         leading=spec.leading,
         textColor=color,
         alignment=spec.align,
-        wordWrap="CJK",
+        wordWrap="LTR",
+        splitLongWords=0,
     )
 
 
@@ -103,27 +97,6 @@ def _draw_paragraph(c, layout, key, text):
     return _flow_in_frame(c, frame, [paragraph])
 
 
-def _draw_flowables_in_field(c, layout, key, flowables):
-    spec = layout.fields[key]
-    frame = Frame(
-        spec.x * mm,
-        (layout.page_height - spec.y - spec.h) * mm,
-        spec.w * mm,
-        spec.h * mm,
-        leftPadding=spec.padding_x * mm,
-        rightPadding=spec.padding_x * mm,
-        topPadding=spec.padding_y * mm,
-        bottomPadding=spec.padding_y * mm,
-        showBoundary=0,
-    )
-    return _flow_in_frame(c, frame, flowables)
-
-
-def _new_page(c, layout, context, bg_index):
-    _draw_background(c, bg_index, layout)
-    _draw_header(c, layout, context)
-
-
 def _table_style(layout):
     return TableStyle(
         [
@@ -132,8 +105,8 @@ def _table_style(layout):
             ("FONTNAME", (0, 0), (-1, -1), layout.font_regular),
             ("FONTSIZE", (0, 0), (-1, -1), 10),
             ("TEXTCOLOR", (0, 0), (-1, -1), GRAY_TEXT),
-            ("LEFTPADDING", (0, 0), (-1, -1), 2),
-            ("RIGHTPADDING", (0, 0), (-1, -1), 2),
+            ("LEFTPADDING", (0, 0), (-1, -1), 1),
+            ("RIGHTPADDING", (0, 0), (-1, -1), 1),
             ("TOPPADDING", (0, 0), (-1, -1), 1),
             ("BOTTOMPADDING", (0, 0), (-1, -1), 1),
         ]
@@ -166,11 +139,11 @@ def _build_results_table(context, layout):
     data = [
         [
             Paragraph(
-                f"<b>{context.get('main_gene','')}</b><br/>{_no_midword_break(context.get('main_transcript',''))}",
+                f"<b>{context.get('main_gene','')}</b><br/><nobr>{context.get('main_transcript','')}</nobr>",
                 gene_style,
             ),
             Paragraph(
-                f"{context.get('main_variant_c','')}<br/>{_no_midword_break(context.get('main_variant_p',''))}",
+                f"{context.get('main_variant_c','')}<br/><nobr>{context.get('main_variant_p','')}</nobr>",
                 cell_style,
             ),
             Paragraph(context.get("main_dbsnp", ""), cell_style),
@@ -216,11 +189,11 @@ def _build_vus_table(context, layout):
     data = [
         [
             Paragraph(
-                f"<b>{context.get('vus_gene','')}</b><br/>{_no_midword_break(context.get('vus_transcript',''))}",
+                f"<b>{context.get('vus_gene','')}</b><br/><nobr>{context.get('vus_transcript','')}</nobr>",
                 gene_style,
             ),
             Paragraph(
-                f"{context.get('vus_variant_c','')}<br/>{_no_midword_break(context.get('vus_variant_p',''))}",
+                f"{context.get('vus_variant_c','')}<br/><nobr>{context.get('vus_variant_p','')}</nobr>",
                 cell_style,
             ),
             Paragraph(context.get("vus_dbsnp", ""), cell_style),
@@ -311,32 +284,18 @@ def render_template_b_pdf(context):
     draw_footer(c, layout, context)
 
     # Interpretation (page 2)
-    leftover = _draw_paragraph(
+    _draw_paragraph(
         c,
         layout,
         "p2.interpretation",
-        context.get("interpretation_text", ""),
+        context.get("interpretation_p2") or context.get("interpretation_text", ""),
     )
     c.showPage()
 
     # Page 3
     _draw_background(c, 3, layout)
     _draw_header(c, layout, context)
-    overflow = []
-    if leftover:
-        spec = layout.fields["p3.interpretation"]
-        frame_leftover = Frame(
-            spec.x * mm,
-            (layout.page_height - spec.y - spec.h) * mm,
-            spec.w * mm,
-            spec.h * mm,
-            leftPadding=spec.padding_x * mm,
-            rightPadding=spec.padding_x * mm,
-            topPadding=spec.padding_y * mm,
-            bottomPadding=spec.padding_y * mm,
-            showBoundary=0,
-        )
-        overflow = _flow_in_frame(c, frame_leftover, leftover)
+    _draw_paragraph(c, layout, "p3.interpretation", context.get("interpretation_p3", ""))
     _draw_paragraph(c, layout, "p3.additional", context.get("additional_findings_p3") or context.get("additional_findings_text", ""))
     _draw_table(c, layout, "vus", _build_vus_table(context, layout))
     draw_footer(c, layout, context)
@@ -350,37 +309,12 @@ def render_template_b_pdf(context):
     c.showPage()
 
     # Page 5
-    _new_page(c, layout, context, 5)
+    _draw_background(c, 5, layout)
+    _draw_header(c, layout, context)
     _draw_paragraph(c, layout, "p5.notes_subtitle", "ACHADOS SECUNDÁRIOS")
-    notes_overflow = _draw_paragraph(c, layout, "p5.notes", context.get("notes_text", ""))
-    had_section_break = False
-    while notes_overflow:
-        had_section_break = True
-        draw_footer(c, layout, context)
-        c.showPage()
-        _new_page(c, layout, context, 8)
-        _draw_paragraph(c, layout, "p5.notes_subtitle", "ACHADOS SECUNDÁRIOS (continuação)")
-        notes_overflow = _draw_flowables_in_field(c, layout, "p5.notes", notes_overflow)
-
+    _draw_paragraph(c, layout, "p5.notes", context.get("notes_text", ""))
     if context.get("is_admin"):
-        if had_section_break:
-            draw_footer(c, layout, context)
-            c.showPage()
-            _new_page(c, layout, context, 8)
-            had_section_break = False
-        recommendations_overflow = _draw_paragraph(c, layout, "p5.recommendations", context.get("recommendations_text", ""))
-        while recommendations_overflow:
-            had_section_break = True
-            draw_footer(c, layout, context)
-            c.showPage()
-            _new_page(c, layout, context, 8)
-            recommendations_overflow = _draw_flowables_in_field(c, layout, "p5.recommendations", recommendations_overflow)
-
-    if had_section_break:
-        draw_footer(c, layout, context)
-        c.showPage()
-        _new_page(c, layout, context, 8)
-
+        _draw_paragraph(c, layout, "p5.recommendations", context.get("recommendations_text", ""))
     _draw_paragraph(c, layout, "p5.metrics.title", "DNA Nuclear")
     _draw_paragraph(c, layout, "p5.metrics.label_mean", "Cobertura média da região alvo:")
     _draw_paragraph(c, layout, "p5.metrics.label_50x", "% da região alvo com cobertura maior ou igual a 50x:")
@@ -403,33 +337,10 @@ def render_template_b_pdf(context):
     draw_footer(c, layout, context)
     c.showPage()
 
-    # Overflow pages for interpretation (if any)
-    used_overflow = False
-    while overflow:
-        used_overflow = True
-        _draw_background(c, 8, layout)
-        _draw_header(c, layout, context)
-        draw_footer(c, layout, context)
-        frame_overflow = Frame(
-            12.70 * mm,
-            (layout.page_height - 75.93 - 175.93) * mm,
-            165.10 * mm,
-            175.93 * mm,
-            leftPadding=layout.padding_x * mm,
-            rightPadding=layout.padding_x * mm,
-            topPadding=layout.padding_y * mm,
-            bottomPadding=layout.padding_y * mm,
-            showBoundary=0,
-        )
-        overflow = _flow_in_frame(c, frame_overflow, overflow)
-        if overflow:
-            c.showPage()
-
-    # Page 8 (background only) if no overflow
-    if not used_overflow:
-        _draw_background(c, 8, layout)
-        _draw_header(c, layout, context)
-        draw_footer(c, layout, context)
+    # Page 8
+    _draw_background(c, 8, layout)
+    _draw_header(c, layout, context)
+    draw_footer(c, layout, context)
 
     c.save()
     buffer.seek(0)
