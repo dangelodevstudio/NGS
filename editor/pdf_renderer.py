@@ -342,12 +342,15 @@ def render_template_b_pdf(context):
     # Page 2
     _draw_background(c, 2, layout)
     _draw_header(c, layout, context)
-    _draw_paragraph(c, layout, "p2.requester", f"<b>Solicitante:</b> {context.get('requester_display') or context.get('requester_name','')}")
-    _draw_paragraph(c, layout, "p2.sample", f"<b>Amostra:</b> {context.get('sample_display') or context.get('sample_description','')}")
-    _draw_paragraph(c, layout, "p2.exam", f"<b>Nome do exame:</b> {context.get('exam_name','')}")
+    requester_line = f"<b>Solicitante:</b>&nbsp;{context.get('requester_display') or context.get('requester_name','')}"
+    sample_line = f"<b>Amostra:</b>&nbsp;{context.get('sample_display') or context.get('sample_description','')}"
     clinical_indication = (context.get("clinical_indication") or "").strip()
+    data_lines = [requester_line, sample_line]
     if clinical_indication:
-        _draw_paragraph(c, layout, "p2.clinical", f"<b>Indicação clínica:</b> {clinical_indication}")
+        data_lines.append(f"<b>Indicação clínica:</b>&nbsp;{clinical_indication}")
+    data_lines.append("")
+    data_lines.append(f"Nome do exame: <b>{context.get('exam_name','')}</b>")
+    _draw_paragraph(c, layout, "p2.data", "\n".join(data_lines))
     result_intro = (
         context.get("main_result_intro")
         or "Foi identificada uma variante clinicamente relevante no gene TP53."

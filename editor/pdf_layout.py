@@ -68,6 +68,7 @@ def get_layout() -> ReportLayout:
         "header.release": _field(72.25, 38.21, 101.00, 6.00, 11, 13.0, color="purple"),
 
         # Page 2 content
+        "p2.data": _field(13.61, 78.01, 164.97, 25.60, 9.8, 10.8, padding_x=2.0, padding_y=0.8, align=0),
         "p2.requester": _field(13.61, 78.01, 164.91, 4.23, 12, 11.0),
         "p2.sample": _field(13.61, 82.24, 164.97, 4.23, 12, 11.0),
         "p2.clinical": _field(13.61, 86.48, 169.16, 11.10, 10.0, 11.0, padding_x=1.2, padding_y=0.5, align=4),
