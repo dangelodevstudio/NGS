@@ -97,10 +97,10 @@ def get_layout() -> ReportLayout:
         "p6.methodology": _field(13.11, 75.99, 163.84, 38.53, 10.5, 11.5, padding_x=1.2, padding_y=1.0, align=4),
 
         # Footer (internal pages: 2-7)
-        "footer.analyst": _field(27.21, 248.30, 145.14, 4.10, 9.0, 10.0, color="purple", font_name="bold"),
-        "footer.tech": _field(27.21, 252.00, 145.14, 4.10, 9.0, 10.0, color="purple", font_name="bold"),
-        "footer.md": _field(27.21, 255.70, 145.14, 4.10, 9.0, 10.0, color="purple", font_name="bold"),
-        "footer.director": _field(27.21, 259.41, 145.14, 4.10, 9.0, 10.0, color="purple", font_name="bold"),
+        "footer.analyst": _field(27.21, 248.70, 145.14, 4.10, 9.0, 10.0, color="purple", font_name="bold"),
+        "footer.tech": _field(27.21, 252.40, 145.14, 4.10, 9.0, 10.0, color="purple", font_name="bold"),
+        "footer.md": _field(27.21, 256.10, 145.14, 4.10, 9.0, 10.0, color="purple", font_name="bold"),
+        "footer.director": _field(27.21, 259.81, 145.14, 4.10, 9.0, 10.0, color="purple", font_name="bold"),
     }
 
     tables = {
