@@ -198,18 +198,6 @@ def _table_style(layout):
 
 
 def _build_results_table(context, layout):
-    gene_style = ParagraphStyle(
-        "gene",
-        fontName=layout.font_regular,
-        boldFontName=layout.font_bold,
-        fontSize=8.0,
-        leading=8.4,
-        spaceBefore=1.6,
-        textColor=Color(1, 1, 1),
-        alignment=1,
-        wordWrap="LTR",
-        splitLongWords=0,
-    )
     cell_style = ParagraphStyle(
         "cell",
         fontName=layout.font_regular,
@@ -224,11 +212,7 @@ def _build_results_table(context, layout):
     data = [
         ["", "", "", "", "", ""],
         [
-            Paragraph(
-                f"<font name='{layout.font_bold}'>{context.get('main_gene','')}</font><br/>"
-                f"<font name='{layout.font_regular}'><nobr>{context.get('main_transcript','')}</nobr></font>",
-                gene_style,
-            ),
+            "",
             Paragraph(
                 f"{context.get('main_variant_c','')}<br/><nobr>{context.get('main_variant_p','')}</nobr>",
                 cell_style,
@@ -256,8 +240,6 @@ def _build_results_table(context, layout):
                 ("BOTTOMPADDING", (0, 1), (-1, 1), 0.2),
                 ("LEFTPADDING", (0, 1), (-1, 1), 0.3),
                 ("RIGHTPADDING", (0, 1), (-1, 1), 0.3),
-                ("TOPPADDING", (0, 1), (0, 1), 1.1),
-                ("BOTTOMPADDING", (0, 1), (0, 1), 1.1),
             ]
         )
     )
@@ -369,6 +351,28 @@ def _draw_table(c, layout, spec_key, table):
     table.drawOn(c, table_x, table_y)
 
 
+def _draw_results_gene_centered(c, layout, context):
+    spec = layout.tables["results"]
+    header_h_mm = 4.7
+    data_h_mm = spec.row_height - header_h_mm
+    x = spec.x * mm
+    y = (layout.page_height - spec.y - spec.row_height) * mm
+    w = spec.col_widths[0] * mm
+    cx = x + (w / 2.0)
+    cy = y + ((data_h_mm * mm) / 2.0)
+
+    gene = (context.get("main_gene", "") or "").strip()
+    transcript = (context.get("main_transcript", "") or "").strip()
+
+    c.saveState()
+    c.setFillColor(Color(1, 1, 1))
+    c.setFont(layout.font_bold, 9.2)
+    c.drawCentredString(cx, cy - 3.6, gene)
+    c.setFont(layout.font_regular, 8.3)
+    c.drawCentredString(cx, cy - 11.7, transcript)
+    c.restoreState()
+
+
 def render_template_b_pdf(context):
     _register_fonts()
     layout = get_layout()
@@ -409,6 +413,7 @@ def render_template_b_pdf(context):
     if interpretation_p2:
         _draw_paragraph(c, layout, "p2.interpretation", interpretation_p2)
     _draw_table(c, layout, "results", _build_results_table(context, layout))
+    _draw_results_gene_centered(c, layout, context)
     draw_footer(c, layout, context)
     c.showPage()
 
