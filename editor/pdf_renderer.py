@@ -407,6 +407,9 @@ def render_template_b_pdf(context):
     )
     _draw_paragraph(c, layout, "p2.results", result_intro)
     _draw_paragraph(c, layout, "p2.condition", f"Condição: {context.get('main_condition','')}")
+    inheritance_legend = (context.get("main_inheritance_legend") or "").strip()
+    if inheritance_legend:
+        _draw_paragraph(c, layout, "p2.inheritance_legend", inheritance_legend)
     interpretation_source = context.get("interpretation_text", "")
     interpretation_p2, interpretation_remaining = _split_text_to_fit(
         layout,

@@ -35,3 +35,13 @@ Arquivo validado: `laudo-etapa10.pdf`
 - Os PNGs de background (`laudo144_pg06.png` e `laudo144_pg07.png`) já embutem parte do conteúdo institucional (incluindo blocos e referências).  
   Por isso, o renderer mantém overlay somente de conteúdo dinâmico nesses pontos para evitar duplicação visual.
 
+## Main Result Controls (2026-02-18)
+
+- [PASS] `Zigosidade`, `Herança` e `Classificação` com select + fallback `Outro` no editor.
+- [PASS] Compatibilidade com dados legados: valores fora da lista abrem em `Outro`.
+- [PASS] `Condição` com fenótipo editável e OMIM fixo no editor.
+- [PASS] Persistência mantém campos existentes em `Report.data` (`main_zygosity`, `main_inheritance`, `main_classification`, `main_condition`).
+- [PASS] Legenda automática de herança adicionada na página 2 (preview HTML + PDF ReportLab).
+- [PASS] VUS não alterado (escopo restrito ao resultado principal).
+- [PASS] Testes automatizados de regra/contexto/update (`python manage.py test editor -v 2`).
+- [PASS] Validação de render PDF (`pdftotext` página 2 com condição + legenda).

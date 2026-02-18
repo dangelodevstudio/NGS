@@ -75,6 +75,7 @@ def get_layout() -> ReportLayout:
         "p2.exam": _field(13.61, 99.18, 160.91, 4.23, 12, 11.0),
         "p2.results": _field(12.99, 128.00, 164.02, 11.10, 10.5, 13.0, padding_x=padding_x, padding_y=padding_y, align=4),
         "p2.condition": _field(39.40, 172.16, 135.25, 4.30, 10, 12.0),
+        "p2.inheritance_legend": _field(39.40, 177.20, 135.25, 4.30, 8.6, 9.4, align=0),
         "p2.interpretation": _field(13.08, 200.14, 163.63, 34.30, 10.0, 10.5, padding_x=padding_x, padding_y=0.0, align=4),
 
         # Page 3 content

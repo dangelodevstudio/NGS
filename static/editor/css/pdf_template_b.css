@@ -160,6 +160,7 @@
 .field-p2-zygosity,
 .field-p2-inheritance,
 .field-p2-classification,
+.field-p2-inheritance-legend,
 .field-p3-vus-gene,
 .field-p3-vus-transcript,
 .field-p3-vus-variant-c,
@@ -175,6 +176,7 @@
 .field-p2-zygosity,
 .field-p2-inheritance,
 .field-p2-classification,
+.field-p2-inheritance-legend,
 .field-p3-vus-dbsnp,
 .field-p3-vus-zygosity,
 .field-p3-vus-inheritance,
@@ -191,6 +193,7 @@
 
 .field-p2-inheritance,
 .field-p2-classification,
+.field-p2-inheritance-legend,
 .field-p3-vus-inheritance,
 .field-p3-vus-classification {
     white-space: normal;
@@ -294,6 +297,7 @@
 .field-p2-inheritance,
 .field-p2-classification,
 .field-p2-condition,
+.field-p2-inheritance-legend,
 .field-p2-results,
 .field-p2-interpretation,
 .field-p3-interpretation,
@@ -459,6 +463,17 @@
     left: 39.40mm;
     width: 135.25mm;
     height: 4.30mm;
+}
+
+.field-p2-inheritance-legend {
+    top: 177.20mm;
+    left: 39.40mm;
+    width: 135.25mm;
+    height: 4.30mm;
+    font-size: 8.6pt;
+    line-height: 1.15;
+    color: #595959;
+    text-align: left;
 }
 
 /* Bloco RESULTADOS */
