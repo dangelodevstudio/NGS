@@ -237,9 +237,9 @@ def _build_vus_table(context, layout):
         "vus_gene",
         fontName=layout.font_regular,
         boldFontName=layout.font_bold,
-        fontSize=8.8,
-        leading=9.6,
-        textColor=Color(1, 1, 1),
+        fontSize=8.6,
+        leading=9.2,
+        textColor=GRAY_TEXT,
         alignment=1,
         wordWrap="LTR",
         splitLongWords=0,
@@ -248,8 +248,8 @@ def _build_vus_table(context, layout):
         "vus_cell",
         fontName=layout.font_regular,
         boldFontName=layout.font_bold,
-        fontSize=8.8,
-        leading=9.6,
+        fontSize=8.6,
+        leading=9.2,
         textColor=GRAY_TEXT,
         alignment=1,
         wordWrap="LTR",
@@ -262,7 +262,7 @@ def _build_vus_table(context, layout):
                 gene_style,
             ),
             Paragraph(
-                f"{context.get('vus_variant_c','')}<br/><nobr>{context.get('vus_variant_p','')}</nobr>",
+                f"{context.get('vus_variant_c','')} <nobr>{context.get('vus_variant_p','')}</nobr>",
                 cell_style,
             ),
             Paragraph(context.get("vus_dbsnp", ""), cell_style),
@@ -278,7 +278,6 @@ def _build_vus_table(context, layout):
         rowHeights=[spec.row_height * mm],
     )
     table.setStyle(_table_style(layout))
-    table.setStyle(TableStyle([("BACKGROUND", (0, 0), (0, 0), PURPLE)]))
     return table
 
 
