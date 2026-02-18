@@ -286,7 +286,7 @@ def _build_vus_table(context, layout):
                 ("LEFTPADDING", (0, 0), (-1, -1), 0.2),
                 ("RIGHTPADDING", (0, 0), (-1, -1), 0.2),
                 ("TOPPADDING", (0, 0), (-1, -1), 0.0),
-                ("BOTTOMPADDING", (0, 0), (-1, -1), 0.8),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 2.0),
             ]
         )
     )
@@ -394,6 +394,7 @@ def render_template_b_pdf(context):
     additional_text = context.get("additional_findings_text", "")
     if interpretation_overflow:
         additional_text = f"{interpretation_overflow}\n\n{additional_text}".strip()
+    additional_text = additional_text.strip()
     _draw_paragraph(c, layout, "p3.additional", additional_text)
     _draw_table(c, layout, "vus", _build_vus_table(context, layout))
     draw_footer(c, layout, context)

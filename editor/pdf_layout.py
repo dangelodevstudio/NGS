@@ -79,7 +79,7 @@ def get_layout() -> ReportLayout:
 
         # Page 3 content
         "p3.interpretation": _field(12.70, 72.22, 165.10, 83.33, 10.0, 10.5, padding_x=padding_x, padding_y=0.0, align=4),
-        "p3.additional": _field(12.77, 183.69, 164.38, 22.04, 10.0, 11.0, padding_x=padding_x, padding_y=0.0, align=4),
+        "p3.additional": _field(12.77, 181.90, 164.38, 22.04, 10.0, 11.0, padding_x=padding_x, padding_y=0.0, align=4),
 
         # Page 4 content
         "p4.genes": _field(12.90, 82.99, 164.24, 47.00, 9.0, 11.0, padding_x=3.4, padding_y=0.0, align=4),
