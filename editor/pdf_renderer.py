@@ -202,8 +202,8 @@ def _build_results_table(context, layout):
         "gene",
         fontName=layout.font_regular,
         boldFontName=layout.font_bold,
-        fontSize=8.8,
-        leading=9.6,
+        fontSize=8.4,
+        leading=9.1,
         textColor=Color(1, 1, 1),
         alignment=1,
         wordWrap="LTR",
@@ -213,17 +213,18 @@ def _build_results_table(context, layout):
         "cell",
         fontName=layout.font_regular,
         boldFontName=layout.font_bold,
-        fontSize=8.8,
-        leading=9.6,
+        fontSize=8.3,
+        leading=9.0,
         textColor=GRAY_TEXT,
         alignment=1,
         wordWrap="LTR",
         splitLongWords=0,
     )
     data = [
+        ["", "", "", "", "", ""],
         [
             Paragraph(
-                f"<b>{context.get('main_gene','')}</b><br/><nobr>{context.get('main_transcript','')}</nobr>",
+                f"<i><b>{context.get('main_gene','')}</b></i><br/><nobr>{context.get('main_transcript','')}</nobr>",
                 gene_style,
             ),
             Paragraph(
@@ -240,10 +241,20 @@ def _build_results_table(context, layout):
     table = Table(
         data,
         colWidths=[w * mm for w in spec.col_widths],
-        rowHeights=[spec.row_height * mm],
+        rowHeights=[4.7 * mm, (spec.row_height - 4.7) * mm],
     )
     table.setStyle(_table_style(layout))
-    table.setStyle(TableStyle([("BACKGROUND", (0, 0), (0, 0), PURPLE)]))
+    table.setStyle(
+        TableStyle(
+            [
+                ("BACKGROUND", (0, 1), (0, 1), PURPLE),
+                ("TOPPADDING", (0, 1), (-1, 1), 0.0),
+                ("BOTTOMPADDING", (0, 1), (-1, 1), 0.2),
+                ("LEFTPADDING", (0, 1), (-1, 1), 0.3),
+                ("RIGHTPADDING", (0, 1), (-1, 1), 0.3),
+            ]
+        )
+    )
     return table
 
 
