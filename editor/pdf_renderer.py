@@ -285,8 +285,8 @@ def _build_vus_table(context, layout):
                 ("ALIGN", (0, 0), (-1, -1), "CENTER"),
                 ("LEFTPADDING", (0, 0), (-1, -1), 0.2),
                 ("RIGHTPADDING", (0, 0), (-1, -1), 0.2),
-                ("TOPPADDING", (0, 0), (-1, -1), 0.2),
-                ("BOTTOMPADDING", (0, 0), (-1, -1), 0.2),
+                ("TOPPADDING", (0, 0), (-1, -1), 0.0),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 0.8),
             ]
         )
     )
