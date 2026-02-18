@@ -183,21 +183,69 @@
                                 </div>
                                 <div class="col-4 mb-2">
                                     <label class="form-label">Zigosidade</label>
-                                    <input type="text" name="main_zygosity" class="form-control" value="{{ main_zygosity }}">
+                                    <select name="main_zygosity_choice" id="main-zygosity-choice" class="form-select">
+                                        <option value="">Selecione</option>
+                                        {% for option in main_zygosity_options %}
+                                            <option value="{{ option }}" {% if main_zygosity_choice == option %}selected{% endif %}>{{ option }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <div class="main-zygosity-other-wrap mt-2 {% if main_zygosity_choice != 'Outro' %}d-none{% endif %}">
+                                        <input type="text"
+                                               name="main_zygosity_other"
+                                               id="main-zygosity-other"
+                                               class="form-control"
+                                               placeholder="Informe a zigosidade"
+                                               value="{{ main_zygosity_other }}"
+                                               {% if main_zygosity_choice != 'Outro' %}disabled{% endif %}>
+                                    </div>
                                 </div>
                                 <div class="col-4 mb-2">
                                     <label class="form-label">Herança</label>
-                                    <input type="text" name="main_inheritance" class="form-control" value="{{ main_inheritance }}">
+                                    <select name="main_inheritance_choice" id="main-inheritance-choice" class="form-select">
+                                        <option value="">Selecione</option>
+                                        {% for option in main_inheritance_options %}
+                                            <option value="{{ option }}" {% if main_inheritance_choice == option %}selected{% endif %}>{{ option }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <div class="main-inheritance-other-wrap mt-2 {% if main_inheritance_choice != 'Outro' %}d-none{% endif %}">
+                                        <input type="text"
+                                               name="main_inheritance_other"
+                                               id="main-inheritance-other"
+                                               class="form-control"
+                                               placeholder="Informe a herança"
+                                               value="{{ main_inheritance_other }}"
+                                               {% if main_inheritance_choice != 'Outro' %}disabled{% endif %}>
+                                    </div>
                                 </div>
                             </div>
                             <div class="row">
                                 <div class="col-6 mb-2">
                                     <label class="form-label">Classificação</label>
-                                    <input type="text" name="main_classification" class="form-control" value="{{ main_classification }}">
+                                    <select name="main_classification_choice" id="main-classification-choice" class="form-select">
+                                        <option value="">Selecione</option>
+                                        {% for option in main_classification_options %}
+                                            <option value="{{ option }}" {% if main_classification_choice == option %}selected{% endif %}>{{ option }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <div class="main-classification-other-wrap mt-2 {% if main_classification_choice != 'Outro' %}d-none{% endif %}">
+                                        <input type="text"
+                                               name="main_classification_other"
+                                               id="main-classification-other"
+                                               class="form-control"
+                                               placeholder="Informe a classificação"
+                                               value="{{ main_classification_other }}"
+                                               {% if main_classification_choice != 'Outro' %}disabled{% endif %}>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-6 mb-2">
+                                    <label class="form-label">Condição (fenótipo)</label>
+                                    <input type="text" name="main_condition_phenotype" class="form-control" value="{{ main_condition_phenotype }}">
                                 </div>
                                 <div class="col-6 mb-2">
-                                    <label class="form-label">Condição</label>
-                                    <input type="text" name="main_condition" class="form-control" value="{{ main_condition }}">
+                                    <label class="form-label">OMIM (fixo)</label>
+                                    <input type="text" name="main_condition_omim" class="form-control" value="{{ main_condition_omim }}" readonly>
                                 </div>
                             </div>
                             <div class="mb-2">
@@ -731,6 +779,47 @@
         sampleType.addEventListener('change', updateSampleOther);
     }
     updateSampleOther();
+})();
+
+(function() {
+    const selectors = [
+        {
+            choiceId: 'main-zygosity-choice',
+            otherWrapSelector: '.main-zygosity-other-wrap',
+            otherInputId: 'main-zygosity-other',
+        },
+        {
+            choiceId: 'main-inheritance-choice',
+            otherWrapSelector: '.main-inheritance-other-wrap',
+            otherInputId: 'main-inheritance-other',
+        },
+        {
+            choiceId: 'main-classification-choice',
+            otherWrapSelector: '.main-classification-other-wrap',
+            otherInputId: 'main-classification-other',
+        },
+    ];
+
+    function syncOtherField(config) {
+        const choice = document.getElementById(config.choiceId);
+        const wrap = document.querySelector(config.otherWrapSelector);
+        const input = document.getElementById(config.otherInputId);
+        if (!choice || !wrap || !input) return;
+
+        const showOther = choice.value === 'Outro';
+        wrap.classList.toggle('d-none', !showOther);
+        input.disabled = !showOther;
+        if (!showOther) {
+            input.value = '';
+        }
+    }
+
+    selectors.forEach((config) => {
+        const choice = document.getElementById(config.choiceId);
+        if (!choice) return;
+        choice.addEventListener('change', () => syncOtherField(config));
+        syncOtherField(config);
+    });
 })();
 
 (function() {

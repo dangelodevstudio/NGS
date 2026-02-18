@@ -268,6 +268,36 @@ SAMPLE_TYPES = [
     "Outro",
 ]
 
+MAIN_ZYGOSITY_OPTIONS = [
+    "Heterozigose",
+    "Homozigose",
+    "Hemizigose",
+    "Outro",
+]
+
+MAIN_INHERITANCE_OPTIONS = [
+    "Autossômica dominante",
+    "Autossômica recessiva",
+    "Ligada ao X dominante",
+    "Ligada ao X recessiva",
+    "Autossômica dominante/recessiva",
+    "Mitocondrial",
+    "Y-ligada",
+    "Outro",
+]
+
+MAIN_CLASSIFICATION_OPTIONS = [
+    "Patogênica",
+    "Provavelmente patogênica",
+    "VUS",
+    "Alelo de risco",
+    "Patogênica (em haplótipo)",
+    "Provavelmente patogênica (em haplótipo)",
+    "Outro",
+]
+
+MAIN_CONDITION_DEFAULT_OMIM = "151623"
+
 PROFESSIONAL_OPTIONS = {
     "analyst": [
         {
@@ -317,6 +347,78 @@ def _to_bool(value):
     if value is None:
         return False
     return str(value).lower() in ("1", "true", "on", "yes")
+
+
+def _split_condition_omim(main_condition_str):
+    text = (main_condition_str or "").strip()
+    if not text:
+        return "", MAIN_CONDITION_DEFAULT_OMIM
+
+    pattern = re.compile(r"\(\s*OMIM\s*:\s*#?\s*([A-Za-z0-9.\-]+)\s*\)", re.IGNORECASE)
+    match = pattern.search(text)
+    if not match:
+        return text, MAIN_CONDITION_DEFAULT_OMIM
+
+    omim = (match.group(1) or "").strip() or MAIN_CONDITION_DEFAULT_OMIM
+    phenotype = f"{text[:match.start()]} {text[match.end():]}".strip(" ,;:-")
+    return phenotype, omim
+
+
+def _compose_main_condition(phenotype, omim):
+    normalized_phenotype = (phenotype or "").strip()
+    if not normalized_phenotype:
+        return ""
+
+    normalized_omim = (omim or "").strip()
+    if not normalized_omim:
+        normalized_omim = MAIN_CONDITION_DEFAULT_OMIM
+    return f"{normalized_phenotype} (OMIM:#{normalized_omim})"
+
+
+def _resolve_select_value(stored_value, allowed_values):
+    allowed = set(allowed_values)
+    normalized = (stored_value or "").strip()
+    if not normalized:
+        return "", ""
+    if normalized in allowed:
+        return normalized, ""
+    if normalized.lower() == "outro":
+        return "Outro", ""
+    return "Outro", normalized
+
+
+def _resolve_select_post(request, choice_field, other_field, legacy_field, allowed_values):
+    allowed = set(allowed_values)
+    choice = (request.POST.get(choice_field) or "").strip()
+    other = (request.POST.get(other_field) or "").strip()
+    legacy = (request.POST.get(legacy_field) or "").strip()
+
+    if choice:
+        if choice == "Outro":
+            return other or legacy
+        if choice in allowed:
+            return choice
+
+    if legacy:
+        return legacy
+    return ""
+
+
+def _build_inheritance_legend(inheritance_text):
+    value = (inheritance_text or "").strip()
+    if not value:
+        return ""
+
+    mapping = {
+        "Autossômica dominante": "Modelo de herança: autossômica dominante (AD).",
+        "Autossômica recessiva": "Modelo de herança: autossômica recessiva (AR).",
+        "Ligada ao X dominante": "Modelo de herança: ligada ao X dominante (XLD).",
+        "Ligada ao X recessiva": "Modelo de herança: ligada ao X recessiva (XLR).",
+        "Autossômica dominante/recessiva": "Modelo de herança: autossômica dominante/recessiva (AD/AR).",
+        "Mitocondrial": "Modelo de herança: mitocondrial (MT).",
+        "Y-ligada": "Modelo de herança: ligada ao Y (Y-linked).",
+    }
+    return mapping.get(value, f"Modelo de herança: {value}.")
 
 
 def _format_requester_display(data):
@@ -653,6 +755,9 @@ def _build_context(request, base_data=None):
         "md_responsible_crm": get_field("md_responsible_crm", "CRM-SP: 256188"),
         "md_technical": get_field("md_technical", "Dra. Ângela F. L. Waitzberg"),
         "md_technical_crm": get_field("md_technical_crm", "CRM-SP: 69504"),
+        "main_zygosity_options": MAIN_ZYGOSITY_OPTIONS,
+        "main_inheritance_options": MAIN_INHERITANCE_OPTIONS,
+        "main_classification_options": MAIN_CLASSIFICATION_OPTIONS,
     }
 
     context["is_admin"] = _is_admin(request.user)
@@ -685,6 +790,21 @@ def _build_context(request, base_data=None):
         if parsed_id:
             context["sample_identifier"] = context.get("sample_identifier") or parsed_id
     context["sample_display"] = _format_sample_display(context)
+
+    zyg_choice, zyg_other = _resolve_select_value(context.get("main_zygosity", ""), MAIN_ZYGOSITY_OPTIONS)
+    inh_choice, inh_other = _resolve_select_value(context.get("main_inheritance", ""), MAIN_INHERITANCE_OPTIONS)
+    cls_choice, cls_other = _resolve_select_value(context.get("main_classification", ""), MAIN_CLASSIFICATION_OPTIONS)
+    phenotype, omim = _split_condition_omim(context.get("main_condition", ""))
+
+    context["main_zygosity_choice"] = zyg_choice
+    context["main_zygosity_other"] = zyg_other
+    context["main_inheritance_choice"] = inh_choice
+    context["main_inheritance_other"] = inh_other
+    context["main_classification_choice"] = cls_choice
+    context["main_classification_other"] = cls_other
+    context["main_condition_phenotype"] = phenotype
+    context["main_condition_omim"] = omim or MAIN_CONDITION_DEFAULT_OMIM
+    context["main_inheritance_legend"] = _build_inheritance_legend(context.get("main_inheritance", ""))
 
     for field in [
         "interpretation_text",
@@ -779,6 +899,53 @@ def _update_report_from_request(report, request):
 
     if data.get("sample_type") != "Outro":
         data["sample_type_other"] = ""
+
+    # Resultado principal: aceita novos campos (select + "Outro") com fallback
+    # para payload legado (inputs livres).
+    resolved_zygosity = _resolve_select_post(
+        request,
+        "main_zygosity_choice",
+        "main_zygosity_other",
+        "main_zygosity",
+        MAIN_ZYGOSITY_OPTIONS,
+    )
+    if resolved_zygosity:
+        data["main_zygosity"] = resolved_zygosity
+
+    resolved_inheritance = _resolve_select_post(
+        request,
+        "main_inheritance_choice",
+        "main_inheritance_other",
+        "main_inheritance",
+        MAIN_INHERITANCE_OPTIONS,
+    )
+    if resolved_inheritance:
+        data["main_inheritance"] = resolved_inheritance
+
+    resolved_classification = _resolve_select_post(
+        request,
+        "main_classification_choice",
+        "main_classification_other",
+        "main_classification",
+        MAIN_CLASSIFICATION_OPTIONS,
+    )
+    if resolved_classification:
+        data["main_classification"] = resolved_classification
+
+    if any(
+        field in request.POST
+        for field in ["main_condition_phenotype", "main_condition_omim", "main_condition"]
+    ):
+        current_phenotype, current_omim = _split_condition_omim(data.get("main_condition", ""))
+        phenotype = (request.POST.get("main_condition_phenotype") or "").strip()
+        if not phenotype and "main_condition" in request.POST:
+            phenotype, _ = _split_condition_omim(request.POST.get("main_condition"))
+        if not phenotype:
+            phenotype = current_phenotype
+
+        # OMIM permanece fixo no editor; usamos o já salvo (ou default do modelo).
+        omim = current_omim or MAIN_CONDITION_DEFAULT_OMIM
+        data["main_condition"] = _compose_main_condition(phenotype, omim)
 
     data["metrics_text"] = defaults.get("metrics_text", data.get("metrics_text", ""))
     data["notes_text"] = defaults.get("notes_text", data.get("notes_text", ""))
