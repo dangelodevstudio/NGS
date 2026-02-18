@@ -363,18 +363,16 @@ def _draw_results_gene_centered(c, layout, context):
 
     gene = (context.get("main_gene", "") or "").strip()
     transcript = (context.get("main_transcript", "") or "").strip()
+    if not gene and not transcript:
+        return
 
     c.saveState()
     c.setFillColor(Color(1, 1, 1))
-    c.saveState()
-    c.translate(cx, cy + 2.4)
-    c.skew(-10, 0)
-    c.setFont(layout.font_bold, 11.0)
-    gene_w = pdfmetrics.stringWidth(gene, layout.font_bold, 11.0)
-    c.drawString(-(gene_w / 2.0), 0, gene)
-    c.restoreState()
+    # Keep both lines centered as a block inside the purple data cell.
+    c.setFont(layout.font_bold, 10.8)
+    c.drawCentredString(cx, cy - 2.4, gene)
     c.setFont(layout.font_regular, 9.0)
-    c.drawCentredString(cx, cy - 5.8, transcript)
+    c.drawCentredString(cx, cy - 11.4, transcript)
     c.restoreState()
 
 
