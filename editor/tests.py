@@ -6,6 +6,8 @@ from .views import (
     LAUDO_MODELOS,
     _build_context,
     _build_inheritance_legend,
+    _normalize_date_ddmmyyyy,
+    _get_exam_name_for_type,
     _split_condition_omim,
     _update_report_from_request,
 )
@@ -141,3 +143,68 @@ class MainResultControlsTests(TestCase):
             _build_inheritance_legend("Herança rara custom"),
             "Modelo de herança: Herança rara custom.",
         )
+
+    def test_exam_name_synced_from_laudo_type_in_context(self):
+        request = self.factory.get("/")
+        request.user = self.user
+        context = _build_context(
+            request,
+            base_data={
+                "laudo_type": "cancer_hereditario_144",
+                "exam_name": "Nome digitado manualmente",
+            },
+        )
+        self.assertEqual(context["exam_name"], _get_exam_name_for_type("cancer_hereditario_144"))
+
+    def test_exam_name_synced_from_laudo_type_on_update(self):
+        report = Report.objects.create(
+            workspace=self.workspace,
+            created_by=self.user,
+            title="Laudo nome exame",
+            report_type="cancer_hereditario_144",
+            data={"laudo_type": "cancer_hereditario_144", **self.defaults},
+        )
+        request = self.factory.post("/preview/", data={"exam_name": "Nome inválido manual"})
+        request.user = self.user
+        request.workspace = self.workspace
+        data = _update_report_from_request(report, request)
+        self.assertEqual(data["exam_name"], _get_exam_name_for_type("cancer_hereditario_144"))
+
+    def test_date_normalization_accepts_dash_and_dot(self):
+        self.assertEqual(_normalize_date_ddmmyyyy("10-11-1994"), "10/11/1994")
+        self.assertEqual(_normalize_date_ddmmyyyy("10.11.1994"), "10/11/1994")
+
+    def test_date_normalization_invalid_goes_to_placeholder(self):
+        self.assertEqual(_normalize_date_ddmmyyyy("abc"), "00/00/0000")
+        self.assertEqual(_normalize_date_ddmmyyyy("3/2024"), "00/00/0000")
+
+    def test_date_normalization_rejects_iso_and_compact(self):
+        self.assertEqual(_normalize_date_ddmmyyyy("1994-11-10"), "00/00/0000")
+        self.assertEqual(_normalize_date_ddmmyyyy("10111994"), "00/00/0000")
+
+    def test_existing_valid_ddmmyyyy_is_preserved(self):
+        self.assertEqual(_normalize_date_ddmmyyyy("10/11/1994"), "10/11/1994")
+
+    def test_update_report_normalizes_dates_from_post(self):
+        report = Report.objects.create(
+            workspace=self.workspace,
+            created_by=self.user,
+            title="Laudo datas",
+            report_type="cancer_hereditario_144",
+            data={"laudo_type": "cancer_hereditario_144", **self.defaults},
+        )
+        request = self.factory.post(
+            "/preview/",
+            data={
+                "patient_birth_date": "10-11-1994",
+                "exam_entry_date": "10.12.2025",
+                "exam_release_date": "invalida",
+            },
+        )
+        request.user = self.user
+        request.workspace = self.workspace
+
+        data = _update_report_from_request(report, request)
+        self.assertEqual(data["patient_birth_date"], "10/11/1994")
+        self.assertEqual(data["exam_entry_date"], "10/12/2025")
+        self.assertEqual(data["exam_release_date"], "00/00/0000")

@@ -10,6 +10,7 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Q, Count
 from django.contrib.auth.models import User
 from pathlib import Path
+from datetime import datetime
 import uuid
 import os
 import logging
@@ -341,12 +342,40 @@ def _resolve_laudo_type(request, base_data=None):
     )
 
 
+def _get_exam_name_for_type(laudo_type):
+    model = LAUDO_MODELOS.get(laudo_type) or LAUDO_MODELOS["cancer_hereditario_144"]
+    return model.get("label", "")
+
+
 def _to_bool(value):
     if isinstance(value, bool):
         return value
     if value is None:
         return False
     return str(value).lower() in ("1", "true", "on", "yes")
+
+
+def _normalize_date_ddmmyyyy(value):
+    text = (value or "").strip()
+    if not text:
+        return "00/00/0000"
+    if text == "00/00/0000":
+        return text
+
+    text = text.replace("-", "/").replace(".", "/")
+    if not re.match(r"^\d{2}/\d{2}/\d{4}$", text):
+        return "00/00/0000"
+    try:
+        datetime.strptime(text, "%d/%m/%Y")
+    except ValueError:
+        return "00/00/0000"
+    return text
+
+
+def _normalize_main_dates(data):
+    for field in ["patient_birth_date", "exam_entry_date", "exam_release_date"]:
+        data[field] = _normalize_date_ddmmyyyy(data.get(field))
+    return data
 
 
 def _split_condition_omim(main_condition_str):
@@ -684,7 +713,7 @@ def _build_context(request, base_data=None):
         "patient_code_cover": get_field("patient_code_cover", "000000000000000"),
 
         # dados do exame
-        "exam_name": get_field("exam_name"),
+        "exam_name": _get_exam_name_for_type(laudo_type),
         "exam_entry_date": get_field("exam_entry_date", "00/00/0000"),
         "exam_release_date": get_field("exam_release_date", "00/00/0000"),
 
@@ -766,6 +795,7 @@ def _build_context(request, base_data=None):
         "main_inheritance_options": MAIN_INHERITANCE_OPTIONS,
         "main_classification_options": MAIN_CLASSIFICATION_OPTIONS,
     }
+    _normalize_main_dates(context)
 
     context["is_admin"] = _is_admin(request.user)
     context["requester_not_identified"] = _to_bool(context.get("requester_not_identified"))
@@ -892,6 +922,8 @@ def _update_report_from_request(report, request):
         data.get("laudo_type"),
         LAUDO_MODELOS["cancer_hereditario_144"],
     )["defaults"]
+    data["exam_name"] = _get_exam_name_for_type(data.get("laudo_type"))
+    _normalize_main_dates(data)
     if "vus_variant_c" not in request.POST:
         data["vus_variant_c"] = defaults.get("vus_variant_c", "")
     if _to_bool(data.get("requester_not_identified")):
