@@ -244,8 +244,17 @@
                                     <input type="text" name="main_condition_phenotype" class="form-control" value="{{ main_condition_phenotype }}">
                                 </div>
                                 <div class="col-6 mb-2">
-                                    <label class="form-label">OMIM (fixo)</label>
-                                    <input type="text" name="main_condition_omim" class="form-control" value="{{ main_condition_omim }}" readonly>
+                                    <label class="form-label">OMIM</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">OMIM:#</span>
+                                        <input type="text"
+                                               name="main_condition_omim"
+                                               class="form-control"
+                                               value="{{ main_condition_omim }}"
+                                               inputmode="numeric"
+                                               pattern="[0-9]*"
+                                               maxlength="12">
+                                    </div>
                                 </div>
                             </div>
                             <div class="mb-2">

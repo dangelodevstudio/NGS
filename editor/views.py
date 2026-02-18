@@ -359,9 +359,16 @@ def _split_condition_omim(main_condition_str):
     if not match:
         return text, MAIN_CONDITION_DEFAULT_OMIM
 
-    omim = (match.group(1) or "").strip() or MAIN_CONDITION_DEFAULT_OMIM
+    omim = _normalize_omim_number(match.group(1)) or MAIN_CONDITION_DEFAULT_OMIM
     phenotype = f"{text[:match.start()]} {text[match.end():]}".strip(" ,;:-")
     return phenotype, omim
+
+
+def _normalize_omim_number(value):
+    if value is None:
+        return ""
+    digits = re.sub(r"\D", "", str(value))
+    return digits
 
 
 def _compose_main_condition(phenotype, omim):
@@ -369,7 +376,7 @@ def _compose_main_condition(phenotype, omim):
     if not normalized_phenotype:
         return ""
 
-    normalized_omim = (omim or "").strip()
+    normalized_omim = _normalize_omim_number(omim)
     if not normalized_omim:
         normalized_omim = MAIN_CONDITION_DEFAULT_OMIM
     return f"{normalized_phenotype} (OMIM:#{normalized_omim})"
@@ -803,7 +810,7 @@ def _build_context(request, base_data=None):
     context["main_classification_choice"] = cls_choice
     context["main_classification_other"] = cls_other
     context["main_condition_phenotype"] = phenotype
-    context["main_condition_omim"] = omim or MAIN_CONDITION_DEFAULT_OMIM
+    context["main_condition_omim"] = _normalize_omim_number(omim) or MAIN_CONDITION_DEFAULT_OMIM
     context["main_inheritance_legend"] = _build_inheritance_legend(context.get("main_inheritance", ""))
 
     for field in [
@@ -943,8 +950,11 @@ def _update_report_from_request(report, request):
         if not phenotype:
             phenotype = current_phenotype
 
-        # OMIM permanece fixo no editor; usamos o já salvo (ou default do modelo).
-        omim = current_omim or MAIN_CONDITION_DEFAULT_OMIM
+        omim_post = request.POST.get("main_condition_omim")
+        if omim_post is not None:
+            omim = _normalize_omim_number(omim_post) or current_omim or MAIN_CONDITION_DEFAULT_OMIM
+        else:
+            omim = current_omim or MAIN_CONDITION_DEFAULT_OMIM
         data["main_condition"] = _compose_main_condition(phenotype, omim)
 
     data["metrics_text"] = defaults.get("metrics_text", data.get("metrics_text", ""))

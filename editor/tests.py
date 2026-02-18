@@ -79,6 +79,28 @@ class MainResultControlsTests(TestCase):
         self.assertEqual(data["main_classification"], "Provavelmente patogênica")
         self.assertEqual(data["main_condition"], "Fenótipo atualizado (OMIM:#151623)")
 
+    def test_update_report_from_request_allows_editing_only_omim_number(self):
+        report = Report.objects.create(
+            workspace=self.workspace,
+            created_by=self.user,
+            title="Laudo OMIM",
+            report_type="cancer_hereditario_144",
+            data={"laudo_type": "cancer_hereditario_144", **self.defaults},
+        )
+
+        request = self.factory.post(
+            "/preview/",
+            data={
+                "main_condition_phenotype": "Fenótipo atualizado",
+                "main_condition_omim": "OMIM:#000777",
+            },
+        )
+        request.user = self.user
+        request.workspace = self.workspace
+
+        data = _update_report_from_request(report, request)
+        self.assertEqual(data["main_condition"], "Fenótipo atualizado (OMIM:#000777)")
+
     def test_update_report_from_request_persists_custom_outro_values(self):
         report = Report.objects.create(
             workspace=self.workspace,
