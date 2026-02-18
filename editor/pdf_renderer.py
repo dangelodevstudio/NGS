@@ -366,10 +366,15 @@ def _draw_results_gene_centered(c, layout, context):
 
     c.saveState()
     c.setFillColor(Color(1, 1, 1))
-    c.setFont(layout.font_bold, 9.2)
-    c.drawCentredString(cx, cy - 3.6, gene)
-    c.setFont(layout.font_regular, 8.3)
-    c.drawCentredString(cx, cy - 11.7, transcript)
+    c.saveState()
+    c.translate(cx, cy + 2.4)
+    c.skew(-10, 0)
+    c.setFont(layout.font_bold, 11.0)
+    gene_w = pdfmetrics.stringWidth(gene, layout.font_bold, 11.0)
+    c.drawString(-(gene_w / 2.0), 0, gene)
+    c.restoreState()
+    c.setFont(layout.font_regular, 9.0)
+    c.drawCentredString(cx, cy - 5.8, transcript)
     c.restoreState()
 
 
