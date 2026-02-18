@@ -202,8 +202,9 @@ def _build_results_table(context, layout):
         "gene",
         fontName=layout.font_regular,
         boldFontName=layout.font_bold,
-        fontSize=8.4,
-        leading=9.1,
+        fontSize=8.0,
+        leading=8.4,
+        spaceBefore=1.6,
         textColor=Color(1, 1, 1),
         alignment=1,
         wordWrap="LTR",
@@ -255,6 +256,8 @@ def _build_results_table(context, layout):
                 ("BOTTOMPADDING", (0, 1), (-1, 1), 0.2),
                 ("LEFTPADDING", (0, 1), (-1, 1), 0.3),
                 ("RIGHTPADDING", (0, 1), (-1, 1), 0.3),
+                ("TOPPADDING", (0, 1), (0, 1), 1.1),
+                ("BOTTOMPADDING", (0, 1), (0, 1), 1.1),
             ]
         )
     )
