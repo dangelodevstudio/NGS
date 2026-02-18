@@ -418,7 +418,9 @@ def render_template_b_pdf(context):
     _draw_paragraph(c, layout, "p5.metrics.50x", context.get("metrics_coverage_50x", ""))
     if context.get("is_admin"):
         _draw_paragraph(c, layout, "p5.recommendations", context.get("recommendations_text", ""))
-    _draw_paragraph(c, layout, "p5.notes", context.get("notes_text", ""))
+    notes_text = re.sub(r"\s*\n+\s*", " ", (context.get("notes_text", "") or "").strip())
+    notes_text = re.sub(r"\s{2,}", " ", notes_text)
+    _draw_paragraph(c, layout, "p5.notes", notes_text)
     draw_footer(c, layout, context)
     c.showPage()
 
