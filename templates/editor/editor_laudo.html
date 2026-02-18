@@ -50,7 +50,7 @@
                             <div class="row">
                                 <div class="col-6 mb-2">
                                     <label class="form-label">Data de nascimento</label>
-                                    <input type="text" name="patient_birth_date" class="form-control" placeholder="dd/mm/aaaa" value="{{ patient_birth_date }}">
+                                    <input type="text" name="patient_birth_date" class="form-control date-mask" placeholder="dd/mm/aaaa" maxlength="10" inputmode="numeric" autocomplete="off" value="{{ patient_birth_date }}">
                                 </div>
                                 <div class="col-6 mb-2">
                                     <label class="form-label">Sexo</label>
@@ -83,11 +83,11 @@
                             <div class="row">
                                 <div class="col-6 mb-2">
                                     <label class="form-label">Data de entrada</label>
-                                    <input type="text" name="exam_entry_date" class="form-control" placeholder="dd/mm/aaaa" value="{{ exam_entry_date }}">
+                                    <input type="text" name="exam_entry_date" class="form-control date-mask" placeholder="dd/mm/aaaa" maxlength="10" inputmode="numeric" autocomplete="off" value="{{ exam_entry_date }}">
                                 </div>
                                 <div class="col-6 mb-2">
                                     <label class="form-label">Data de liberação</label>
-                                    <input type="text" name="exam_release_date" class="form-control" placeholder="dd/mm/aaaa" value="{{ exam_release_date }}">
+                                    <input type="text" name="exam_release_date" class="form-control date-mask" placeholder="dd/mm/aaaa" maxlength="10" inputmode="numeric" autocomplete="off" value="{{ exam_release_date }}">
                                 </div>
                             </div>
                             <h6 class="text-uppercase small text-muted mb-2 mt-3">Solicitante e amostra</h6>
@@ -469,7 +469,42 @@
     const emptyState = document.getElementById('preview-empty');
     const loadingEl = document.getElementById('preview-loading');
     const errorEl = document.getElementById('preview-error');
+    const dateInputs = form
+        ? [
+            form.querySelector('input[name="patient_birth_date"]'),
+            form.querySelector('input[name="exam_entry_date"]'),
+            form.querySelector('input[name="exam_release_date"]'),
+        ].filter(Boolean)
+        : [];
     if (!form || !button || !iframe) return;
+
+    function normalizeDateInputValue(value) {
+        const raw = String(value || '').trim();
+        if (!raw) return '';
+
+        const separated = raw.replace(/[.-]/g, '/');
+        if (/^\d{8}$/.test(separated)) {
+            return `${separated.slice(0, 2)}/${separated.slice(2, 4)}/${separated.slice(4, 8)}`;
+        }
+
+        const digits = separated.replace(/\D/g, '').slice(0, 8);
+        if (!digits) return '';
+        if (digits.length <= 2) return digits;
+        if (digits.length <= 4) return `${digits.slice(0, 2)}/${digits.slice(2)}`;
+        return `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4)}`;
+    }
+
+    function normalizeDateInputs() {
+        dateInputs.forEach((input) => {
+            input.value = normalizeDateInputValue(input.value);
+        });
+    }
+
+    dateInputs.forEach((input) => {
+        input.addEventListener('input', normalizeDateInputs);
+        input.addEventListener('blur', normalizeDateInputs);
+    });
+    form.addEventListener('submit', normalizeDateInputs);
 
     function setLoading(isLoading) {
         if (!loadingEl) return;
@@ -510,6 +545,7 @@
         setError('');
         setLoading(true);
 
+        normalizeDateInputs();
         const formData = new FormData(form);
         const csrfToken = form.querySelector('input[name="csrfmiddlewaretoken"]')?.value || '';
 

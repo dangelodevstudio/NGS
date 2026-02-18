@@ -178,9 +178,9 @@ class MainResultControlsTests(TestCase):
         self.assertEqual(_normalize_date_ddmmyyyy("abc"), "00/00/0000")
         self.assertEqual(_normalize_date_ddmmyyyy("3/2024"), "00/00/0000")
 
-    def test_date_normalization_rejects_iso_and_compact(self):
+    def test_date_normalization_accepts_compact_ddmmyyyy_and_rejects_iso(self):
         self.assertEqual(_normalize_date_ddmmyyyy("1994-11-10"), "00/00/0000")
-        self.assertEqual(_normalize_date_ddmmyyyy("10111994"), "00/00/0000")
+        self.assertEqual(_normalize_date_ddmmyyyy("10111994"), "10/11/1994")
 
     def test_existing_valid_ddmmyyyy_is_preserved(self):
         self.assertEqual(_normalize_date_ddmmyyyy("10/11/1994"), "10/11/1994")
@@ -196,7 +196,7 @@ class MainResultControlsTests(TestCase):
         request = self.factory.post(
             "/preview/",
             data={
-                "patient_birth_date": "10-11-1994",
+                "patient_birth_date": "10111994",
                 "exam_entry_date": "10.12.2025",
                 "exam_release_date": "invalida",
             },

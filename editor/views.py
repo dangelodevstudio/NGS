@@ -363,6 +363,8 @@ def _normalize_date_ddmmyyyy(value):
         return text
 
     text = text.replace("-", "/").replace(".", "/")
+    if re.match(r"^\d{8}$", text):
+        text = f"{text[:2]}/{text[2:4]}/{text[4:]}"
     if not re.match(r"^\d{2}/\d{2}/\d{4}$", text):
         return "00/00/0000"
     try:
