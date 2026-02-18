@@ -1,6 +1,7 @@
 """ReportLab-based PDF renderer for template B pages."""
 from io import BytesIO
 import re
+import unicodedata
 
 from django.contrib.staticfiles import finders
 from reportlab.lib.colors import Color
@@ -165,6 +166,19 @@ def _split_text_to_fit(layout, key, text):
         return "\n\n".join(accepted).strip(), remaining
 
     return "\n\n".join(accepted).strip(), ""
+
+
+def _sanitize_methodology_text(text):
+    if not text:
+        return ""
+    cleaned = unicodedata.normalize("NFKC", str(text))
+    # Remove any bullet-like glyphs accidentally pasted into the content.
+    cleaned = re.sub(r"[•●▪◦·]", " ", cleaned)
+    # Some comparison glyphs render as black dots with the current PDF stack.
+    cleaned = re.sub(r"≥\s*90%", "maior ou igual a 90%", cleaned)
+    cleaned = re.sub(r">=\s*90%", "maior ou igual a 90%", cleaned)
+    cleaned = re.sub(r"\s{2,}", " ", cleaned)
+    return cleaned
 
 
 def _table_style(layout):
@@ -431,7 +445,7 @@ def render_template_b_pdf(context):
     # Page 6 background already contains "CONSIDERAÇÕES E LIMITAÇÕES" and
     # "OBSERVAÇÕES" blocks in this template family; only methodology text is
     # overlaid here to avoid duplicated content.
-    _draw_paragraph(c, layout, "p6.methodology", context.get("methodology_text", ""))
+    _draw_paragraph(c, layout, "p6.methodology", _sanitize_methodology_text(context.get("methodology_text", "")))
     draw_footer(c, layout, context)
     c.showPage()
 
