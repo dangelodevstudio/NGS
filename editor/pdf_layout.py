@@ -85,7 +85,7 @@ def get_layout() -> ReportLayout:
         "p4.genes": _field(12.90, 82.99, 164.24, 47.00, 9.0, 11.0, padding_x=3.4, padding_y=0.0, align=4),
 
         # Page 5 content
-        "p5.notes": _field(13.33, 84.00, 164.34, 43.50, 9.0, 9.7, padding_x=1.8, padding_y=1.0, align=0),
+        "p5.notes": _field(13.33, 84.00, 164.34, 43.50, 10.8, 11.6, padding_x=1.8, padding_y=1.0, align=0),
         "p5.recommendations": _field(13.44, 146.42, 164.53, 17.37, 9.3, 10.0, padding_x=2.2, padding_y=0.8, align=4),
         "p5.metrics.title": _field(15.13, 189.19, 117.07, 4.67, 11.0, 13.0, color="purple", font_name="bold"),
         "p5.metrics.label_mean": _field(15.13, 192.20, 119.06, 4.80, 9.3, 10.0, color="purple", font_name="bold"),
