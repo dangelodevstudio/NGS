@@ -224,7 +224,8 @@ def _build_results_table(context, layout):
         ["", "", "", "", "", ""],
         [
             Paragraph(
-                f"<i><b>{context.get('main_gene','')}</b></i><br/><nobr>{context.get('main_transcript','')}</nobr>",
+                f"<font name='{layout.font_bold}'>{context.get('main_gene','')}</font><br/>"
+                f"<font name='{layout.font_regular}'><nobr>{context.get('main_transcript','')}</nobr></font>",
                 gene_style,
             ),
             Paragraph(
@@ -248,6 +249,8 @@ def _build_results_table(context, layout):
         TableStyle(
             [
                 ("BACKGROUND", (0, 1), (0, 1), PURPLE),
+                ("VALIGN", (0, 1), (0, 1), "MIDDLE"),
+                ("ALIGN", (0, 1), (0, 1), "CENTER"),
                 ("TOPPADDING", (0, 1), (-1, 1), 0.0),
                 ("BOTTOMPADDING", (0, 1), (-1, 1), 0.2),
                 ("LEFTPADDING", (0, 1), (-1, 1), 0.3),
