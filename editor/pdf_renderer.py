@@ -83,6 +83,7 @@ def _flow_in_frame(c, frame, flowables):
 
 def _draw_paragraph(c, layout, key, text):
     spec = layout.fields[key]
+    style = _style_for_field(layout, spec)
     frame = Frame(
         spec.x * mm,
         (layout.page_height - spec.y - spec.h) * mm,
@@ -94,7 +95,7 @@ def _draw_paragraph(c, layout, key, text):
         bottomPadding=spec.padding_y * mm,
         showBoundary=0,
     )
-    paragraph = Paragraph(_format_text(text), _style_for_field(layout, spec))
+    paragraph = Paragraph(_format_text(text), style)
     return _flow_in_frame(c, frame, [paragraph])
 
 
