@@ -45,7 +45,7 @@
                             <h6 class="text-uppercase small text-muted mb-2">Identificação do paciente</h6>
                             <div class="mb-2">
                                 <label class="form-label">Nome do paciente</label>
-                                <input type="text" name="patient_name" class="form-control" value="{{ patient_name }}">
+                                <input type="text" name="patient_name" class="form-control" style="text-transform: uppercase;" autocomplete="off" value="{{ patient_name }}">
                             </div>
                             <div class="row">
                                 <div class="col-6 mb-2">
@@ -469,6 +469,7 @@
     const emptyState = document.getElementById('preview-empty');
     const loadingEl = document.getElementById('preview-loading');
     const errorEl = document.getElementById('preview-error');
+    const patientNameInput = form ? form.querySelector('input[name="patient_name"]') : null;
     const dateInputs = form
         ? [
             form.querySelector('input[name="patient_birth_date"]'),
@@ -500,11 +501,22 @@
         });
     }
 
+    function normalizePatientNameInput() {
+        if (!patientNameInput) return;
+        patientNameInput.value = String(patientNameInput.value || '').toUpperCase();
+    }
+
     dateInputs.forEach((input) => {
         input.addEventListener('input', normalizeDateInputs);
         input.addEventListener('blur', normalizeDateInputs);
     });
+    if (patientNameInput) {
+        patientNameInput.addEventListener('input', normalizePatientNameInput);
+        patientNameInput.addEventListener('blur', normalizePatientNameInput);
+        normalizePatientNameInput();
+    }
     form.addEventListener('submit', normalizeDateInputs);
+    form.addEventListener('submit', normalizePatientNameInput);
 
     function setLoading(isLoading) {
         if (!loadingEl) return;
@@ -545,6 +557,7 @@
         setError('');
         setLoading(true);
 
+        normalizePatientNameInput();
         normalizeDateInputs();
         const formData = new FormData(form);
         const csrfToken = form.querySelector('input[name="csrfmiddlewaretoken"]')?.value || '';

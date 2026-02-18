@@ -380,6 +380,10 @@ def _normalize_main_dates(data):
     return data
 
 
+def _normalize_patient_name(value):
+    return (value or "").strip().upper()
+
+
 def _split_condition_omim(main_condition_str):
     text = (main_condition_str or "").strip()
     if not text:
@@ -798,6 +802,8 @@ def _build_context(request, base_data=None):
         "main_classification_options": MAIN_CLASSIFICATION_OPTIONS,
     }
     _normalize_main_dates(context)
+    context["patient_name"] = _normalize_patient_name(context.get("patient_name"))
+    context["patient_birth_date_cover"] = context.get("patient_birth_date") or "00/00/0000"
 
     context["is_admin"] = _is_admin(request.user)
     context["requester_not_identified"] = _to_bool(context.get("requester_not_identified"))
@@ -926,6 +932,8 @@ def _update_report_from_request(report, request):
     )["defaults"]
     data["exam_name"] = _get_exam_name_for_type(data.get("laudo_type"))
     _normalize_main_dates(data)
+    data["patient_name"] = _normalize_patient_name(data.get("patient_name"))
+    data["patient_birth_date_cover"] = data.get("patient_birth_date") or "00/00/0000"
     if "vus_variant_c" not in request.POST:
         data["vus_variant_c"] = defaults.get("vus_variant_c", "")
     if _to_bool(data.get("requester_not_identified")):

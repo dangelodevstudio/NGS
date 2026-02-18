@@ -208,3 +208,42 @@ class MainResultControlsTests(TestCase):
         self.assertEqual(data["patient_birth_date"], "10/11/1994")
         self.assertEqual(data["exam_entry_date"], "10/12/2025")
         self.assertEqual(data["exam_release_date"], "00/00/0000")
+
+    def test_build_context_syncs_cover_birth_date_and_uppercases_name(self):
+        request = self.factory.get("/")
+        request.user = self.user
+        context = _build_context(
+            request,
+            base_data={
+                "laudo_type": "cancer_hereditario_144",
+                "patient_name": "wellington da silva",
+                "patient_birth_date": "10.11.1994",
+                "patient_birth_date_cover": "00/00/000",
+            },
+        )
+        self.assertEqual(context["patient_name"], "WELLINGTON DA SILVA")
+        self.assertEqual(context["patient_birth_date"], "10/11/1994")
+        self.assertEqual(context["patient_birth_date_cover"], "10/11/1994")
+
+    def test_update_report_uppercases_name_and_syncs_cover_birth_date(self):
+        report = Report.objects.create(
+            workspace=self.workspace,
+            created_by=self.user,
+            title="Laudo capa",
+            report_type="cancer_hereditario_144",
+            data={"laudo_type": "cancer_hereditario_144", **self.defaults},
+        )
+        request = self.factory.post(
+            "/preview/",
+            data={
+                "patient_name": "wellington da silva",
+                "patient_birth_date": "12121212",
+            },
+        )
+        request.user = self.user
+        request.workspace = self.workspace
+
+        data = _update_report_from_request(report, request)
+        self.assertEqual(data["patient_name"], "WELLINGTON DA SILVA")
+        self.assertEqual(data["patient_birth_date"], "12/12/1212")
+        self.assertEqual(data["patient_birth_date_cover"], "12/12/1212")
