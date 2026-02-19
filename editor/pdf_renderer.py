@@ -146,6 +146,46 @@ def _draw_single_line_fitted(c, layout, key, text, min_font_size=8.0):
     c.restoreState()
 
 
+def _draw_label_with_bold_value(c, layout, key, label, value, min_font_size=8.0):
+    spec = layout.fields[key]
+    style = _style_for_field(layout, spec)
+    label_text = str(label or "")
+    value_text = str(value or "")
+    regular_font = layout.font_regular
+    bold_font = layout.font_bold
+    font_size = float(spec.font_size)
+    min_size = float(min_font_size)
+    available_width = max((spec.w - (spec.padding_x * 2)) * mm, 1)
+    available_height = max((spec.h - (spec.padding_y * 2)) * mm, 1)
+
+    total_width = (
+        pdfmetrics.stringWidth(label_text, regular_font, font_size)
+        + pdfmetrics.stringWidth(value_text, bold_font, font_size)
+    )
+    while font_size > min_size and total_width > available_width:
+        font_size = round(font_size - 0.2, 2)
+        total_width = (
+            pdfmetrics.stringWidth(label_text, regular_font, font_size)
+            + pdfmetrics.stringWidth(value_text, bold_font, font_size)
+        )
+
+    label_width = pdfmetrics.stringWidth(label_text, regular_font, font_size)
+    remaining_width = max(available_width - label_width, 1)
+    value_rendered = _truncate_to_width(value_text, bold_font, font_size, remaining_width)
+
+    c.saveState()
+    c.setFillColor(style.textColor)
+    x_start = (spec.x + spec.padding_x) * mm
+    y_bottom = (layout.page_height - spec.y - spec.h + spec.padding_y) * mm
+    baseline = y_bottom + ((available_height - font_size) / 2.0) + (font_size * 0.25)
+
+    c.setFont(regular_font, font_size)
+    c.drawString(x_start, baseline, label_text)
+    c.setFont(bold_font, font_size)
+    c.drawString(x_start + label_width, baseline, value_rendered)
+    c.restoreState()
+
+
 def _paragraph_fits(layout, key, text):
     spec = layout.fields[key]
     style = _style_for_field(layout, spec)
@@ -445,7 +485,14 @@ def render_template_b_pdf(context):
     if clinical_indication:
         data_lines.append(f"<b>Indicação clínica:</b>&nbsp;{clinical_indication}")
     _draw_paragraph(c, layout, "p2.data", "\n".join(data_lines))
-    _draw_paragraph(c, layout, "p2.exam", f"Nome do exame: <b>{context.get('exam_name','')}</b>")
+    _draw_label_with_bold_value(
+        c,
+        layout,
+        "p2.exam",
+        "Nome do exame: ",
+        context.get("exam_name", ""),
+        min_font_size=8.4,
+    )
     result_intro = (
         context.get("main_result_intro")
         or "Foi identificada uma variante clinicamente relevante no gene TP53."
