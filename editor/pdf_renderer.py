@@ -126,22 +126,23 @@ def _draw_single_line_fitted(c, layout, key, text, min_font_size=8.0):
         font_size = round(font_size - 0.2, 2)
 
     rendered_text = _truncate_to_width(rendered_text, font_name, font_size, available_width)
-    text_width = pdfmetrics.stringWidth(rendered_text, font_name, font_size)
-
     c.saveState()
     c.setFillColor(style.textColor)
     c.setFont(font_name, font_size)
     x_start = (spec.x + spec.padding_x) * mm
     if spec.align == 1:
-        x = x_start + max((available_width - text_width) / 2.0, 0)
+        center_x = x_start + (available_width / 2.0)
     elif spec.align == 2:
-        x = x_start + max(available_width - text_width, 0)
-    else:
-        x = x_start
+        right_x = x_start + available_width
     y_bottom = (layout.page_height - spec.y - spec.h + spec.padding_y) * mm
     # Approximate baseline for vertical centering in a single-line label box.
     baseline = y_bottom + ((available_height - font_size) / 2.0) + (font_size * 0.25)
-    c.drawString(x, baseline, rendered_text)
+    if spec.align == 1:
+        c.drawCentredString(center_x, baseline, rendered_text)
+    elif spec.align == 2:
+        c.drawRightString(right_x, baseline, rendered_text)
+    else:
+        c.drawString(x_start, baseline, rendered_text)
     c.restoreState()
 
 
