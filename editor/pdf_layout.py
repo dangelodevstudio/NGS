@@ -92,7 +92,7 @@ def get_layout() -> ReportLayout:
         "p5.metrics.label_mean": _field(15.13, 192.20, 119.06, 4.80, 9.3, 10.0, color="purple", font_name="bold"),
         "p5.metrics.label_50x": _field(15.13, 198.55, 119.06, 4.80, 9.3, 10.0, color="purple", font_name="bold"),
         "p5.metrics.note": _field(15.13, 204.00, 118.88, 3.80, 8.0, 8.6, color="purple"),
-        "p5.metrics.mean": _field(153.99, 191.70, 20.00, 5.00, 9.8, 10.0, align=1),
+        "p5.metrics.mean": _field(153.20, 191.70, 20.00, 5.00, 9.8, 10.0, align=1),
         "p5.metrics.50x": _field(153.99, 203.25, 20.00, 5.00, 9.8, 10.0, align=1),
 
         # Page 6 content
