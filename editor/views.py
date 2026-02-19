@@ -463,13 +463,22 @@ def _build_inheritance_legend(inheritance_text):
     return mapping.get(value, f"Modelo de herança: {value}.")
 
 
+def _normalize_requester_name(value):
+    text = (value or "").strip()
+    if not text:
+        return ""
+    text = re.sub(r"^\s*dr(?:\(a\)|a)?\.?\s*", "", text, flags=re.IGNORECASE)
+    text = text.lstrip(" -,:;.")
+    return re.sub(r"\s+", " ", text).strip()
+
+
 def _format_requester_display(data):
     if not data:
         return ""
     if _to_bool(data.get("requester_not_identified")):
         return "Nao identificado"
 
-    name = (data.get("requester_name") or "").strip()
+    name = _normalize_requester_name(data.get("requester_name"))
     reg_type = (data.get("requester_reg_type") or "").strip()
     reg_type_other = (data.get("requester_reg_type_other") or "").strip()
     reg_number = (data.get("requester_reg_number") or "").strip()
@@ -481,8 +490,6 @@ def _format_requester_display(data):
     has_reg = any([reg_type, reg_number, reg_state])
 
     if name and not has_reg:
-        if name.lower().startswith(("dr", "dra", "dr(a)")):
-            return name
         return f"Dr(a). {name}"
 
     parts = []
@@ -804,6 +811,7 @@ def _build_context(request, base_data=None):
     _normalize_main_dates(context)
     context["patient_name"] = _normalize_patient_name(context.get("patient_name"))
     context["patient_birth_date_cover"] = context.get("patient_birth_date") or "00/00/0000"
+    context["requester_name"] = _normalize_requester_name(context.get("requester_name"))
 
     context["is_admin"] = _is_admin(request.user)
     context["requester_not_identified"] = _to_bool(context.get("requester_not_identified"))
@@ -934,6 +942,7 @@ def _update_report_from_request(report, request):
     _normalize_main_dates(data)
     data["patient_name"] = _normalize_patient_name(data.get("patient_name"))
     data["patient_birth_date_cover"] = data.get("patient_birth_date") or "00/00/0000"
+    data["requester_name"] = _normalize_requester_name(data.get("requester_name"))
     if "vus_variant_c" not in request.POST:
         data["vus_variant_c"] = defaults.get("vus_variant_c", "")
     if _to_bool(data.get("requester_not_identified")):

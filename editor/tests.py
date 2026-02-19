@@ -6,6 +6,7 @@ from .views import (
     LAUDO_MODELOS,
     _build_context,
     _build_inheritance_legend,
+    _format_requester_display,
     _normalize_date_ddmmyyyy,
     _get_exam_name_for_type,
     _split_condition_omim,
@@ -247,3 +248,27 @@ class MainResultControlsTests(TestCase):
         self.assertEqual(data["patient_name"], "WELLINGTON DA SILVA")
         self.assertEqual(data["patient_birth_date"], "12/12/1212")
         self.assertEqual(data["patient_birth_date_cover"], "12/12/1212")
+
+    def test_requester_display_does_not_duplicate_fixed_title(self):
+        display = _format_requester_display(
+            {
+                "requester_name": "Dr(a). Juliana das Gracas",
+                "requester_reg_type": "CRM",
+                "requester_reg_number": "8141",
+                "requester_reg_state": "BR",
+            }
+        )
+        self.assertEqual(display, "Dr(a). Juliana das Gracas CRM - BR 8141")
+
+    def test_build_context_normalizes_requester_name_for_input(self):
+        request = self.factory.get("/")
+        request.user = self.user
+        context = _build_context(
+            request,
+            base_data={
+                "laudo_type": "cancer_hereditario_144",
+                "requester_name": "Dra. Juliana das Gracas",
+            },
+        )
+        self.assertEqual(context["requester_name"], "Juliana das Gracas")
+        self.assertEqual(context["requester_display"], "Dr(a). Juliana das Gracas")
