@@ -444,9 +444,8 @@ def render_template_b_pdf(context):
     data_lines = [requester_line, sample_line]
     if clinical_indication:
         data_lines.append(f"<b>Indicação clínica:</b>&nbsp;{clinical_indication}")
-    data_lines.append("")
-    data_lines.append(f"Nome do exame: <b>{context.get('exam_name','')}</b>")
     _draw_paragraph(c, layout, "p2.data", "\n".join(data_lines))
+    _draw_paragraph(c, layout, "p2.exam", f"Nome do exame: <b>{context.get('exam_name','')}</b>")
     result_intro = (
         context.get("main_result_intro")
         or "Foi identificada uma variante clinicamente relevante no gene TP53."

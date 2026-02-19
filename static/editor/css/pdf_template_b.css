@@ -407,6 +407,12 @@
 .field-p2-clinical { top: 86.48mm; left: 13.61mm; width: 169.16mm; height: 11.10mm; }
 
 .field-p2-exam { top: 99.18mm; left: 13.61mm; width: 160.91mm; height: 4.23mm; }
+.field-p2-exam {
+    font-weight: 400 !important;
+}
+.field-p2-exam .exam-name {
+    font-weight: 700 !important;
+}
 
 /* Linha do RESULTADO PRINCIPAL */
 .field-p2-gene {
