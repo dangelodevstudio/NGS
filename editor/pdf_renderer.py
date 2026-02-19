@@ -100,6 +100,44 @@ def _draw_paragraph(c, layout, key, text):
     return _flow_in_frame(c, frame, [paragraph])
 
 
+def _truncate_to_width(text, font_name, font_size, max_width):
+    content = str(text or "")
+    if pdfmetrics.stringWidth(content, font_name, font_size) <= max_width:
+        return content
+    ellipsis = "..."
+    if pdfmetrics.stringWidth(ellipsis, font_name, font_size) > max_width:
+        return ""
+    while content and pdfmetrics.stringWidth(f"{content}{ellipsis}", font_name, font_size) > max_width:
+        content = content[:-1]
+    return f"{content}{ellipsis}"
+
+
+def _draw_single_line_fitted(c, layout, key, text, min_font_size=8.0):
+    spec = layout.fields[key]
+    style = _style_for_field(layout, spec)
+    font_name = style.fontName
+    font_size = float(spec.font_size)
+    min_size = float(min_font_size)
+    available_width = max((spec.w - (spec.padding_x * 2)) * mm, 1)
+    available_height = max((spec.h - (spec.padding_y * 2)) * mm, 1)
+    rendered_text = str(text or "")
+
+    while font_size > min_size and pdfmetrics.stringWidth(rendered_text, font_name, font_size) > available_width:
+        font_size = round(font_size - 0.2, 2)
+
+    rendered_text = _truncate_to_width(rendered_text, font_name, font_size, available_width)
+
+    c.saveState()
+    c.setFillColor(style.textColor)
+    c.setFont(font_name, font_size)
+    x = (spec.x + spec.padding_x) * mm
+    y_bottom = (layout.page_height - spec.y - spec.h + spec.padding_y) * mm
+    # Approximate baseline for vertical centering in a single-line label box.
+    baseline = y_bottom + ((available_height - font_size) / 2.0) + (font_size * 0.25)
+    c.drawString(x, baseline, rendered_text)
+    c.restoreState()
+
+
 def _paragraph_fits(layout, key, text):
     spec = layout.fields[key]
     style = _style_for_field(layout, spec)
@@ -308,7 +346,7 @@ def _build_vus_table(context, layout):
 
 
 def _draw_header(c, layout, context):
-    _draw_paragraph(c, layout, "header.name", f"<b>Nome:</b> {context.get('patient_name','')}")
+    _draw_single_line_fitted(c, layout, "header.name", f"Nome: {context.get('patient_name','')}")
     _draw_paragraph(c, layout, "header.birth", f"<b>Data de Nascimento:</b> {context.get('patient_birth_date','')}")
     _draw_paragraph(c, layout, "header.sex", f"<b>Sexo:</b> {context.get('patient_sex','')}")
     _draw_paragraph(c, layout, "header.code", f"<b>Código ID:</b> {context.get('patient_code','')}")
