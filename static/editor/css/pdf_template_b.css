@@ -703,7 +703,7 @@
 
 .field-p5-coverage-mean,
 .field-p5-coverage-50x {
-    left: 156.49mm !important;
+    left: 153.99mm !important;
     width: 20.00mm;
     text-align: center;
     display: flex !important;
@@ -717,14 +717,14 @@
 
 .field-p5-coverage-mean {
     top: 191.10mm;
-    left: 156.49mm !important;
+    left: 153.99mm !important;
     width: 20.00mm;
     height: 5.05mm;
 }
 
 .field-p5-coverage-50x {
     top: 202.64mm;
-    left: 156.49mm !important;
+    left: 153.99mm !important;
     width: 20.00mm;
     height: 5.05mm;
 }
