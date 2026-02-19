@@ -706,7 +706,12 @@
     left: 156.49mm !important;
     width: 20.00mm;
     text-align: center;
-    display: block !important;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    font-size: 10pt;
+    font-weight: 500;
+    line-height: 1;
     z-index: 3;
 }
 

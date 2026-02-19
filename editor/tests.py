@@ -8,6 +8,7 @@ from .views import (
     _build_inheritance_legend,
     _format_requester_display,
     _normalize_date_ddmmyyyy,
+    _normalize_metrics_base,
     _get_exam_name_for_type,
     _split_condition_omim,
     _update_report_from_request,
@@ -272,3 +273,32 @@ class MainResultControlsTests(TestCase):
         )
         self.assertEqual(context["requester_name"], "Juliana das Gracas")
         self.assertEqual(context["requester_display"], "Dr(a). Juliana das Gracas")
+
+    def test_metrics_base_normalization(self):
+        self.assertEqual(_normalize_metrics_base("50"), "50x")
+        self.assertEqual(_normalize_metrics_base("  30X "), "30x")
+        self.assertEqual(_normalize_metrics_base(""), "50x")
+
+    def test_update_report_persists_metrics_base(self):
+        report = Report.objects.create(
+            workspace=self.workspace,
+            created_by=self.user,
+            title="Laudo métricas",
+            report_type="cancer_hereditario_144",
+            data={"laudo_type": "cancer_hereditario_144", **self.defaults},
+        )
+        request = self.factory.post(
+            "/preview/",
+            data={
+                "metrics_coverage_mean": "350x",
+                "metrics_coverage_50x": "98%",
+                "metrics_coverage_base": "60",
+            },
+        )
+        request.user = self.user
+        request.workspace = self.workspace
+
+        data = _update_report_from_request(report, request)
+        self.assertEqual(data["metrics_coverage_mean"], "350x")
+        self.assertEqual(data["metrics_coverage_50x"], "98%")
+        self.assertEqual(data["metrics_coverage_base"], "60x")

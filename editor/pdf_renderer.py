@@ -126,11 +126,18 @@ def _draw_single_line_fitted(c, layout, key, text, min_font_size=8.0):
         font_size = round(font_size - 0.2, 2)
 
     rendered_text = _truncate_to_width(rendered_text, font_name, font_size, available_width)
+    text_width = pdfmetrics.stringWidth(rendered_text, font_name, font_size)
 
     c.saveState()
     c.setFillColor(style.textColor)
     c.setFont(font_name, font_size)
-    x = (spec.x + spec.padding_x) * mm
+    x_start = (spec.x + spec.padding_x) * mm
+    if spec.align == 1:
+        x = x_start + max((available_width - text_width) / 2.0, 0)
+    elif spec.align == 2:
+        x = x_start + max(available_width - text_width, 0)
+    else:
+        x = x_start
     y_bottom = (layout.page_height - spec.y - spec.h + spec.padding_y) * mm
     # Approximate baseline for vertical centering in a single-line label box.
     baseline = y_bottom + ((available_height - font_size) / 2.0) + (font_size * 0.25)
@@ -491,12 +498,13 @@ def render_template_b_pdf(context):
     # Page 5
     _draw_background(c, 5, layout)
     _draw_header(c, layout, context)
+    metrics_base = (context.get("metrics_coverage_base") or "50x").strip() or "50x"
     _draw_paragraph(c, layout, "p5.metrics.title", "DNA Nuclear")
     _draw_paragraph(c, layout, "p5.metrics.label_mean", "Cobertura média da região alvo:")
-    _draw_paragraph(c, layout, "p5.metrics.label_50x", "% da região alvo com cobertura maior ou igual a 50x:")
+    _draw_paragraph(c, layout, "p5.metrics.label_50x", f"% da região alvo com cobertura maior ou igual a {metrics_base}:")
     _draw_paragraph(c, layout, "p5.metrics.note", "Região alvo refere-se a região codificante e sítios de splicing dos genes analisados.")
-    _draw_paragraph(c, layout, "p5.metrics.mean", context.get("metrics_coverage_mean", ""))
-    _draw_paragraph(c, layout, "p5.metrics.50x", context.get("metrics_coverage_50x", ""))
+    _draw_single_line_fitted(c, layout, "p5.metrics.mean", context.get("metrics_coverage_mean", ""), min_font_size=8.2)
+    _draw_single_line_fitted(c, layout, "p5.metrics.50x", context.get("metrics_coverage_50x", ""), min_font_size=8.2)
     if context.get("is_admin"):
         _draw_paragraph(c, layout, "p5.recommendations", context.get("recommendations_text", ""))
     notes_text = re.sub(r"\s*\n+\s*", " ", (context.get("notes_text", "") or "").strip())

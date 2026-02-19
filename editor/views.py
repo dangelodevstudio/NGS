@@ -89,6 +89,7 @@ LAUDO_MODELOS = {
             ),
             "metrics_coverage_mean": "656x",
             "metrics_coverage_50x": "99,99%",
+            "metrics_coverage_base": "50x",
             "metrics_text": (
                 "Cobertura média do painel: 350x; 98% das bases com cobertura ≥50x. "
                 "Regiões com cobertura inferior foram avaliadas e não impactam a interpretação clínica principal."
@@ -214,6 +215,7 @@ REPORT_FIELDS = [
     "vus_classification",
     "metrics_coverage_mean",
     "metrics_coverage_50x",
+    "metrics_coverage_base",
     "metrics_text",
     "recommendations_text",
     "notes_text",
@@ -378,6 +380,18 @@ def _normalize_main_dates(data):
     for field in ["patient_birth_date", "exam_entry_date", "exam_release_date"]:
         data[field] = _normalize_date_ddmmyyyy(data.get(field))
     return data
+
+
+def _normalize_metrics_base(value):
+    raw = (value or "").strip()
+    if not raw:
+        return "50x"
+    compact = re.sub(r"\s+", "", raw)
+    if re.fullmatch(r"\d+", compact):
+        return f"{compact}x"
+    if re.fullmatch(r"\d+x", compact, flags=re.IGNORECASE):
+        return f"{compact[:-1]}x"
+    return raw
 
 
 def _normalize_patient_name(value):
@@ -776,6 +790,7 @@ def _build_context(request, base_data=None):
         # métricas e recomendações
         "metrics_coverage_mean": get_field("metrics_coverage_mean"),
         "metrics_coverage_50x": get_field("metrics_coverage_50x"),
+        "metrics_coverage_base": get_field("metrics_coverage_base", "50x"),
         "metrics_text": defaults.get("metrics_text", ""),
         "recommendations_text": get_field("recommendations_text"),
         "notes_text": defaults.get("notes_text", ""),
@@ -809,6 +824,7 @@ def _build_context(request, base_data=None):
         "main_classification_options": MAIN_CLASSIFICATION_OPTIONS,
     }
     _normalize_main_dates(context)
+    context["metrics_coverage_base"] = _normalize_metrics_base(context.get("metrics_coverage_base"))
     context["patient_name"] = _normalize_patient_name(context.get("patient_name"))
     context["patient_birth_date_cover"] = context.get("patient_birth_date") or "00/00/0000"
     context["requester_name"] = _normalize_requester_name(context.get("requester_name"))
@@ -940,6 +956,7 @@ def _update_report_from_request(report, request):
     )["defaults"]
     data["exam_name"] = _get_exam_name_for_type(data.get("laudo_type"))
     _normalize_main_dates(data)
+    data["metrics_coverage_base"] = _normalize_metrics_base(data.get("metrics_coverage_base"))
     data["patient_name"] = _normalize_patient_name(data.get("patient_name"))
     data["patient_birth_date_cover"] = data.get("patient_birth_date") or "00/00/0000"
     data["requester_name"] = _normalize_requester_name(data.get("requester_name"))
@@ -1009,6 +1026,8 @@ def _update_report_from_request(report, request):
         data["main_condition"] = _compose_main_condition(phenotype, omim)
 
     data["metrics_text"] = defaults.get("metrics_text", data.get("metrics_text", ""))
+    if not data.get("metrics_coverage_base"):
+        data["metrics_coverage_base"] = defaults.get("metrics_coverage_base", "50x")
     data["notes_text"] = defaults.get("notes_text", data.get("notes_text", ""))
     data["methodology_text"] = defaults.get("methodology_text", data.get("methodology_text", ""))
     data["limitations_text"] = defaults.get("limitations_text", data.get("limitations_text", ""))

@@ -335,13 +335,17 @@
                         <div class="mb-3">
                             <h6 class="text-uppercase small text-muted mb-2">Métricas, recomendações e notas</h6>
                             <div class="row">
-                                <div class="col-6 mb-2">
+                                <div class="col-4 mb-2">
                                     <label class="form-label">Cobertura média</label>
                                     <input type="text" name="metrics_coverage_mean" class="form-control" value="{{ metrics_coverage_mean }}">
                                 </div>
-                                <div class="col-6 mb-2">
-                                    <label class="form-label">Bases ≥50x</label>
+                                <div class="col-4 mb-2">
+                                    <label class="form-label">% da região alvo</label>
                                     <input type="text" name="metrics_coverage_50x" class="form-control" value="{{ metrics_coverage_50x }}">
+                                </div>
+                                <div class="col-4 mb-2">
+                                    <label class="form-label">Base (ex.: 50x)</label>
+                                    <input type="text" name="metrics_coverage_base" class="form-control" value="{{ metrics_coverage_base }}">
                                 </div>
                             </div>
                             {% if is_admin %}

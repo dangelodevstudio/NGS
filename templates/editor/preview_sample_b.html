@@ -98,7 +98,7 @@
         {% endif %}
         <div class="field field-p5-metrics-title txt-section">DNA Nuclear</div>
         <div class="field field-p5-metrics-label-mean txt-label">Cobertura média da região alvo:</div>
-        <div class="field field-p5-metrics-label-50x txt-label">% da região alvo com cobertura maior ou igual a 50x:</div>
+        <div class="field field-p5-metrics-label-50x txt-label">% da região alvo com cobertura maior ou igual a {{ metrics_coverage_base|default:"50x" }}:</div>
         <div class="field field-p5-metrics-note txt-label">Região alvo refere-se a região codificante e sítios de splicing dos genes analisados.</div>
         <div class="field field-p5-coverage-mean txt-value">
             {{ metrics_coverage_mean }}
