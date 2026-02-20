@@ -14,6 +14,6 @@ urlpatterns = [
     path('reports/<uuid:report_id>/', views.report_editor, name='report_editor'),
     path('reports/<uuid:report_id>/delete/', views.report_delete, name='report_delete'),
     path('reports/<uuid:report_id>/duplicate/', views.report_duplicate, name='report_duplicate'),
-    path('preview/', views.preview_laudo, name='preview_laudo'),
+    path('preview/pdf/', views.preview_pdf, name='preview_pdf'),
     path('pdf/', views.export_pdf, name='export_pdf'),
 ]

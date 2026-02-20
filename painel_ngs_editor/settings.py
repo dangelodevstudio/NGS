@@ -109,6 +109,8 @@ STATICFILES_DIRS = [
 ]
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+MEDIA_URL = os.environ.get("MEDIA_URL", "/media/")
+MEDIA_ROOT = Path(os.environ.get("MEDIA_ROOT", BASE_DIR / "media"))
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
@@ -123,6 +125,7 @@ CSRF_COOKIE_SECURE = not DEBUG
 SECURE_HSTS_SECONDS = int(os.environ.get("DJANGO_SECURE_HSTS_SECONDS", "3600")) if not DEBUG else 0
 SECURE_HSTS_INCLUDE_SUBDOMAINS = not DEBUG
 SECURE_HSTS_PRELOAD = not DEBUG
+X_FRAME_OPTIONS = os.environ.get("DJANGO_X_FRAME_OPTIONS", "SAMEORIGIN")
 
 LOGIN_URL = "login"
 LOGIN_REDIRECT_URL = "dashboard"
