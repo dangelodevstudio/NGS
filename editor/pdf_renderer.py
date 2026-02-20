@@ -20,9 +20,12 @@ from .pdf_layout import get_layout
 PURPLE = Color(117 / 255, 59 / 255, 189 / 255)
 GRAY_TEXT = Color(89 / 255, 89 / 255, 89 / 255)
 BG_PAGE = Color(245 / 255, 243 / 255, 247 / 255)
+BG_PAGE_WHITE = Color(1, 1, 1)
 BG_PANEL = Color(235 / 255, 231 / 255, 242 / 255)
 BORDER_PURPLE = Color(185 / 255, 154 / 255, 231 / 255)
-TABLE_HEADER_BG = Color(239 / 255, 235 / 255, 247 / 255)
+TABLE_HEADER_BG = Color(239 / 255, 239 / 255, 239 / 255)
+COVER_KICKER = Color(146 / 255, 116 / 255, 205 / 255)
+TABLE_TEXT_BG = Color(239 / 255, 239 / 255, 239 / 255)
 
 
 def _register_fonts():
@@ -155,7 +158,7 @@ def _draw_page_shell(c, layout, page_index):
             )
         return
 
-    c.setFillColor(BG_PAGE)
+    c.setFillColor(BG_PAGE_WHITE)
     c.rect(0, 0, layout.page_width * mm, layout.page_height * mm, stroke=0, fill=1)
 
     # Cabeçalho fixo (6 páginas internas: 2..7).
@@ -439,13 +442,83 @@ def _table_style(layout):
             ("RIGHTPADDING", (0, 0), (-1, -1), 0.6),
             ("TOPPADDING", (0, 0), (-1, -1), 0.5),
             ("BOTTOMPADDING", (0, 0), (-1, -1), 0.5),
-            ("GRID", (0, 0), (-1, -1), 0.35, BORDER_PURPLE),
+            ("GRID", (0, 0), (-1, -1), 0.75, Color(1, 1, 1)),
         ]
     )
 
 
 def _clean_row_value(row, key):
     return str((row or {}).get(key, "") or "").strip()
+
+
+def _prettify_column_label(key):
+    key_norm = str(key or "").strip().lower()
+    fixed = {
+        "dbsnp": "dbSNP",
+        "zygosity": "Zigosidade",
+        "inheritance": "Herança",
+        "classification": "Classificação",
+        "gene": "Gene",
+        "variant": "Variante",
+    }
+    if key_norm in fixed:
+        return fixed[key_norm]
+    return str(key or "").replace("_", " ").strip().title()
+
+
+def _variant_dynamic_columns(row):
+    base = ["gene", "variant", "dbsnp", "zygosity", "inheritance", "classification"]
+    exclude = {
+        "gene",
+        "transcript",
+        "variant_c",
+        "variant_p",
+        "dbsnp",
+        "zygosity",
+        "inheritance",
+        "classification",
+        "condition",
+    }
+    extras = []
+    for key, value in (row or {}).items():
+        k = str(key or "").strip()
+        if not k or k.lower() in exclude:
+            continue
+        if not str(value or "").strip():
+            continue
+        extras.append(k)
+    return base + extras
+
+
+def _variant_col_widths_mm(total_width_mm, columns):
+    weights = []
+    for key in columns:
+        if key == "gene":
+            weights.append(1.1)
+        elif key == "variant":
+            weights.append(1.35)
+        else:
+            weights.append(1.0)
+    total_weight = sum(weights) or 1.0
+    return [(total_width_mm * (w / total_weight)) * mm for w in weights]
+
+
+def _variant_cell_value(row, key):
+    if key == "variant":
+        c_text = _clean_row_value(row, "variant_c")
+        p_text = _clean_row_value(row, "variant_p")
+        if c_text and p_text:
+            return f"{c_text}<br/><nobr>{p_text}</nobr>"
+        return c_text or p_text
+    if key == "gene":
+        gene = _clean_row_value(row, "gene")
+        transcript = _clean_row_value(row, "transcript")
+        if gene and transcript:
+            return f"<b>{gene}</b><br/><nobr>{transcript}</nobr>"
+        if gene:
+            return f"<b>{gene}</b>"
+        return transcript
+    return _clean_row_value(row, key)
 
 
 def _get_main_variant_rows(context):
@@ -539,36 +612,58 @@ def _format_cnv_rows_for_overflow(rows):
 
 
 def _build_results_table(layout, row):
+    spec = layout.tables["results"]
+    columns = _variant_dynamic_columns(row)
+    col_labels = [_prettify_column_label(col) for col in columns]
+
+    gene_style = ParagraphStyle(
+        "results_gene_cell",
+        fontName=layout.font_regular,
+        boldFontName=layout.font_bold,
+        fontSize=9.1,
+        leading=9.8,
+        textColor=Color(1, 1, 1),
+        alignment=1,
+        wordWrap="LTR",
+        splitLongWords=0,
+    )
     cell_style = ParagraphStyle(
         "cell",
         fontName=layout.font_regular,
         boldFontName=layout.font_bold,
-        fontSize=8.3,
-        leading=9.0,
+        fontSize=8.6,
+        leading=9.3,
         textColor=GRAY_TEXT,
         alignment=1,
         wordWrap="LTR",
         splitLongWords=0,
     )
-    data = [
-        ["Gene", "Variante", "dbSNP", "Zigosidade", "Herança", "Classificação"],
-        [
-            "",
-            Paragraph(
-                f"{_clean_row_value(row, 'variant_c')}<br/><nobr>{_clean_row_value(row, 'variant_p')}</nobr>",
-                cell_style,
-            ),
-            Paragraph(_clean_row_value(row, "dbsnp"), cell_style),
-            Paragraph(_clean_row_value(row, "zygosity"), cell_style),
-            Paragraph(_clean_row_value(row, "inheritance"), cell_style),
-            Paragraph(_clean_row_value(row, "classification"), cell_style),
-        ]
-    ]
-    spec = layout.tables["results"]
+    condition_style = ParagraphStyle(
+        "results_condition",
+        fontName=layout.font_regular,
+        boldFontName=layout.font_bold,
+        fontSize=8.4,
+        leading=9.0,
+        textColor=GRAY_TEXT,
+        alignment=0,
+        wordWrap="LTR",
+        splitLongWords=0,
+    )
+    data_row = []
+    for col in columns:
+        style = gene_style if col == "gene" else cell_style
+        data_row.append(Paragraph(_variant_cell_value(row, col), style))
+    condition_text = f"Condição: {_clean_row_value(row, 'condition')}".strip()
+    condition_row = [""] + [Paragraph(condition_text, condition_style)] + [""] * (len(columns) - 2)
+    data = [col_labels, data_row, condition_row]
+
+    header_h = 5.6
+    condition_h = 5.4
+    data_h = max(5.8, spec.row_height - header_h - condition_h)
     table = Table(
         data,
-        colWidths=[w * mm for w in spec.col_widths],
-        rowHeights=[5.2 * mm, (spec.row_height - 5.2) * mm],
+        colWidths=_variant_col_widths_mm(sum(spec.col_widths), columns),
+        rowHeights=[header_h * mm, data_h * mm, condition_h * mm],
     )
     table.setStyle(_table_style(layout))
     table.setStyle(
@@ -577,15 +672,21 @@ def _build_results_table(layout, row):
                 ("BACKGROUND", (0, 0), (-1, 0), TABLE_HEADER_BG),
                 ("TEXTCOLOR", (0, 0), (-1, 0), PURPLE),
                 ("FONTNAME", (0, 0), (-1, 0), layout.font_bold),
-                ("FONTSIZE", (0, 0), (-1, 0), 8.3),
-                ("BACKGROUND", (0, 1), (0, 1), PURPLE),
-                ("VALIGN", (0, 1), (0, 1), "MIDDLE"),
-                ("ALIGN", (0, 1), (0, 1), "CENTER"),
-                ("TEXTCOLOR", (0, 1), (0, 1), Color(1, 1, 1)),
-                ("TOPPADDING", (0, 1), (-1, 1), 0.0),
-                ("BOTTOMPADDING", (0, 1), (-1, 1), 0.2),
-                ("LEFTPADDING", (0, 1), (-1, 1), 0.3),
-                ("RIGHTPADDING", (0, 1), (-1, 1), 0.3),
+                ("FONTSIZE", (0, 0), (-1, 0), 8.5),
+                ("SPAN", (0, 1), (0, 2)),
+                ("BACKGROUND", (0, 1), (0, 2), PURPLE),
+                ("VALIGN", (0, 1), (0, 2), "MIDDLE"),
+                ("ALIGN", (0, 1), (0, 2), "CENTER"),
+                ("TEXTCOLOR", (0, 1), (0, 2), Color(1, 1, 1)),
+                ("BACKGROUND", (1, 1), (-1, 1), TABLE_TEXT_BG),
+                ("BACKGROUND", (1, 2), (-1, 2), TABLE_TEXT_BG),
+                ("SPAN", (1, 2), (-1, 2)),
+                ("ALIGN", (1, 2), (-1, 2), "LEFT"),
+                ("VALIGN", (1, 2), (-1, 2), "MIDDLE"),
+                ("TOPPADDING", (0, 1), (-1, 2), 0.2),
+                ("BOTTOMPADDING", (0, 1), (-1, 2), 0.3),
+                ("LEFTPADDING", (0, 1), (-1, 2), 0.4),
+                ("RIGHTPADDING", (0, 1), (-1, 2), 0.4),
             ]
         )
     )
@@ -593,12 +694,16 @@ def _build_results_table(layout, row):
 
 
 def _build_vus_table(layout, row):
+    spec = layout.tables["vus"]
+    columns = _variant_dynamic_columns(row)
+    col_labels = [_prettify_column_label(col) for col in columns]
+
     gene_style = ParagraphStyle(
         "vus_gene",
         fontName=layout.font_regular,
         boldFontName=layout.font_bold,
-        fontSize=8.2,
-        leading=8.8,
+        fontSize=7.8,
+        leading=8.4,
         textColor=GRAY_TEXT,
         alignment=1,
         wordWrap="LTR",
@@ -608,34 +713,22 @@ def _build_vus_table(layout, row):
         "vus_cell",
         fontName=layout.font_regular,
         boldFontName=layout.font_bold,
-        fontSize=8.2,
-        leading=8.8,
+        fontSize=7.8,
+        leading=8.4,
         textColor=GRAY_TEXT,
         alignment=1,
         wordWrap="LTR",
         splitLongWords=0,
     )
-    data = [
-        ["Gene", "Variante", "dbSNP", "Zigosidade", "Herança", "Classificação"],
-        [
-            Paragraph(
-                f"<b>{_clean_row_value(row, 'gene')}</b><br/><nobr>{_clean_row_value(row, 'transcript')}</nobr>",
-                gene_style,
-            ),
-            Paragraph(
-                f"{_clean_row_value(row, 'variant_c')} <nobr>{_clean_row_value(row, 'variant_p')}</nobr>",
-                cell_style,
-            ),
-            Paragraph(_clean_row_value(row, "dbsnp"), cell_style),
-            Paragraph(_clean_row_value(row, "zygosity"), cell_style),
-            Paragraph(_clean_row_value(row, "inheritance"), cell_style),
-            Paragraph(_clean_row_value(row, "classification"), cell_style),
-        ]
-    ]
-    spec = layout.tables["vus"]
+    row_cells = []
+    for col in columns:
+        value = _variant_cell_value(row, col)
+        style = gene_style if col == "gene" else cell_style
+        row_cells.append(Paragraph(value, style))
+    data = [col_labels, row_cells]
     table = Table(
         data,
-        colWidths=[w * mm for w in spec.col_widths],
+        colWidths=_variant_col_widths_mm(sum(spec.col_widths), columns),
         rowHeights=[5.2 * mm, (spec.row_height - 5.2) * mm],
     )
     table.setStyle(_table_style(layout))
@@ -645,7 +738,7 @@ def _build_vus_table(layout, row):
                 ("BACKGROUND", (0, 0), (-1, 0), TABLE_HEADER_BG),
                 ("TEXTCOLOR", (0, 0), (-1, 0), PURPLE),
                 ("FONTNAME", (0, 0), (-1, 0), layout.font_bold),
-                ("FONTSIZE", (0, 0), (-1, 0), 8.2),
+                ("FONTSIZE", (0, 0), (-1, 0), 8.0),
                 ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
                 ("ALIGN", (0, 0), (-1, -1), "CENTER"),
                 ("LEFTPADDING", (0, 0), (-1, -1), 0.2),
@@ -671,14 +764,14 @@ def draw_footer(c, layout, context, page_number=None, page_total=6):
     # Atualiza apenas paginação do rodapé fixo.
     # Limpa a área onde o PNG traz "Página 1 de 6" e escreve o valor correto.
     c.saveState()
-    c.setFillColor(BG_PAGE)
-    c.rect(150.0 * mm, _y_from_top(layout, 261.8, 10.5), 40.5 * mm, 10.5 * mm, stroke=0, fill=1)
+    c.setFillColor(BG_PAGE_WHITE)
+    c.rect(152.0 * mm, _y_from_top(layout, 265.3, 7.2), 38.5 * mm, 7.2 * mm, stroke=0, fill=1)
     if page_number is not None:
         c.setFillColor(PURPLE)
-        c.setFont(layout.font_regular, 11.8)
-        c.drawRightString(179.0 * mm, _y_from_top(layout, 265.0, 4.8), f"Página {page_number} de {page_total}")
-        c.setFont(layout.font_regular, 14.4)
-        c.drawString(180.6 * mm, _y_from_top(layout, 265.2, 4.8), ">>")
+        c.setFont(layout.font_regular, 9.8)
+        c.drawRightString(179.4 * mm, _y_from_top(layout, 267.1, 4.8), f"Página {page_number} de {page_total}")
+        c.setFont(layout.font_regular, 12.0)
+        c.drawString(180.8 * mm, _y_from_top(layout, 267.2, 4.8), ">>")
     c.restoreState()
 
 
@@ -720,6 +813,19 @@ def _append_overflow_block(blocks, title, text):
     if not content:
         return
     blocks.append((str(title or "Continuação"), content))
+
+
+def _split_cover_exam_name(exam_name):
+    text = str(exam_name or "").strip()
+    if not text:
+        return []
+    if " - " in text:
+        left, right = text.rsplit(" - ", 1)
+        right_clean = right.strip()
+        if re.fullmatch(r"\d+\s*genes?", right_clean, flags=re.IGNORECASE):
+            right_clean = right_clean.lower()
+        return [left.strip(), right_clean]
+    return [text]
 
 
 def _draw_overflow_pages(c, layout, context, blocks):
@@ -766,28 +872,36 @@ def render_template_b_pdf(context):
     # Page 1 (cover)
     _draw_page_shell(c, layout, 1)
     c.saveState()
-    c.setFillColor(PURPLE)
     if has_front_cover:
-        c.setFont(layout.font_regular, 13.0)
-        c.drawString(21.0 * mm, _y_from_top(layout, 108.0, 5.0), "LAUDO CLÍNICO")
-        c.setFont(layout.font_bold, 11.2)
-        c.drawString(21.0 * mm, _y_from_top(layout, 117.5, 5.0), context.get("exam_name", ""))
+        c.setFillColor(COVER_KICKER)
+        c.setFont(layout.font_regular, 13.8)
+        c.drawString(21.0 * mm, _y_from_top(layout, 102.6, 5.0), "LAUDO CLÍNICO")
+        c.setFillColor(PURPLE)
+        c.setFont(layout.font_bold, 17.4)
+        exam_lines = _split_cover_exam_name(context.get("exam_name", ""))
+        if exam_lines:
+            c.drawString(21.0 * mm, _y_from_top(layout, 110.4, 5.0), exam_lines[0])
+            if len(exam_lines) > 1:
+                c.setFont(layout.font_bold, 18.4)
+                c.drawString(21.0 * mm, _y_from_top(layout, 117.5, 5.0), exam_lines[1])
     else:
+        c.setFillColor(COVER_KICKER)
         c.setFont(layout.font_regular, 13.0)
         c.drawString(35.0 * mm, _y_from_top(layout, 122.0, 5.0), "LAUDO CLÍNICO")
+        c.setFillColor(PURPLE)
         c.setFont(layout.font_bold, 11.6)
         c.drawString(35.0 * mm, _y_from_top(layout, 131.2, 5.0), context.get("exam_name", ""))
     c.restoreState()
-    _draw_paragraph(c, layout, "p1.name", f"<b>Nome:</b> {context.get('patient_name','')}")
-    _draw_paragraph(c, layout, "p1.birth", f"<b>Data de Nascimento:</b> {context.get('patient_birth_date_cover','')}")
-    _draw_paragraph(c, layout, "p1.code", f"<b>Código ID:</b> {context.get('patient_code_cover','')}")
+    _draw_paragraph(c, layout, "p1.name", f"Nome: {context.get('patient_name','')}")
+    _draw_paragraph(c, layout, "p1.birth", f"Data de Nascimento: {context.get('patient_birth_date_cover','')}")
+    _draw_paragraph(c, layout, "p1.code", f"Código ID: {context.get('patient_code_cover','')}")
     c.showPage()
 
     # Page 2
     _draw_page_shell(c, layout, 2)
     _draw_section_box(c, layout, 10.5, 67.2, 168.0, 36.0, "DADOS")
     _draw_section_box(c, layout, 10.5, 121.5, 168.0, 16.5, "RESULTADOS")
-    _draw_round_rect(c, layout, 10.5, 149.2, 168.0, 27.6, radius_mm=1.8, stroke=1, fill=0)
+    _draw_round_rect(c, layout, 10.5, 149.2, 168.0, 32.5, radius_mm=1.8, stroke=1, fill=0)
     _draw_section_box(c, layout, 10.5, 187.0, 168.0, 50.0, "INTERPRETAÇÃO")
     _draw_header(c, layout, context)
     requester_line = f"<b>Solicitante:</b>&nbsp;{context.get('requester_display') or context.get('requester_name','')}"
@@ -810,7 +924,6 @@ def render_template_b_pdf(context):
         or "Foi identificada uma variante clinicamente relevante no gene TP53."
     )
     _draw_paragraph(c, layout, "p2.results", result_intro)
-    _draw_paragraph(c, layout, "p2.condition", f"Condição: {context.get('main_condition','')}")
     inheritance_legend = (context.get("main_inheritance_legend") or "").strip()
     if inheritance_legend:
         _draw_paragraph(c, layout, "p2.inheritance_legend", inheritance_legend)
@@ -824,7 +937,6 @@ def render_template_b_pdf(context):
         _draw_paragraph(c, layout, "p2.interpretation", interpretation_p2)
     if main_table_mode == "variant" and main_variant_rows:
         _draw_table(c, layout, "results", _build_results_table(layout, main_variant_rows[0]))
-        _draw_results_gene_centered(c, layout, main_variant_rows[0])
     draw_footer(c, layout, context, page_number=1, page_total=6)
     c.showPage()
 

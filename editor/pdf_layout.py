@@ -55,9 +55,9 @@ def get_layout() -> ReportLayout:
 
     fields = {
         # Page 1 cover
-        "p1.name": _field(26.05, 150.20, 140.10, 8.00, 16, 19.0, color="purple", font_name="bold"),
-        "p1.birth": _field(24.89, 164.40, 140.10, 6.00, 14, 15.0, color="purple", font_name="bold"),
-        "p1.code": _field(24.89, 171.30, 140.10, 6.00, 14, 15.0, color="purple", font_name="bold"),
+        "p1.name": _field(24.89, 136.20, 140.10, 8.00, 16, 19.0, color="purple", font_name="regular"),
+        "p1.birth": _field(24.89, 151.60, 140.10, 6.00, 14, 15.0, color="purple", font_name="regular"),
+        "p1.code": _field(24.89, 158.50, 140.10, 6.00, 14, 15.0, color="purple", font_name="regular"),
 
         # Header (pages 2-7)
         "header.name": _field(72.25, 13.72, 101.00, 6.00, 14, 16.0, color="purple", font_name="bold"),
@@ -75,7 +75,7 @@ def get_layout() -> ReportLayout:
         "p2.exam": _field(13.61, 99.18, 160.91, 4.23, 9.8, 10.8),
         "p2.results": _field(12.99, 128.00, 164.02, 11.10, 10.5, 13.0, padding_x=padding_x, padding_y=padding_y, align=4),
         "p2.condition": _field(39.40, 172.16, 135.25, 4.30, 10, 12.0),
-        "p2.inheritance_legend": _field(39.40, 177.20, 135.25, 4.30, 8.6, 9.4, align=0),
+        "p2.inheritance_legend": _field(39.40, 176.00, 135.25, 4.30, 8.6, 9.4, align=0),
         "p2.interpretation": _field(13.08, 200.14, 163.63, 34.30, 10.0, 10.5, padding_x=padding_x, padding_y=0.0, align=4),
 
         # Page 3 content
@@ -120,7 +120,7 @@ def get_layout() -> ReportLayout:
         "results": _table(
             x=12.53,
             y=151.72,
-            row_height=14.20,
+            row_height=22.00,
             col_widths=[24.384, 35.899, 25.061, 24.892, 26.416, 27.432],
         ),
         # VUS table (page 3).
