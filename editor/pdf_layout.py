@@ -55,9 +55,9 @@ def get_layout() -> ReportLayout:
 
     fields = {
         # Page 1 cover
-        "p1.name": _field(26.05, 135.16, 140.10, 8.00, 16, 19.0, color="purple", font_name="bold"),
-        "p1.birth": _field(24.89, 148.75, 140.10, 6.00, 14, 15.0, color="purple", font_name="bold"),
-        "p1.code": _field(24.89, 155.73, 140.10, 6.00, 14, 15.0, color="purple", font_name="bold"),
+        "p1.name": _field(26.05, 150.20, 140.10, 8.00, 16, 19.0, color="purple", font_name="bold"),
+        "p1.birth": _field(24.89, 164.40, 140.10, 6.00, 14, 15.0, color="purple", font_name="bold"),
+        "p1.code": _field(24.89, 171.30, 140.10, 6.00, 14, 15.0, color="purple", font_name="bold"),
 
         # Header (pages 2-7)
         "header.name": _field(72.25, 13.72, 101.00, 6.00, 14, 16.0, color="purple", font_name="bold"),
@@ -79,7 +79,7 @@ def get_layout() -> ReportLayout:
         "p2.interpretation": _field(13.08, 200.14, 163.63, 34.30, 10.0, 10.5, padding_x=padding_x, padding_y=0.0, align=4),
 
         # Page 3 content
-        "p3.interpretation": _field(12.70, 72.22, 165.10, 83.33, 10.0, 10.5, padding_x=padding_x, padding_y=0.0, align=4),
+        "p3.interpretation": _field(12.70, 72.22, 165.10, 108.20, 10.0, 10.5, padding_x=padding_x, padding_y=0.0, align=4),
         "p3.additional": _field(12.77, 181.90, 164.38, 22.04, 10.0, 11.0, padding_x=padding_x, padding_y=0.0, align=4),
 
         # Page 4 content
@@ -97,6 +97,16 @@ def get_layout() -> ReportLayout:
 
         # Page 6 content
         "p6.methodology": _field(13.11, 75.99, 163.84, 38.53, 10.3, 11.3, padding_x=1.2, padding_y=1.0, align=4),
+        "p6.limitations": _field(13.03, 133.45, 164.38, 47.00, 9.0, 10.0, padding_x=1.2, padding_y=0.8, align=4),
+        "p6.observations": _field(12.83, 188.64, 164.56, 21.60, 9.0, 10.0, padding_x=1.2, padding_y=0.8, align=4),
+
+        # Page 7 content
+        "p7.observations": _field(12.70, 67.20, 165.10, 34.00, 9.0, 10.0, padding_x=1.2, padding_y=0.8, align=4),
+        "p7.references": _field(12.70, 105.80, 165.10, 146.06, 9.0, 10.0, padding_x=1.2, padding_y=0.8, align=4),
+
+        # Overflow continuation pages
+        "overflow.title": _field(12.70, 66.67, 165.10, 8.00, 11.0, 12.0, color="purple", font_name="bold"),
+        "overflow.body": _field(12.70, 75.93, 165.10, 175.93, 9.0, 10.0, padding_x=1.2, padding_y=0.8, align=4),
 
         # Footer (internal pages: 2-7)
         "footer.analyst": _field(27.21, 248.70, 145.14, 4.10, 9.0, 10.0, color="purple", font_name="bold"),

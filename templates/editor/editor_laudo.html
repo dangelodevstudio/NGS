@@ -7,11 +7,29 @@
         <!-- Coluna esquerda: formulário -->
         <div class="col-lg-4 editor-form-pane">
             <div class="card shadow-sm bioma-card">
-                <div class="card-header bioma-card-header d-flex justify-content-between align-items-center">
-                    <h6 class="mb-0 text-white">Configuracao do Laudo</h6>
-                    <div class="form-check form-switch text-white mb-0 d-none">
-                        <input class="form-check-input" type="checkbox" id="calibration-toggle">
-                        <label class="form-check-label small" for="calibration-toggle">Modo calibracao</label>
+                <div class="card-header bioma-card-header editor-form-header">
+                    <div class="editor-form-title-wrap">
+                        <h6 class="mb-0 text-white">Configuracao do Laudo</h6>
+                        <div class="editor-form-subtitle">Preencha os campos e acompanhe a prévia em tempo real.</div>
+                    </div>
+                    <div class="editor-form-header-actions">
+                        <button type="button"
+                                class="btn btn-sm btn-light preview-refresh-btn"
+                                data-preview-url="{% url 'preview_pdf' %}">
+                            Atualizar prévia
+                        </button>
+                        <button type="submit"
+                                form="editor-form"
+                                class="btn btn-sm btn-outline-light export-pdf-btn"
+                                formaction="{% url 'export_pdf' %}"
+                                formtarget="_blank"
+                                hx-disable="true">
+                            Gerar PDF
+                        </button>
+                        <div class="form-check form-switch text-white mb-0 auto-preview-switch">
+                            <input class="form-check-input" type="checkbox" id="auto-preview-toggle" checked>
+                            <label class="form-check-label small" for="auto-preview-toggle">Auto prévia</label>
+                        </div>
                     </div>
                 </div>
                 <div class="card-body">
@@ -22,9 +40,13 @@
                             <input type="hidden" name="report_id" value="{{ report.id }}">
                         {% endif %}
                         <input type="hidden" name="layout_overflow" id="layout-overflow" value="">
+                        <div class="editor-actions-sticky">
+                            <div class="editor-actions-hint">Atalho: Ctrl + Enter para atualizar a prévia.</div>
+                            <div id="editor-quick-nav" class="editor-quick-nav" aria-label="Navegação rápida das seções"></div>
+                        </div>
 
                         <!-- Tipo de Laudo -->
-                        <div class="mb-3">
+                        <div class="mb-3 editor-section-block" id="section-laudo-type" data-editor-section="Tipo de laudo">
                             <h6 class="text-uppercase small text-muted mb-2">Tipo de laudo</h6>
                             <input type="hidden" name="laudo_type" value="{{ laudo_type }}">
                             <select name="laudo_type" class="form-select" disabled aria-disabled="true">
@@ -41,7 +63,7 @@
                         <hr class="my-3">
 
                         <!-- Identificação do Paciente -->
-                        <div class="mb-3">
+                        <div class="mb-3 editor-section-block" id="section-patient" data-editor-section="Identificação do paciente">
                             <h6 class="text-uppercase small text-muted mb-2">Identificação do paciente</h6>
                             <div class="mb-2">
                                 <label class="form-label">Nome do paciente</label>
@@ -78,7 +100,7 @@
                         <hr class="my-3">
 
                         <!-- Dados do Exame -->
-                        <div class="mb-3">
+                        <div class="mb-3 editor-section-block" id="section-exam" data-editor-section="Dados do exame">
                             <h6 class="text-uppercase small text-muted mb-2">Dados do exame</h6>
                             <div class="row">
                                 <div class="col-6 mb-2">
@@ -162,7 +184,7 @@
                         <hr class="my-3">
 
                         <!-- Resultado principal -->
-                        <div class="mb-3">
+                        <div class="mb-3 editor-section-block" id="section-main-result" data-editor-section="Resultado principal">
                             <h6 class="text-uppercase small text-muted mb-2">Resultado principal</h6>
                             <div class="row">
                                 <div class="col-6 mb-2">
@@ -265,20 +287,57 @@
                                 <label class="form-label">Frase introdutória do resultado</label>
                                 <textarea name="main_result_intro" rows="2" class="form-control">{{ main_result_intro }}</textarea>
                             </div>
+                            {% if is_admin %}
+                            <div class="mb-2">
+                                <label class="form-label">Modo de tabela do resultado principal</label>
+                                <select name="main_table_mode" id="main-table-mode" class="form-select">
+                                    {% for option in table_mode_options %}
+                                    <option value="{{ option.key }}" {% if main_table_mode == option.key %}selected{% endif %}>{{ option.label }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="mb-2 table-mode-variant-main">
+                                <label class="form-label">Linhas adicionais da tabela principal (SNV/indel)</label>
+                                <textarea name="main_variant_extra_rows_text" rows="4" class="form-control">{{ main_variant_extra_rows_text }}</textarea>
+                                <div class="form-text">Uma linha por variante: gene; transcript; variante c; variante p; dbSNP; zigosidade; herança; classificação; condição.</div>
+                            </div>
+                            <div class="mb-2 table-mode-cnv-main">
+                                <label class="form-label">Tabela CNV do resultado principal</label>
+                                <textarea name="main_cnv_rows_text" rows="4" class="form-control">{{ main_cnv_rows_text }}</textarea>
+                                <div class="form-text">Uma linha por CNV: tipo; coordenada; região; zigosidade; classificação.</div>
+                            </div>
+                            {% endif %}
                         </div>
 
                         <hr class="my-3">
 
                         <!-- Interpretação principal -->
-                        <div class="mb-3">
+                        <div class="mb-3 editor-section-block" id="section-interpretation" data-editor-section="Interpretação principal">
                             <h6 class="text-uppercase small text-muted mb-2">Interpretação principal</h6>
+                            {% if is_admin %}
+                            <div class="row">
+                                <div class="col-6 mb-2">
+                                    <label class="form-label">Herança automática na interpretação</label>
+                                    <select name="interpretation_inheritance_mode" class="form-select">
+                                        {% for option in interpretation_inheritance_mode_options %}
+                                        <option value="{{ option.key }}" {% if interpretation_inheritance_mode == option.key %}selected{% endif %}>{{ option.label }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-6 mb-2">
+                                    <label class="form-label">Observação opcional da interpretação</label>
+                                    <textarea name="interpretation_obs" rows="2" class="form-control">{{ interpretation_obs }}</textarea>
+                                </div>
+                            </div>
+                            <div class="form-text mb-2">Tokens: @AD, @AR, @LXD, @LXR, @LY, @HM, @denovo, @PE, @GENE, @VAR_C, @VAR_P, @ZIGOSIDADE, @HERANCA, @CLASSIFICACAO, @CONDICAO, @GENE2 e @VAR_C2.</div>
+                            {% endif %}
                             <textarea name="interpretation_text" rows="6" class="form-control">{{ interpretation_text }}</textarea>
                         </div>
 
                         <hr class="my-3">
 
                         <!-- Achados adicionais (VUS) -->
-                        <div class="mb-3">
+                        <div class="mb-3 editor-section-block" id="section-additional-findings" data-editor-section="Achados adicionais">
                             <h6 class="text-uppercase small text-muted mb-2">Achados adicionais (VUS)</h6>
                             <div class="row">
                                 <div class="col-6 mb-2">
@@ -312,6 +371,31 @@
                             </div>
                             <div class="mb-2">
                                 <label class="form-label">Texto de achados adicionais</label>
+                                {% if is_admin %}
+                                <select name="additional_findings_mode" class="form-select mb-2">
+                                    {% for option in additional_findings_mode_options %}
+                                    <option value="{{ option.key }}" {% if additional_findings_mode == option.key %}selected{% endif %}>{{ option.label }}</option>
+                                    {% endfor %}
+                                </select>
+                                <label class="form-label">Observação opcional dos achados adicionais</label>
+                                <textarea name="additional_findings_obs" rows="2" class="form-control mb-2">{{ additional_findings_obs }}</textarea>
+                                <label class="form-label">Modo de tabela dos achados adicionais</label>
+                                <select name="additional_table_mode" id="additional-table-mode" class="form-select mb-2">
+                                    {% for option in table_mode_options %}
+                                    <option value="{{ option.key }}" {% if additional_table_mode == option.key %}selected{% endif %}>{{ option.label }}</option>
+                                    {% endfor %}
+                                </select>
+                                <div class="mb-2 table-mode-variant-additional">
+                                    <label class="form-label">Linhas adicionais da tabela (SNV/indel)</label>
+                                    <textarea name="additional_variant_extra_rows_text" rows="4" class="form-control">{{ additional_variant_extra_rows_text }}</textarea>
+                                    <div class="form-text">Uma linha por variante: gene; transcript; variante c; variante p; dbSNP; zigosidade; herança; classificação; condição.</div>
+                                </div>
+                                <div class="mb-2 table-mode-cnv-additional">
+                                    <label class="form-label">Tabela CNV dos achados adicionais</label>
+                                    <textarea name="additional_cnv_rows_text" rows="4" class="form-control">{{ additional_cnv_rows_text }}</textarea>
+                                    <div class="form-text">Uma linha por CNV: tipo; coordenada; região; zigosidade; classificação.</div>
+                                </div>
+                                {% endif %}
                                 <textarea name="additional_findings_text" rows="4" class="form-control">{{ additional_findings_text }}</textarea>
                             </div>
                         </div>
@@ -319,8 +403,50 @@
                         <hr class="my-3">
 
                         {% if is_admin %}
+                        <div class="mb-3 editor-section-block" id="section-secondary-findings" data-editor-section="Achados secundários">
+                            <h6 class="text-uppercase small text-muted mb-2">Achados secundários (texto)</h6>
+                            <div class="mb-2">
+                                <label class="form-label">Modo de achados secundários</label>
+                                <select name="secondary_findings_mode" class="form-select">
+                                    {% for option in secondary_findings_mode_options %}
+                                    <option value="{{ option.key }}" {% if secondary_findings_mode == option.key %}selected{% endif %}>{{ option.label }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label">Observação opcional dos achados secundários</label>
+                                <textarea name="secondary_findings_obs" rows="2" class="form-control">{{ secondary_findings_obs }}</textarea>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label">Texto de achados secundários</label>
+                                <textarea name="secondary_findings_text" rows="4" class="form-control">{{ secondary_findings_text }}</textarea>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label">Modo de tabela dos achados secundários</label>
+                                <select name="secondary_table_mode" id="secondary-table-mode" class="form-select mb-2">
+                                    {% for option in table_mode_options %}
+                                    <option value="{{ option.key }}" {% if secondary_table_mode == option.key %}selected{% endif %}>{{ option.label }}</option>
+                                    {% endfor %}
+                                </select>
+                                <div class="mb-2 table-mode-variant-secondary">
+                                    <label class="form-label">Tabela de achados secundários (SNV/indel)</label>
+                                    <textarea name="secondary_variant_rows_text" rows="4" class="form-control">{{ secondary_variant_rows_text }}</textarea>
+                                    <div class="form-text">Uma linha por variante: gene; transcript; variante c; variante p; dbSNP; zigosidade; herança; classificação; condição.</div>
+                                </div>
+                                <div class="mb-2 table-mode-cnv-secondary">
+                                    <label class="form-label">Tabela CNV de achados secundários</label>
+                                    <textarea name="secondary_cnv_rows_text" rows="4" class="form-control">{{ secondary_cnv_rows_text }}</textarea>
+                                    <div class="form-text">Uma linha por CNV: tipo; coordenada; região; zigosidade; classificação.</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr class="my-3">
+                        {% endif %}
+
+                        {% if is_admin %}
                         <!-- Genes analisados (admin) -->
-                        <div class="mb-3">
+                        <div class="mb-3 editor-section-block" id="section-genes" data-editor-section="Genes analisados">
                             <h6 class="text-uppercase small text-muted mb-2">Genes analisados</h6>
                             <div class="mb-2">
                                 <label class="form-label">Genes analisados</label>
@@ -332,34 +458,97 @@
                         <hr class="my-3">
 
                         <!-- Métricas, recomendações e notas -->
-                        <div class="mb-3">
+                        <div class="mb-3 editor-section-block" id="section-metrics" data-editor-section="Métricas e recomendações">
                             <h6 class="text-uppercase small text-muted mb-2">Métricas, recomendações e notas</h6>
+                            <div class="mb-2">
+                                <label class="form-label">Modo de métricas</label>
+                                <select name="metrics_mode" id="metrics-mode" class="form-select">
+                                    {% for option in metrics_mode_options %}
+                                    <option value="{{ option.key }}" {% if metrics_mode == option.key %}selected{% endif %}>{{ option.label }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
                             <div class="row">
-                                <div class="col-4 mb-2">
+                                <div class="col-4 mb-2 metrics-mode-panel">
                                     <label class="form-label">Cobertura média</label>
                                     <input type="text" name="metrics_coverage_mean" class="form-control" value="{{ metrics_coverage_mean }}">
                                 </div>
-                                <div class="col-4 mb-2">
+                                <div class="col-4 mb-2 metrics-mode-panel">
                                     <label class="form-label">% da região alvo</label>
                                     <input type="text" name="metrics_coverage_50x" class="form-control" value="{{ metrics_coverage_50x }}">
                                 </div>
-                                <div class="col-4 mb-2">
+                                <div class="col-4 mb-2 metrics-mode-panel">
                                     <label class="form-label">Base (ex.: 50x)</label>
                                     <input type="text" name="metrics_coverage_base" class="form-control" value="{{ metrics_coverage_base }}">
+                                </div>
+                                <div class="col-3 mb-2 metrics-mode-exome">
+                                    <label class="form-label">Base nuclear</label>
+                                    <input type="text" name="metrics_nuclear_base" class="form-control" value="{{ metrics_nuclear_base }}">
+                                </div>
+                                <div class="col-3 mb-2 metrics-mode-exome">
+                                    <label class="form-label">% nuclear</label>
+                                    <input type="text" name="metrics_nuclear_percent" class="form-control" value="{{ metrics_nuclear_percent }}">
+                                </div>
+                                <div class="col-3 mb-2 metrics-mode-exome">
+                                    <label class="form-label">Base mitocondrial</label>
+                                    <input type="text" name="metrics_mito_base" class="form-control" value="{{ metrics_mito_base }}">
+                                </div>
+                                <div class="col-3 mb-2 metrics-mode-exome">
+                                    <label class="form-label">% mitocondrial</label>
+                                    <input type="text" name="metrics_mito_percent" class="form-control" value="{{ metrics_mito_percent }}">
                                 </div>
                             </div>
                             {% if is_admin %}
                             <div class="mb-2">
+                                <label class="form-label">Modo de recomendações</label>
+                                <select name="recommendations_mode" class="form-select mb-2">
+                                    {% for option in recommendations_mode_options %}
+                                    <option value="{{ option.key }}" {% if recommendations_mode == option.key %}selected{% endif %}>{{ option.label }}</option>
+                                    {% endfor %}
+                                </select>
+                                <label class="form-label">Observação opcional das recomendações</label>
+                                <textarea name="recommendations_obs" rows="2" class="form-control mb-2">{{ recommendations_obs }}</textarea>
                                 <label class="form-label">Recomendações</label>
                                 <textarea name="recommendations_text" rows="3" class="form-control">{{ recommendations_text }}</textarea>
                             </div>
+                            <div class="mb-2">
+                                <label class="form-label">Observação opcional do bloco de notas</label>
+                                <textarea name="notes_obs" rows="2" class="form-control">{{ notes_obs }}</textarea>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label">Texto do bloco de notas</label>
+                                <textarea name="notes_text" rows="5" class="form-control">{{ notes_text }}</textarea>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label">Modo de metodologia</label>
+                                <select name="methodology_mode" class="form-select mb-2">
+                                    {% for option in methodology_mode_options %}
+                                    <option value="{{ option.key }}" {% if methodology_mode == option.key %}selected{% endif %}>{{ option.label }}</option>
+                                    {% endfor %}
+                                </select>
+                                <label class="form-label">Metodologia</label>
+                                <textarea name="methodology_text" rows="5" class="form-control">{{ methodology_text }}</textarea>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label">Considerações e limitações</label>
+                                <textarea name="limitations_text" rows="5" class="form-control">{{ limitations_text }}</textarea>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label">Observações</label>
+                                <textarea name="observations_text" rows="5" class="form-control">{{ observations_text }}</textarea>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label">Referências bibliográficas</label>
+                                <textarea name="references_text" rows="12" class="form-control">{{ references_text }}</textarea>
+                            </div>
+                            <div class="form-text">Os modos automáticos preenchem o texto com base nas regras definidas. No modo Manual, o conteúdo digitado é preservado.</div>
                             {% endif %}
                         </div>
 
                         <hr class="my-3">
 
                         <!-- Profissionais -->
-                        <div class="mb-3">
+                        <div class="mb-3 editor-section-block" id="section-professionals" data-editor-section="Profissionais">
                             <h6 class="text-uppercase small text-muted mb-2">Profissionais</h6>
                             <div class="mb-2">
                                 <label class="form-label">Analista responsavel</label>
@@ -419,18 +608,7 @@
                             </div>
                         </div>
 
-                        <div class="d-grid gap-2">
-                            <button type="button" class="btn bioma-primary-btn" id="preview-refresh-btn" data-preview-url="{% url 'preview_pdf' %}">
-                                Atualizar prévia
-                            </button>
-                            <button type="submit"
-                                    class="btn btn-outline-secondary"
-                                    formaction="{% url 'export_pdf' %}"
-                                    formtarget="_blank"
-                                    hx-disable="true">
-                                Gerar PDF (PDF A4)
-                            </button>
-                        </div>
+                        <div class="form-text">Use as ações no cabeçalho deste card para atualizar a prévia e gerar o PDF.</div>
                     </form>
                 </div>
             </div>
@@ -471,11 +649,13 @@
 <script>
 (function() {
     const form = document.getElementById('editor-form');
-    const button = document.getElementById('preview-refresh-btn');
+    const refreshButtons = Array.from(document.querySelectorAll('.preview-refresh-btn'));
+    const autoPreviewToggle = document.getElementById('auto-preview-toggle');
     const iframe = document.getElementById('preview-pdf-frame');
     const emptyState = document.getElementById('preview-empty');
     const loadingEl = document.getElementById('preview-loading');
     const errorEl = document.getElementById('preview-error');
+    const previewUrl = refreshButtons.find((btn) => btn.dataset.previewUrl)?.dataset.previewUrl || '';
     const patientNameInput = form ? form.querySelector('input[name="patient_name"]') : null;
     const dateInputs = form
         ? [
@@ -484,7 +664,7 @@
             form.querySelector('input[name="exam_release_date"]'),
         ].filter(Boolean)
         : [];
-    if (!form || !button || !iframe) return;
+    if (!form || !refreshButtons.length || !iframe || !previewUrl) return;
 
     function normalizeDateInputValue(value) {
         const raw = String(value || '').trim();
@@ -560,7 +740,10 @@
         }
     }
 
-    button.addEventListener('click', async () => {
+    let autoPreviewTimer = null;
+    let activeController = null;
+
+    async function refreshPreview() {
         setError('');
         setLoading(true);
 
@@ -568,12 +751,17 @@
         normalizeDateInputs();
         const formData = new FormData(form);
         const csrfToken = form.querySelector('input[name="csrfmiddlewaretoken"]')?.value || '';
+        if (activeController) {
+            activeController.abort();
+        }
+        activeController = new AbortController();
 
         try {
-            const response = await fetch(button.dataset.previewUrl, {
+            const response = await fetch(previewUrl, {
                 method: 'POST',
                 body: formData,
                 headers: csrfToken ? { 'X-CSRFToken': csrfToken } : {},
+                signal: activeController.signal,
             });
             if (!response.ok) {
                 const fallback = await response.text();
@@ -585,209 +773,103 @@
             }
             setPreviewUrl(payload.url);
         } catch (err) {
+            if (err.name === 'AbortError') return;
             setError(err.message || 'Erro ao gerar a prévia.');
         } finally {
             setLoading(false);
+            activeController = null;
+        }
+    }
+
+    function scheduleAutoPreview() {
+        if (!autoPreviewToggle || !autoPreviewToggle.checked) return;
+        window.clearTimeout(autoPreviewTimer);
+        autoPreviewTimer = window.setTimeout(() => {
+            refreshPreview();
+        }, 900);
+    }
+
+    refreshButtons.forEach((button) => {
+        button.addEventListener('click', refreshPreview);
+    });
+
+    form.addEventListener('input', scheduleAutoPreview);
+    form.addEventListener('change', scheduleAutoPreview);
+    document.addEventListener('keydown', (event) => {
+        if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+            event.preventDefault();
+            refreshPreview();
         }
     });
 })();
 
 (function() {
-    const shell = document.getElementById('preview-shell');
-    const scaleEl = document.getElementById('preview-scale');
-    const toggle = document.getElementById('calibration-toggle');
-    const PAGE_WIDTH_PX = 794; // 210mm @ 96dpi
-    const PX_PER_MM = PAGE_WIDTH_PX / 210;
-    const storageKey = 'templateBFieldOverrides';
-    let overrides = {};
-    let currentField = null;
-    let currentClass = '';
+    const form = document.getElementById('editor-form');
+    const quickNav = document.getElementById('editor-quick-nav');
+    if (!form || !quickNav) return;
 
-    function pxToMm(px) {
-        return +(px / PX_PER_MM).toFixed(2);
+    const scrollContainer = form.closest('.card-body');
+    if (!scrollContainer) return;
+    const stickyActions = form.querySelector('.editor-actions-sticky');
+    const sections = Array.from(form.querySelectorAll('.editor-section-block[data-editor-section]'));
+    if (!sections.length) return;
+
+    quickNav.innerHTML = sections
+        .map((section, index) => {
+            const targetId = section.id || `editor-section-${index + 1}`;
+            section.id = targetId;
+            const label = section.dataset.editorSection || `Seção ${index + 1}`;
+            return `<button type="button" class="editor-nav-chip" data-target="${targetId}">${label}</button>`;
+        })
+        .join('');
+
+    const chips = Array.from(quickNav.querySelectorAll('.editor-nav-chip'));
+    let tick = false;
+
+    function getStickyOffset() {
+        return (stickyActions ? stickyActions.offsetHeight : 0) + 10;
     }
 
-    function getFieldClass(el) {
-        const cls = Array.from(el.classList).find(c => c.startsWith('field-'));
-        return cls || '';
-    }
-
-    function readBox(el) {
-        const cs = getComputedStyle(el);
-        return {
-            top: pxToMm(parseFloat(cs.top) || 0),
-            left: pxToMm(parseFloat(cs.left) || 0),
-            width: pxToMm(parseFloat(cs.width) || 0),
-            height: pxToMm(parseFloat(cs.height) || 0),
-        };
-    }
-
-    function applyBox(el, box) {
-        ['top', 'left', 'width', 'height'].forEach(prop => {
-            if (box[prop] !== undefined && box[prop] !== null && !Number.isNaN(box[prop])) {
-                el.style[prop] = `${box[prop]}mm`;
-            }
+    function setActiveChip(sectionId) {
+        chips.forEach((chip) => {
+            chip.classList.toggle('is-active', chip.dataset.target === sectionId);
         });
     }
 
-    function loadOverrides() {
-        try {
-            overrides = JSON.parse(localStorage.getItem(storageKey) || '{}') || {};
-        } catch (e) {
-            overrides = {};
-        }
-    }
-
-    function saveOverrides() {
-        localStorage.setItem(storageKey, JSON.stringify(overrides));
-    }
-
-    function applyOverrides() {
-        Object.entries(overrides).forEach(([cls, box]) => {
-            shell.querySelectorAll(`.${cls}`).forEach(el => applyBox(el, box));
+    function getActiveSectionId() {
+        const current = scrollContainer.scrollTop + getStickyOffset() + 24;
+        let active = sections[0];
+        sections.forEach((section) => {
+            if (section.offsetTop <= current) {
+                active = section;
+            }
         });
+        return active.id;
     }
 
-    // HUD helper
-    const helper = document.createElement('div');
-    helper.className = 'field-helper';
-    helper.innerHTML = `
-        <div class="helper-title">Field helper</div>
-        <div class="helper-values">
-            <div><strong>top</strong>: <span data-field="top">-</span> mm</div>
-            <div><strong>left</strong>: <span data-field="left">-</span> mm</div>
-            <div><strong>width</strong>: <span data-field="width">-</span> mm</div>
-            <div><strong>height</strong>: <span data-field="height">-</span> mm</div>
-        </div>
-        <div class="helper-actions">
-            <button type="button" data-action="copy">Copy CSS rule</button>
-            <button type="button" data-action="toggle-box">Toggle box mode</button>
-        </div>
-    `;
-    shell.appendChild(helper);
-
-    function updateHelper() {
-        if (!shell.classList.contains('is-calibrating') || !currentField) {
-            helper.classList.remove('is-visible');
-            return;
-        }
-        const box = readBox(currentField);
-        helper.classList.add('is-visible');
-        helper.querySelector('.helper-title').textContent = currentClass || 'field';
-        helper.querySelector('[data-field="top"]').textContent = box.top.toFixed(2);
-        helper.querySelector('[data-field="left"]').textContent = box.left.toFixed(2);
-        helper.querySelector('[data-field="width"]').textContent = box.width.toFixed(2);
-        helper.querySelector('[data-field="height"]').textContent = box.height.toFixed(2);
+    function updateActiveFromScroll() {
+        setActiveChip(getActiveSectionId());
+        tick = false;
     }
 
-    function selectField(el) {
-        if (!shell.classList.contains('is-calibrating')) return;
-        if (currentField && currentField !== el) {
-            currentField.classList.remove('is-selected');
-        }
-        currentField = el;
-        currentClass = getFieldClass(el);
-        if (currentField) {
-            currentField.classList.add('is-selected');
-        }
-        updateHelper();
-    }
-
-    function setBoxAndPersist(el, box) {
-        applyBox(el, box);
-        if (currentClass) {
-            overrides[currentClass] = Object.assign({}, overrides[currentClass] || {}, box);
-            saveOverrides();
-        }
-        updateHelper();
-    }
-
-    function handleKey(e) {
-        if (!shell.classList.contains('is-calibrating') || !currentField) return;
-        if (!['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) return;
-        e.preventDefault();
-        const box = readBox(currentField);
-        if (e.altKey) {
-            const step = 0.5;
-            if (e.key === 'ArrowLeft') box.width = Math.max(0, box.width - step);
-            if (e.key === 'ArrowRight') box.width += step;
-            if (e.key === 'ArrowUp') box.height = Math.max(0, box.height - step);
-            if (e.key === 'ArrowDown') box.height += step;
-        } else {
-            const step = e.shiftKey ? 2 : 0.5;
-            if (e.key === 'ArrowLeft') box.left -= step;
-            if (e.key === 'ArrowRight') box.left += step;
-            if (e.key === 'ArrowUp') box.top -= step;
-            if (e.key === 'ArrowDown') box.top += step;
-        }
-        setBoxAndPersist(currentField, box);
-    }
-
-    shell.addEventListener('click', (e) => {
-        if (!shell.classList.contains('is-calibrating')) return;
-        const target = e.target.closest('.field');
-        if (!target || !shell.contains(target)) return;
-        selectField(target);
+    quickNav.addEventListener('click', (event) => {
+        const chip = event.target.closest('.editor-nav-chip');
+        if (!chip) return;
+        const target = form.querySelector(`#${chip.dataset.target}`);
+        if (!target) return;
+        const top = Math.max(0, target.offsetTop - getStickyOffset());
+        scrollContainer.scrollTo({ top, behavior: 'smooth' });
+        setActiveChip(target.id);
     });
 
-    document.addEventListener('keydown', handleKey);
-
-    helper.addEventListener('click', async (e) => {
-        const action = e.target.getAttribute('data-action');
-        if (!action || !currentField) return;
-        if (action === 'copy') {
-            const box = readBox(currentField);
-            const rule = `.${currentClass} { top: ${box.top.toFixed(2)}mm; left: ${box.left.toFixed(2)}mm; width: ${box.width.toFixed(2)}mm; height: ${box.height.toFixed(2)}mm; }`;
-            try {
-                await navigator.clipboard.writeText(rule);
-            } catch (err) {
-                console.warn('Clipboard error', err);
-            }
-        }
-        if (action === 'toggle-box') {
-            currentField.classList.toggle('box');
-        }
-        updateHelper();
+    scrollContainer.addEventListener('scroll', () => {
+        if (tick) return;
+        tick = true;
+        window.requestAnimationFrame(updateActiveFromScroll);
     });
 
-    function reselectAfterSwap() {
-        if (currentClass) {
-            const candidate = shell.querySelector(`.${currentClass}`);
-            if (candidate) {
-                selectField(candidate);
-            } else {
-                currentField = null;
-                currentClass = '';
-                updateHelper();
-            }
-        } else {
-            updateHelper();
-        }
-    }
-
-    document.addEventListener('htmx:afterSwap', (evt) => {
-        if (evt.target && evt.target.id === 'preview-container') {
-            applyOverrides();
-            reselectAfterSwap();
-        }
-    });
-
-    if (toggle) {
-        toggle.addEventListener('change', () => {
-            if (!toggle.checked && currentField) {
-                currentField.classList.remove('is-selected');
-                currentField = null;
-                currentClass = '';
-            }
-            updateHelper();
-        });
-    }
-
-    loadOverrides();
-    applyOverrides();
-    updateHelper();
+    updateActiveFromScroll();
 })();
-
 
 (function() {
     const notIdentified = document.getElementById('requester-not-identified');
@@ -886,6 +968,77 @@
         choice.addEventListener('change', () => syncOtherField(config));
         syncOtherField(config);
     });
+})();
+
+(function() {
+    function toggleBlock(selector, show) {
+        document.querySelectorAll(selector).forEach((block) => {
+            block.classList.toggle('d-none', !show);
+            block.querySelectorAll('input, textarea, select').forEach((field) => {
+                field.disabled = !show;
+            });
+        });
+    }
+
+    const configs = [
+        {
+            selectId: 'main-table-mode',
+            variantSelector: '.table-mode-variant-main',
+            cnvSelector: '.table-mode-cnv-main',
+        },
+        {
+            selectId: 'additional-table-mode',
+            variantSelector: '.table-mode-variant-additional',
+            cnvSelector: '.table-mode-cnv-additional',
+        },
+        {
+            selectId: 'secondary-table-mode',
+            variantSelector: '.table-mode-variant-secondary',
+            cnvSelector: '.table-mode-cnv-secondary',
+        },
+    ];
+
+    function syncTableMode(config) {
+        const select = document.getElementById(config.selectId);
+        if (!select) return;
+        const isCnv = select.value === 'cnv';
+        toggleBlock(config.variantSelector, !isCnv);
+        toggleBlock(config.cnvSelector, isCnv);
+    }
+
+    configs.forEach((config) => {
+        const select = document.getElementById(config.selectId);
+        if (!select) return;
+        select.addEventListener('change', () => syncTableMode(config));
+        syncTableMode(config);
+    });
+})();
+
+(function() {
+    const modeSelect = document.getElementById('metrics-mode');
+    const panelGroups = document.querySelectorAll('.metrics-mode-panel');
+    const exomeGroups = document.querySelectorAll('.metrics-mode-exome');
+
+    function toggleGroup(groups, show) {
+        groups.forEach((group) => {
+            group.classList.toggle('d-none', !show);
+            group.querySelectorAll('input, textarea, select').forEach((field) => {
+                field.disabled = !show;
+            });
+        });
+    }
+
+    function syncMetricsMode() {
+        if (!modeSelect) return;
+        const isExome = modeSelect.value === 'exome_mito';
+        toggleGroup(panelGroups, !isExome);
+        toggleGroup(exomeGroups, isExome);
+    }
+
+    if (modeSelect) {
+        modeSelect.addEventListener('change', syncMetricsMode);
+        syncMetricsMode();
+    }
 })();
 
 (function() {

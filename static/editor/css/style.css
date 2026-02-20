@@ -65,6 +65,44 @@ body {
     z-index: 1040;
 }
 
+.bioma-navbar-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+.bioma-navbar-logo-wrap {
+    background: rgba(255, 255, 255, 0.96);
+    border-radius: 10px;
+    padding: 4px 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+}
+
+.bioma-navbar-logo {
+    height: 24px;
+    width: auto;
+    display: block;
+}
+
+.bioma-navbar-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.1;
+}
+
+.bioma-navbar-title {
+    font-size: 1.02rem;
+    font-weight: 700;
+}
+
+.bioma-navbar-subtitle {
+    font-size: 0.74rem;
+    opacity: 0.9;
+}
+
 .bioma-home-btn {
     background: linear-gradient(90deg, #ff6b6b, #ff8e53);
     color: #ffffff;
@@ -123,6 +161,119 @@ body {
 .editor-form-pane .card-body {
     overflow-y: auto;
     height: calc(100vh - var(--navbar-height) - 140px);
+    padding-top: 0.85rem;
+}
+
+.editor-form-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.9rem;
+}
+
+.editor-form-title-wrap {
+    min-width: 0;
+}
+
+.editor-form-subtitle {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 0.78rem;
+    margin-top: 0.2rem;
+}
+
+.editor-form-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    flex-wrap: wrap;
+}
+
+.editor-form-header-actions .btn {
+    white-space: nowrap;
+}
+
+.editor-form-header-actions .export-pdf-btn {
+    border-color: rgba(255, 255, 255, 0.65);
+    color: #fff;
+}
+
+.editor-form-header-actions .export-pdf-btn:hover {
+    background: rgba(255, 255, 255, 0.14);
+    color: #fff;
+}
+
+.editor-actions-sticky {
+    position: sticky;
+    top: 0;
+    z-index: 6;
+    background: #ffffff;
+    margin: 0 0 0.9rem 0;
+    padding: 0.2rem 0 0.4rem 0;
+    border-bottom: 1px solid #e6eaf4;
+}
+
+.auto-preview-switch {
+    white-space: nowrap;
+    color: #fff;
+}
+
+.editor-actions-hint {
+    font-size: 0.8rem;
+    color: #6f7692;
+    margin-top: 0.1rem;
+}
+
+.editor-quick-nav {
+    display: flex;
+    gap: 0.4rem;
+    overflow-x: auto;
+    padding-top: 0.45rem;
+    padding-bottom: 0.15rem;
+    scrollbar-width: thin;
+}
+
+.editor-nav-chip {
+    border: 1px solid #c9d4ef;
+    background: #f5f8ff;
+    color: #274591;
+    border-radius: 999px;
+    padding: 0.28rem 0.68rem;
+    font-size: 0.76rem;
+    font-weight: 600;
+    white-space: nowrap;
+    line-height: 1.2;
+    transition: all 0.16s ease;
+}
+
+.editor-nav-chip:hover {
+    background: #e8f0ff;
+    border-color: #96b0ee;
+}
+
+.editor-nav-chip.is-active {
+    background: #0050ef;
+    border-color: #0050ef;
+    color: #ffffff;
+}
+
+@media (max-width: 576px) {
+    .editor-form-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .editor-form-header-actions {
+        width: 100%;
+    }
+
+    .editor-form-header-actions .btn {
+        flex: 1 1 calc(50% - 0.25rem);
+    }
+
+    .editor-form-header-actions .auto-preview-switch {
+        width: 100%;
+        color: #ffffff;
+    }
 }
 
 .preview-viewport {
@@ -189,6 +340,21 @@ body {
 
 .preview-loading.is-hidden {
     display: none;
+}
+
+.preview-refresh-btn.btn-light {
+    color: #163f9d;
+    font-weight: 600;
+}
+
+@media (max-width: 768px) {
+    .bioma-navbar-logo {
+        height: 20px;
+    }
+
+    .bioma-navbar-subtitle {
+        display: none;
+    }
 }
 
 #preview-shell .pdf-document {

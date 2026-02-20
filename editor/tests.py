@@ -9,6 +9,7 @@ from .views import (
     _format_requester_display,
     _normalize_date_ddmmyyyy,
     _normalize_metrics_base,
+    _resolve_inheritance_paragraph,
     _get_exam_name_for_type,
     _split_condition_omim,
     _update_report_from_request,
@@ -145,6 +146,18 @@ class MainResultControlsTests(TestCase):
             _build_inheritance_legend("Herança rara custom"),
             "Modelo de herança: Herança rara custom.",
         )
+
+    def test_resolve_inheritance_paragraph_supports_synonyms_and_codes(self):
+        from_synonym = _resolve_inheritance_paragraph("Ligado ao X")
+        self.assertIn("ligado ao cromossomo X", from_synonym)
+
+        from_code = _resolve_inheritance_paragraph("AR")
+        self.assertIn("autossômico recessivo", from_code)
+
+    def test_resolve_inheritance_paragraph_supports_dominant_recessive_combo(self):
+        combo = _resolve_inheritance_paragraph("Autossômica dominante/recessiva")
+        self.assertIn("autossômico dominante", combo)
+        self.assertIn("autossômico recessivo", combo)
 
     def test_exam_name_synced_from_laudo_type_in_context(self):
         request = self.factory.get("/")
@@ -302,3 +315,258 @@ class MainResultControlsTests(TestCase):
         self.assertEqual(data["metrics_coverage_mean"], "350x")
         self.assertEqual(data["metrics_coverage_50x"], "98%")
         self.assertEqual(data["metrics_coverage_base"], "60x")
+
+    def test_build_context_keeps_admin_editable_notes_and_methodology(self):
+        request = self.factory.get("/")
+        request.user = self.user
+        context = _build_context(
+            request,
+            base_data={
+                "laudo_type": "cancer_hereditario_144",
+                "notes_text": "Texto custom de notas.",
+                "methodology_text": "Texto custom de metodologia.",
+            },
+        )
+        self.assertEqual(context["notes_text"], "Texto custom de notas.")
+        self.assertEqual(context["methodology_text"], "Texto custom de metodologia.")
+
+    def test_update_report_preserves_raw_interpretation_and_renders_tokens_in_context(self):
+        report = Report.objects.create(
+            workspace=self.workspace,
+            created_by=self.user,
+            title="Laudo token",
+            report_type="cancer_hereditario_144",
+            data={"laudo_type": "cancer_hereditario_144", **self.defaults},
+        )
+        request = self.factory.post(
+            "/preview/",
+            data={
+                "interpretation_inheritance_mode": "none",
+                "interpretation_text": "Texto base @AR",
+            },
+        )
+        request.user = self.user
+        request.workspace = self.workspace
+
+        data = _update_report_from_request(report, request)
+        self.assertEqual(data["interpretation_text"], "Texto base @AR")
+
+        context_request = self.factory.get("/")
+        context_request.user = self.user
+        context = _build_context(context_request, base_data=data)
+        self.assertIn("autossômico recessivo", context["interpretation_text_rendered"])
+        self.assertNotIn("@AR", context["interpretation_text_rendered"])
+
+    def test_update_report_applies_additional_and_secondary_presets_in_rendered_context(self):
+        report = Report.objects.create(
+            workspace=self.workspace,
+            created_by=self.user,
+            title="Laudo presets",
+            report_type="cancer_hereditario_144",
+            data={"laudo_type": "cancer_hereditario_144", **self.defaults},
+        )
+        request = self.factory.post(
+            "/preview/",
+            data={
+                "additional_findings_mode": "none",
+                "additional_findings_obs": "Obs adicional.",
+                "secondary_findings_mode": "present",
+                "secondary_findings_obs": "Obs secundária.",
+            },
+        )
+        request.user = self.user
+        request.workspace = self.workspace
+
+        data = _update_report_from_request(report, request)
+        self.assertEqual(data["additional_findings_mode"], "none")
+        self.assertEqual(data["secondary_findings_mode"], "present")
+
+        context_request = self.factory.get("/")
+        context_request.user = self.user
+        context = _build_context(context_request, base_data=data)
+        self.assertIn("Nao foram identificados achados adicionais", context["additional_findings_text_rendered"])
+        self.assertTrue(context["additional_findings_text_rendered"].endswith("Obs adicional."))
+        self.assertIn("variantes clinicamente acionaveis", context["secondary_findings_text_rendered"])
+        self.assertTrue(context["secondary_findings_text_rendered"].endswith("Obs secundária."))
+
+    def test_update_report_applies_recommendations_mode_and_obs_in_rendered_context(self):
+        report = Report.objects.create(
+            workspace=self.workspace,
+            created_by=self.user,
+            title="Laudo recomendacoes",
+            report_type="cancer_hereditario_144",
+            data={"laudo_type": "cancer_hereditario_144", **self.defaults},
+        )
+        request = self.factory.post(
+            "/preview/",
+            data={
+                "recommendations_mode": "without_main_finding",
+                "recommendations_obs": "Obs final.",
+            },
+        )
+        request.user = self.user
+        request.workspace = self.workspace
+
+        data = _update_report_from_request(report, request)
+        self.assertEqual(data["recommendations_mode"], "without_main_finding")
+
+        context_request = self.factory.get("/")
+        context_request.user = self.user
+        context = _build_context(context_request, base_data=data)
+        self.assertIn("aconselhamento genetico", context["recommendations_text_rendered"])
+        self.assertTrue(context["recommendations_text_rendered"].endswith("Obs final."))
+
+    def test_update_report_keeps_raw_additional_text_when_observation_is_filled(self):
+        report = Report.objects.create(
+            workspace=self.workspace,
+            created_by=self.user,
+            title="Laudo observacao",
+            report_type="cancer_hereditario_144",
+            data={"laudo_type": "cancer_hereditario_144", **self.defaults},
+        )
+        request = self.factory.post(
+            "/preview/",
+            data={
+                "additional_findings_mode": "manual",
+                "additional_findings_text": "Texto base adicional.",
+                "additional_findings_obs": "Paz e amor",
+            },
+        )
+        request.user = self.user
+        request.workspace = self.workspace
+
+        data = _update_report_from_request(report, request)
+        self.assertEqual(data["additional_findings_text"], "Texto base adicional.")
+
+        context_request = self.factory.get("/")
+        context_request.user = self.user
+        context = _build_context(context_request, base_data=data)
+        self.assertTrue(context["additional_findings_text_rendered"].endswith("Paz e amor"))
+
+    def test_update_report_clears_legacy_appended_additional_observation(self):
+        report = Report.objects.create(
+            workspace=self.workspace,
+            created_by=self.user,
+            title="Laudo obs legada",
+            report_type="cancer_hereditario_144",
+            data={
+                "laudo_type": "cancer_hereditario_144",
+                **self.defaults,
+                "additional_findings_text": "Texto base adicional.\n\nPaz e amor\n\nPaz e amor",
+                "additional_findings_obs": "Paz e amor",
+            },
+        )
+        request = self.factory.post(
+            "/preview/",
+            data={
+                "additional_findings_mode": "manual",
+                "additional_findings_text": "Texto base adicional.\n\nPaz e amor\n\nPaz e amor",
+                "additional_findings_obs": "",
+            },
+        )
+        request.user = self.user
+        request.workspace = self.workspace
+
+        data = _update_report_from_request(report, request)
+        self.assertEqual(data["additional_findings_text"], "Texto base adicional.")
+
+    def test_update_report_cleans_repeated_legacy_tail_when_obs_already_empty(self):
+        report = Report.objects.create(
+            workspace=self.workspace,
+            created_by=self.user,
+            title="Laudo obs legada sem historico",
+            report_type="cancer_hereditario_144",
+            data={
+                "laudo_type": "cancer_hereditario_144",
+                **self.defaults,
+                "additional_findings_text": "Paz e amor\n\nPaz e amor\n\nPaz e amor",
+                "additional_findings_obs": "",
+            },
+        )
+        request = self.factory.post(
+            "/preview/",
+            data={
+                "additional_findings_mode": "manual",
+                "additional_findings_text": "Paz e amor\n\nPaz e amor\n\nPaz e amor",
+                "additional_findings_obs": "",
+            },
+        )
+        request.user = self.user
+        request.workspace = self.workspace
+
+        data = _update_report_from_request(report, request)
+        self.assertEqual(data["additional_findings_text"], "")
+
+    def test_build_context_parses_variant_and_cnv_table_rows(self):
+        request = self.factory.get("/")
+        request.user = self.user
+        context = _build_context(
+            request,
+            base_data={
+                "laudo_type": "cancer_hereditario_144",
+                "main_gene": "GAA",
+                "main_transcript": "NM_000152.5",
+                "main_variant_c": "c.2560C>T",
+                "main_variant_p": "p.(Arg854*)",
+                "main_dbsnp": "rs121907943",
+                "main_zygosity": "Heterozigose",
+                "main_inheritance": "Autossômica recessiva",
+                "main_classification": "Patogênica",
+                "main_condition": "Doença de Pompe (OMIM:#232300)",
+                "main_variant_extra_rows_text": "GAA; NM_000152.5; c.-32-13T>G; p.(?); rs386834236; Heterozigose; Autossômica recessiva; Patogênica; Doença de Pompe tardia",
+                "main_cnv_rows_text": "Deleção; chr1:93270347-103006350; 1p22.1-p21.1; Heterozigose; VUS",
+                "secondary_variant_rows_text": "MYBPC3; NM_000256.3; c.3065G>C; p.(Arg1022Pro); rs397516000; Heterozigose; Autossômica dominante; Patogênica; Cardiomiopatia",
+            },
+        )
+
+        self.assertEqual(len(context["main_variant_rows"]), 2)
+        self.assertEqual(context["main_variant_rows"][1]["variant_c"], "c.-32-13T>G")
+        self.assertEqual(len(context["main_cnv_rows"]), 1)
+        self.assertEqual(context["main_cnv_rows"][0]["coordinate"], "chr1:93270347-103006350")
+        self.assertEqual(len(context["secondary_variant_rows"]), 1)
+        self.assertEqual(context["secondary_variant_rows"][0]["gene"], "MYBPC3")
+
+    def test_interpretation_supports_table_tokens_for_first_and_second_rows(self):
+        request = self.factory.get("/")
+        request.user = self.user
+        context = _build_context(
+            request,
+            base_data={
+                "laudo_type": "cancer_hereditario_144",
+                "main_gene": "GAA",
+                "main_variant_c": "c.2560C>T",
+                "main_variant_extra_rows_text": "GAA; NM_000152.5; c.-32-13T>G; p.(?); rs386834236; Heterozigose; Autossômica recessiva; Patogênica; Doença de Pompe tardia",
+                "interpretation_text": "Primeira: @GENE @VAR_C. Segunda: @GENE2 @VAR_C2.",
+            },
+        )
+
+        self.assertIn("Primeira: GAA c.2560C>T.", context["interpretation_text_rendered"])
+        self.assertIn("Segunda: GAA c.-32-13T>G.", context["interpretation_text_rendered"])
+
+    def test_update_report_normalizes_metrics_mode_fields(self):
+        report = Report.objects.create(
+            workspace=self.workspace,
+            created_by=self.user,
+            title="Laudo metricas exoma",
+            report_type="cancer_hereditario_144",
+            data={"laudo_type": "cancer_hereditario_144", **self.defaults},
+        )
+        request = self.factory.post(
+            "/preview/",
+            data={
+                "metrics_mode": "exome_mito",
+                "metrics_nuclear_base": "30",
+                "metrics_nuclear_percent": "90,42%",
+                "metrics_mito_base": "100",
+                "metrics_mito_percent": "98,45%",
+            },
+        )
+        request.user = self.user
+        request.workspace = self.workspace
+
+        data = _update_report_from_request(report, request)
+        self.assertEqual(data["metrics_mode"], "exome_mito")
+        self.assertEqual(data["metrics_nuclear_base"], "30x")
+        self.assertEqual(data["metrics_mito_base"], "100x")
+        self.assertEqual(data["metrics_nuclear_percent"], "90,42%")
+        self.assertEqual(data["metrics_mito_percent"], "98,45%")
